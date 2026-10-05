@@ -34,6 +34,16 @@ class TestPhase2DataEvidenceSubmission(unittest.TestCase):
         cls.cso_token = cso_resp.json()["access_token"]
         cls.cso_headers = {"Authorization": f"Bearer {cls.cso_token}"}
 
+    def setUp(self):
+        db = SessionLocal()
+        try:
+            period = db.query(ReportingPeriod).filter(ReportingPeriod.id == "period-2025-09").first()
+            if period and period.is_locked:
+                period.is_locked = False
+                db.commit()
+        finally:
+            db.close()
+
     def test_evidence_byte_sha256_and_upload(self):
         """Verify upload computes SHA256 from actual file bytes and stores document"""
         file_bytes = b"Official IOCL Diesel Delivery Invoice Content - Challan #88492"

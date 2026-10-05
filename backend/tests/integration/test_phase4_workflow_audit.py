@@ -41,6 +41,16 @@ class TestPhase4WorkflowAudit(unittest.TestCase):
         resp = cls.client.post("/api/v1/auth/login", json={"email": "cso@meilgroup.in", "password": "password123"})
         assert resp.status_code == 200, f"CSO login failed: {resp.text}"
         cls.cso_headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
+ 
+    def setUp(self):
+        db = SessionLocal()
+        try:
+            period = db.query(ReportingPeriod).filter(ReportingPeriod.id == "period-2025-09").first()
+            if period and period.is_locked:
+                period.is_locked = False
+                db.commit()
+        finally:
+            db.close()
 
     def test_full_hierarchical_workflow_and_lock(self):
         """Test complete 4-tier lifecycle: DRAFT -> SUBMITTED -> BU_APPROVED -> SUBSIDIARY_APPROVED -> LOCKED"""
