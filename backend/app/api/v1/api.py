@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     auth, organization, reporting_periods, submissions,
     reports, audit, hr, hse, evidence, esg_records, factors,
-    consolidation, brsr
+    consolidation, brsr, procurement, governance, csr
 )
 
 api_router = APIRouter()
@@ -20,5 +20,8 @@ api_router.include_router(esg_records.router)
 api_router.include_router(factors.router)
 api_router.include_router(consolidation.router)
 api_router.include_router(brsr.router)
+api_router.include_router(procurement.router)
+api_router.include_router(governance.router)
+api_router.include_router(csr.router)
 
 

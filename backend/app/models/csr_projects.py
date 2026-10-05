@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import uuid
 from app.core.database import Base
@@ -43,8 +44,8 @@ class CsrProject(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     category = relationship("CsrProgramCategory", back_populates="csr_projects")
-    subsidiary = relationship("Subsidiary", back_populates="csr_projects")
-    business_unit = relationship("BusinessUnit", back_populates="csr_projects")
+    subsidiary = relationship("Subsidiary")
+    business_unit = relationship("BusinessUnit")
 
 class CsrProjectMilestone(Base):
     __tablename__ = "csr_project_milestones"
@@ -100,7 +101,7 @@ class Community(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    project = relationship("CsrProject", back_populates="community")
+    project = relationship("CsrProject")
 
 class CommunityLocation(Base):
     __tablename__ = "community_locations"
@@ -258,113 +259,8 @@ class CsrAction(Base):
     closed_at = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-class EvidenceDocument(Base):
-    __tablename__ = "evidence_documents"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    project_id = Column(String, ForeignKey("csr_projects.id"), nullable=True)
-    reporting_period_id = Column(String, nullable=True)
-    filename = Column(String, nullable=False)
-    file_path = Column(String, nullable=False)           # Local path or Supabase Storage URL
-    file_size_bytes = Column(Integer, nullable=False)
-    mime_type = Column(String, nullable=False)
-    sha256_hash = Column(String, nullable=True)          # Cryptographic integrity check
-    document_type = Column(String, nullable=False)       # CSR Project Report, Activity Report, Beneficiary Evidence, Photographs, Impact Report, Invoice, Certificate, Partner Report, Stakeholder Meeting Record, Grievance Evidence, Completion Evidence
-    uploaded_by = Column(String, nullable=False)
-    is_verified = Column(Boolean, default=False)
-    verified_by = Column(String, nullable=True)
-    verification_notes = Column(String, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-class EvidenceLink(Base):
-    __tablename__ = "evidence_links"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    evidence_id = Column(String, ForeignKey("evidence_documents.id"), nullable=False)
-    source_type = Column(String, nullable=False)  # csr_project, community, beneficiary, impact_record, stakeholder_engagement, grievance, submission
-    source_id = Column(String, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-class EvidenceVersion(Base):
-    __tablename__ = "evidence_versions"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    evidence_id = Column(String, ForeignKey("evidence_documents.id"), nullable=False)
-    version_number = Column(Integer, nullable=False)
-    filename = Column(String, nullable=False)
-    file_path = Column(String, nullable=False)
-    sha256_hash = Column(String, nullable=True)
-    uploaded_by = Column(String, nullable=True)
-    reason = Column(Text, nullable=True)
-    status = Column(String, default="Pending Review")  # Uploaded, Pending Review, Verified, Rejected
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-class Submission(Base):
-    __tablename__ = "submissions"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    project_id = Column(String, ForeignKey("csr_projects.id"), nullable=True)
-    reporting_period_id = Column(String, nullable=True)
-    status = Column(String, default="Draft")  # Draft, Validated, Submitted, Under Review, Correction Required, Resubmitted, Approved, Locked
-    submitted_by = Column(String, nullable=True)
-    submitted_at = Column(DateTime, nullable=True)
-    reviewed_by = Column(String, nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
-    approved_by = Column(String, nullable=True)
-    approved_at = Column(DateTime, nullable=True)
-    correction_count = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-
-class SubmissionItem(Base):
-    __tablename__ = "submission_items"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    submission_id = Column(String, ForeignKey("submissions.id"), nullable=False)
-    module = Column(String, nullable=False)  # CSR Project, Community, Beneficiaries, Social Impact, Stakeholder Engagement, Grievances
-    scope = Column(String, nullable=True)
-    project_id = Column(String, nullable=True)
-    data = Column(Text, nullable=True)  # JSON payload
-    evidence_count = Column(Integer, default=0, nullable=False)
-    status = Column(String, default="Validated")  # Draft, Validated, Submitted
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-
-class SubmissionReview(Base):
-    __tablename__ = "submission_reviews"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    submission_id = Column(String, ForeignKey("submissions.id"), nullable=False)
-    reviewer = Column(String, nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
-    status = Column(String, default="Under Review")  # Draft, Validated, Submitted, Under Review, Correction Required, Resubmitted, Approved, Locked
-    comments = Column(Text, nullable=True)
-    required_actions = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-class SubmissionComment(Base):
-    __tablename__ = "submission_comments"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    submission_id = Column(String, ForeignKey("submissions.id"), nullable=True)
-    author = Column(String, nullable=True)
-    author_role = Column(String, nullable=True)
-    comment = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-class SubmissionStatusHistory(Base):
-    __tablename__ = "submission_status_history"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    submission_id = Column(String, ForeignKey("submissions.id"), nullable=False)
-    from_status = Column(String, nullable=True)
-    to_status = Column(String, nullable=False)
-    changed_by = Column(String, nullable=True)
-    changed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    comment = Column(Text, nullable=True)
-
-class Activity(Base):
-    __tablename__ = "activities"
+class CsrActivity(Base):
+    __tablename__ = "csr_activities"
 
     id = Column(String, primary_key=True, default=generate_uuid)
     project_id = Column(String, ForeignKey("csr_projects.id"), nullable=True)
@@ -379,33 +275,16 @@ class Activity(Base):
     evidence_ref = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-class Notification(Base):
-    __tablename__ = "notifications"
+class CsrNotification(Base):
+    __tablename__ = "csr_notifications"
 
     id = Column(String, primary_key=True, default=generate_uuid)
     user_id = Column(String, nullable=False)
     title = Column(String, nullable=False)
     message = Column(String, nullable=False)
-    type = Column(String, nullable=True)  # deadline, evidence_due, grievance_due, submission_correction, submission_approved, import_failed, action_assigned, action_overdue
-    source_type = Column(String, nullable=True)  # csr_project, community, beneficiary, impact, stakeholder, grievance, submission
+    type = Column(String, nullable=True)  # deadline, evidence_due, grievance_due, submission_correction, submission_approved
+    source_type = Column(String, nullable=True)  # csr_project, community, beneficiary, impact, stakeholder, grievance
     source_id = Column(String, nullable=True)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     read_at = Column(DateTime, nullable=True)
-
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    actor_id = Column(String, nullable=True)
-    actor_name = Column(String, nullable=True)
-    actor_role = Column(String, nullable=True)
-    action = Column(String, nullable=False)
-    entity_type = Column(String, nullable=False)
-    entity_id = Column(String, nullable=True)
-    old_state = Column(String, nullable=True)
-    new_state = Column(String, nullable=True)
-    details = Column(Text, nullable=True)
-    comment = Column(String, nullable=True)
-    ip_address = Column(String, nullable=True)
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))

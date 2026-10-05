@@ -33,6 +33,13 @@ from app.models.hse import (
     HseSubmissionRecord
 )
 
+from app.models.procurement import Supplier, ProcurementMetric
+from app.models.governance import GovernancePolicy, EthicsGrievance
+from app.models.csr_projects import (
+    CsrProgramCategory, CsrProject, CsrSpendRecord,
+    BeneficiaryRecord, Community
+)
+
 __all__ = [
     "Base",
     "Group",
@@ -69,6 +76,15 @@ __all__ = [
     "HseTrainingBatch",
     "HseEnvironmentalRecord",
     "HseEvidenceRecord",
-    "HseSubmissionRecord"
+    "HseSubmissionRecord",
+    "Supplier",
+    "ProcurementMetric",
+    "GovernancePolicy",
+    "EthicsGrievance",
+    "CsrProgramCategory",
+    "CsrProject",
+    "CsrSpendRecord",
+    "BeneficiaryRecord",
+    "Community"
 ]
 
