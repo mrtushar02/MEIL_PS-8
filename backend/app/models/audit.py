@@ -21,4 +21,9 @@ class AuditLog(Base):
     details = Column(Text, nullable=True)
     comment = Column(Text, nullable=True)
     ip_address = Column(String, nullable=True)
+    scope_type = Column(String, nullable=True)     # GROUP, SUBSIDIARY, BUSINESS_UNIT, PROJECT
+    scope_id = Column(String, nullable=True)
+    previous_hash = Column(String, nullable=True)   # SHA-256 hash of previous audit record
+    event_hash = Column(String, nullable=True, index=True) # SHA-256(canonical_payload + previous_hash)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+

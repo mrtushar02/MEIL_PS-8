@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
@@ -8,14 +8,18 @@ from app.models.organization import Project
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
 from app.models.user import User
 from app.models.engine import CalculationRun, CalculationResult, ValidationRun, ValidationResult
+from app.models.workflow import ApprovalAction, SubmissionVersion, WorkflowTransition
 from app.schemas.reporting import ProjectMonthlySubmissionInput, SubmissionResponse, SubmissionStatusUpdate
 from app.schemas.engine import CalculationRunResponse, ValidationRunResponse
+from app.schemas.workflow import WorkflowActionInput, ApprovalActionResponse, SubmissionVersionResponse
 from app.services.validation_engine import ValidationEngine
 from app.services.emission_engine import EmissionEngine
+from app.services.workflow_engine import WorkflowEngine
 from app.services.audit_service import AuditService
 from app.api.deps import get_current_user, require_project_access
 
 router = APIRouter(prefix="/submissions", tags=["ESG Data Submissions & Workflow"])
+
 
 
 @router.get("", response_model=List[SubmissionResponse])
@@ -229,41 +233,126 @@ def update_submission_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    target_status = update.status
+    if target_status == "CORRECTION_REQUESTED":
+        target_status = "CORRECTION_REQUIRED"
+
+    return WorkflowEngine.execute_transition(
+        db=db,
+        submission_id=submission_id,
+        to_status=target_status,
+        user=current_user,
+        comment=update.comment
+    )
+
+@router.post("/{submission_id}/submit", response_model=SubmissionResponse)
+def workflow_submit(
+    submission_id: str,
+    action_in: Optional[WorkflowActionInput] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    comment = action_in.comment if action_in else None
+    return WorkflowEngine.execute_transition(
+        db=db,
+        submission_id=submission_id,
+        to_status="SUBMITTED",
+        user=current_user,
+        comment=comment
+    )
+
+@router.post("/{submission_id}/approve", response_model=SubmissionResponse)
+def workflow_approve(
+    submission_id: str,
+    action_in: Optional[WorkflowActionInput] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     submission = db.query(Submission).filter(Submission.id == submission_id).first()
     if not submission:
         raise HTTPException(status_code=404, detail="Submission not found")
 
-    old_state = submission.status
-    submission.status = update.status
-    actor_role = current_user.role.name if current_user.role else "USER"
+    # Tier advancement based on current status
+    if submission.status in ["SUBMITTED", "BU_REVIEW"]:
+        target_status = "BU_APPROVED"
+    elif submission.status in ["BU_APPROVED", "SUBSIDIARY_REVIEW"]:
+        target_status = "SUBSIDIARY_APPROVED"
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot approve submission currently in status '{submission.status}'"
+        )
 
-    if update.status == "BU_APPROVED":
-        submission.reviewed_by = current_user.full_name
-        submission.reviewed_at = datetime.now(timezone.utc)
-    elif update.status == "SUBSIDIARY_APPROVED":
-        submission.approved_by = current_user.full_name
-        submission.approved_at = datetime.now(timezone.utc)
-    elif update.status == "CORRECTION_REQUESTED":
-        submission.rejection_reason = update.comment
-
-    db.commit()
-    db.refresh(submission)
-
-    # Log transition with real authenticated actor
-    AuditService.log_event(
+    comment = action_in.comment if action_in else None
+    return WorkflowEngine.execute_transition(
         db=db,
-        actor_id=current_user.id,
-        actor_name=current_user.full_name,
-        actor_role=actor_role,
-        action=f"STATUS_TRANSITION_TO_{update.status}",
-        entity_type="Submission",
-        entity_id=submission.id,
-        old_state=old_state,
-        new_state=update.status,
-        comment=update.comment
+        submission_id=submission_id,
+        to_status=target_status,
+        user=current_user,
+        comment=comment
     )
 
-    return submission
+@router.post("/{submission_id}/reject", response_model=SubmissionResponse)
+def workflow_reject_for_correction(
+    submission_id: str,
+    action_in: WorkflowActionInput,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not action_in.comment:
+        raise HTTPException(status_code=400, detail="Rejection comment explaining required corrections is mandatory")
+
+    return WorkflowEngine.execute_transition(
+        db=db,
+        submission_id=submission_id,
+        to_status="CORRECTION_REQUIRED",
+        user=current_user,
+        comment=action_in.comment
+    )
+
+@router.post("/{submission_id}/lock", response_model=SubmissionResponse)
+def workflow_group_lock(
+    submission_id: str,
+    action_in: Optional[WorkflowActionInput] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    comment = action_in.comment if action_in else None
+    return WorkflowEngine.execute_transition(
+        db=db,
+        submission_id=submission_id,
+        to_status="LOCKED",
+        user=current_user,
+        comment=comment
+    )
+
+@router.get("/{submission_id}/history", response_model=Dict[str, Any])
+def get_submission_workflow_history(
+    submission_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    submission = db.query(Submission).filter(Submission.id == submission_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    require_project_access(submission.project_id, current_user, db)
+
+    approvals = db.query(ApprovalAction).filter(
+        ApprovalAction.submission_id == submission_id
+    ).order_by(ApprovalAction.created_at.desc()).all()
+
+    versions = db.query(SubmissionVersion).filter(
+        SubmissionVersion.submission_id == submission_id
+    ).order_by(SubmissionVersion.version_number.desc()).all()
+
+    return {
+        "submission_id": submission_id,
+        "current_status": submission.status,
+        "current_version": submission.version,
+        "approval_actions": [ApprovalActionResponse.model_validate(a) for a in approvals],
+        "archived_versions": [SubmissionVersionResponse.model_validate(v) for v in versions]
+    }
+
  
 @router.post("/{submission_id}/calculate", response_model=CalculationRunResponse)
 def calculate_submission_metrics(

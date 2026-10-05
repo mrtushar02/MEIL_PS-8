@@ -14,7 +14,12 @@ class AuditLogResponse(BaseModel):
     new_state: Optional[str] = None
     details: Optional[str] = None
     comment: Optional[str] = None
+    scope_type: Optional[str] = None
+    scope_id: Optional[str] = None
+    previous_hash: Optional[str] = None
+    event_hash: Optional[str] = None
     timestamp: datetime
 
     class Config:
         from_attributes = True
+
