@@ -27,6 +27,8 @@ ENV/
 *.db-journal
 *.db-shm
 *.db-wal
+backend/storage/evidence/*
+!backend/storage/evidence/.gitkeep
 
 # Editor & OS
 .vscode/*

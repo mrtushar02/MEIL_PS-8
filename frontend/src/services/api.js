@@ -822,6 +822,139 @@ class ApiService {
       return { ...data, id: `sub-local-${Date.now()}`, submission_number: `SUB-HSE-2026-${Math.floor(10 + Math.random() * 90)}`, status: 'Under Review' };
     }
   }
+
+  // Evidence Vault
+  async getEvidence(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return await this.request(`/evidence${qs ? `?${qs}` : ''}`);
+  }
+
+  async getEvidenceDetail(id) {
+    return await this.request(`/evidence/${id}`);
+  }
+
+  async uploadEvidence(formData) {
+    const headers = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    const response = await fetch(`${API_BASE_URL}/evidence/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `Upload failed with status ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  async verifyEvidence(id, notes = 'Verified under ICAI & SEBI BRSR Assurance standard') {
+    return await this.request(`/evidence/${id}/verify`, {
+      method: 'POST',
+      body: JSON.stringify({ notes }),
+    });
+  }
+
+  async rejectEvidence(id, reason) {
+    return await this.request(`/evidence/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async linkEvidence(id, linkData) {
+    return await this.request(`/evidence/${id}/link`, {
+      method: 'POST',
+      body: JSON.stringify(linkData),
+    });
+  }
+
+  // Project ESG Operational Records
+  async getProjectFuel(projectId, reportingPeriodId) {
+    const qs = reportingPeriodId ? `?reporting_period_id=${reportingPeriodId}` : '';
+    return await this.request(`/projects/${projectId}/fuel${qs}`);
+  }
+
+  async createProjectFuel(projectId, data) {
+    return await this.request(`/projects/${projectId}/fuel`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getProjectEnergy(projectId, reportingPeriodId) {
+    const qs = reportingPeriodId ? `?reporting_period_id=${reportingPeriodId}` : '';
+    return await this.request(`/projects/${projectId}/energy${qs}`);
+  }
+
+  async createProjectEnergy(projectId, data) {
+    return await this.request(`/projects/${projectId}/energy`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getProjectWater(projectId, reportingPeriodId) {
+    const qs = reportingPeriodId ? `?reporting_period_id=${reportingPeriodId}` : '';
+    return await this.request(`/projects/${projectId}/water${qs}`);
+  }
+
+  async createProjectWater(projectId, data) {
+    return await this.request(`/projects/${projectId}/water`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getProjectWaste(projectId, reportingPeriodId) {
+    const qs = reportingPeriodId ? `?reporting_period_id=${reportingPeriodId}` : '';
+    return await this.request(`/projects/${projectId}/waste${qs}`);
+  }
+
+  async createProjectWaste(projectId, data) {
+    return await this.request(`/projects/${projectId}/waste`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getProjectSafety(projectId, reportingPeriodId) {
+    const qs = reportingPeriodId ? `?reporting_period_id=${reportingPeriodId}` : '';
+    return await this.request(`/projects/${projectId}/safety${qs}`);
+  }
+
+  async createProjectSafety(projectId, data) {
+    return await this.request(`/projects/${projectId}/safety`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Submissions
+  async getSubmissions(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return await this.request(`/submissions${qs ? `?${qs}` : ''}`);
+  }
+
+  async getSubmissionDetail(id) {
+    return await this.request(`/submissions/${id}`);
+  }
+
+  async submitMonthlyEsgData(data) {
+    return await this.request('/submissions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateSubmissionStatus(id, status, comment) {
+    return await this.request(`/submissions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, comment }),
+    });
+  }
 }
 
 export const api = new ApiService();

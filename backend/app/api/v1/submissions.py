@@ -1,27 +1,82 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from typing import List, Optional
 from datetime import datetime, timezone
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.models.reporting import Submission, ReportingPeriod
 from app.models.organization import Project
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
+from app.models.user import User
 from app.schemas.reporting import ProjectMonthlySubmissionInput, SubmissionResponse, SubmissionStatusUpdate
 from app.services.validation_engine import ValidationEngine
 from app.services.emission_engine import EmissionEngine
 from app.services.audit_service import AuditService
+from app.api.deps import get_current_user, require_project_access
 
 router = APIRouter(prefix="/submissions", tags=["ESG Data Submissions & Workflow"])
 
+@router.get("", response_model=List[SubmissionResponse])
+def list_submissions(
+    project_id: Optional[str] = Query(None),
+    reporting_period_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    query = db.query(Submission).options(
+        joinedload(Submission.fuel_records),
+        joinedload(Submission.energy_records),
+        joinedload(Submission.water_records),
+        joinedload(Submission.waste_records),
+        joinedload(Submission.safety_records)
+    )
+    if project_id:
+        require_project_access(project_id, current_user, db)
+        query = query.filter(Submission.project_id == project_id)
+    if reporting_period_id:
+        query = query.filter(Submission.reporting_period_id == reporting_period_id)
+    if status:
+        query = query.filter(Submission.status == status)
+
+    return query.order_by(Submission.updated_at.desc()).all()
+
+@router.get("/{submission_id}", response_model=SubmissionResponse)
+def get_submission_detail(
+    submission_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    submission = db.query(Submission).options(
+        joinedload(Submission.fuel_records),
+        joinedload(Submission.energy_records),
+        joinedload(Submission.water_records),
+        joinedload(Submission.waste_records),
+        joinedload(Submission.safety_records)
+    ).filter(Submission.id == submission_id).first()
+
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    require_project_access(submission.project_id, current_user, db)
+    return submission
+
 @router.post("", response_model=SubmissionResponse)
-def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = Depends(get_db)):
-    # 1. Verify period is active and not locked
+def submit_monthly_esg_data(
+    data: ProjectMonthlySubmissionInput,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Verify project authorization scope
+    require_project_access(data.project_id, current_user, db)
+
+    # 2. Verify reporting period is active and not locked
     period = db.query(ReportingPeriod).filter(ReportingPeriod.id == data.reporting_period_id).first()
     if not period or not period.is_active:
         raise HTTPException(status_code=400, detail="Reporting period is inactive or does not exist")
     if period.is_locked:
-        raise HTTPException(status_code=400, detail="Reporting period is locked. Edits not permitted.")
+        raise HTTPException(status_code=423, detail="Reporting period is locked. Edits not permitted.")
 
-    # 2. Run automated validation engine
+    # 3. Run automated validation engine
     validation_result = ValidationEngine.validate_monthly_submission(data.model_dump())
     if not validation_result["is_valid"]:
         raise HTTPException(
@@ -29,18 +84,21 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
             detail={"message": "Validation rules failed", "errors": validation_result["errors"]}
         )
 
-    # 3. Create or update Submission header
+    # 4. Create or update Submission header
     submission = db.query(Submission).filter(
         Submission.project_id == data.project_id,
         Submission.reporting_period_id == data.reporting_period_id
     ).first()
+
+    user_role_name = current_user.role.name if current_user.role else "PROJECT_OFFICER"
 
     if not submission:
         submission = Submission(
             project_id=data.project_id,
             reporting_period_id=data.reporting_period_id,
             status="SUBMITTED",
-            submitted_by="Site ESG Officer",
+            version=1,
+            submitted_by=current_user.full_name,
             submitted_at=datetime.now(timezone.utc)
         )
         db.add(submission)
@@ -48,9 +106,17 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
     else:
         submission.status = "SUBMITTED"
         submission.version += 1
+        submission.submitted_by = current_user.full_name
         submission.submitted_at = datetime.now(timezone.utc)
 
-    # 4. Process Fuel Records (Scope 1)
+    # Clean existing draft child records for clean version replacement
+    db.query(FuelRecord).filter(FuelRecord.submission_id == submission.id).delete()
+    db.query(EnergyRecord).filter(EnergyRecord.submission_id == submission.id).delete()
+    db.query(WaterRecord).filter(WaterRecord.submission_id == submission.id).delete()
+    db.query(WasteRecord).filter(WasteRecord.submission_id == submission.id).delete()
+    db.query(SafetyRecord).filter(SafetyRecord.submission_id == submission.id).delete()
+
+    # 5. Process Fuel Records (Scope 1)
     for f in data.fuel_records:
         fuel_factor = EmissionEngine.get_factor(db, f.fuel_type)
         scope1_tons = round((f.quantity * fuel_factor["factor"]) / 1000.0, 2)
@@ -68,7 +134,7 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
         )
         db.add(rec)
 
-    # 5. Process Energy Records (Scope 2 & GJ)
+    # 6. Process Energy Records (Scope 2 & GJ)
     for e in data.energy_records:
         energy_factor = EmissionEngine.get_factor(db, "grid_electricity")
         grid_kwh = max(0.0, e.quantity_kwh - (e.renewable_kwh or 0.0))
@@ -90,7 +156,7 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
         )
         db.add(rec)
 
-    # 6. Process Water Records
+    # 7. Process Water Records
     for w in data.water_records:
         rec = WaterRecord(
             submission_id=submission.id,
@@ -105,7 +171,21 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
         )
         db.add(rec)
 
-    # 7. Process Safety Records
+    # 8. Process Waste Records
+    for wst in data.waste_records:
+        rec = WasteRecord(
+            submission_id=submission.id,
+            project_id=data.project_id,
+            reporting_period_id=data.reporting_period_id,
+            waste_category=wst.waste_category,
+            quantity_metric_tonnes=wst.quantity_metric_tonnes,
+            disposal_route=wst.disposal_route,
+            diverted_from_disposal_pct=wst.diverted_from_disposal_pct or 0.0,
+            evidence_id=wst.evidence_id
+        )
+        db.add(rec)
+
+    # 9. Process Safety Records
     for s in data.safety_records:
         ltifr = round(((s.lost_time_injuries or 0) * 1000000.0) / s.safe_man_hours, 2) if s.safe_man_hours > 0 else 0.0
         rec = SafetyRecord(
@@ -124,17 +204,17 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
     db.commit()
     db.refresh(submission)
 
-    # 8. Log Immutable Audit Event
+    # 10. Log Immutable Regulatory Audit Event with Real Context
     AuditService.log_event(
         db=db,
-        actor_id="user-site-officer",
-        actor_name="Site ESG Engineer",
-        actor_role="PROJECT_OFFICER",
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=user_role_name,
         action="MONTHLY_SUBMISSION_CREATED",
         entity_type="Submission",
         entity_id=submission.id,
         new_state="SUBMITTED",
-        details=f"Logged monthly ESG records for Project ID: {data.project_id}"
+        details=f"Submitted ESG monthly package for Project ID: {data.project_id} (Version {submission.version})"
     )
 
     return submission
@@ -143,7 +223,8 @@ def submit_monthly_esg_data(data: ProjectMonthlySubmissionInput, db: Session = D
 def update_submission_status(
     submission_id: str,
     update: SubmissionStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     submission = db.query(Submission).filter(Submission.id == submission_id).first()
     if not submission:
@@ -151,12 +232,13 @@ def update_submission_status(
 
     old_state = submission.status
     submission.status = update.status
+    actor_role = current_user.role.name if current_user.role else "USER"
 
     if update.status == "BU_APPROVED":
-        submission.reviewed_by = "BU Coordinator"
+        submission.reviewed_by = current_user.full_name
         submission.reviewed_at = datetime.now(timezone.utc)
     elif update.status == "SUBSIDIARY_APPROVED":
-        submission.approved_by = "Subsidiary ESG Head"
+        submission.approved_by = current_user.full_name
         submission.approved_at = datetime.now(timezone.utc)
     elif update.status == "CORRECTION_REQUESTED":
         submission.rejection_reason = update.comment
@@ -164,12 +246,12 @@ def update_submission_status(
     db.commit()
     db.refresh(submission)
 
-    # Log transition
+    # Log transition with real authenticated actor
     AuditService.log_event(
         db=db,
-        actor_id="user-reviewer",
-        actor_name="Reviewer / Approver",
-        actor_role="REVIEWER",
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=actor_role,
         action=f"STATUS_TRANSITION_TO_{update.status}",
         entity_type="Submission",
         entity_id=submission.id,
