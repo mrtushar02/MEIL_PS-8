@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "21st": {
+      "url": "https://21st.dev/api/mcp",
+      "headers": {
+        "x-api-key": "$API_KEY_21ST"
+      }
+    },
+    "design-inspiration": {
+      "command": "node",
+      "args": ["d:/MEIL_PS-8/ui-skills/design-inspiration-mcp/src/index.js"]
+    },
+    "website-design-systems": {
+      "command": "node",
+      "args": ["d:/MEIL_PS-8/ui-skills/website-design-systems-mcp/dist/index.js"]
+    },
+    "coderabbitai": {
+      "command": "node",
+      "args": ["d:/MEIL_PS-8/ui-skills/coderabbitai-mcp/dist/index.js"]
+    }
+  }
+}

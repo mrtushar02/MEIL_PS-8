@@ -1,0 +1,663 @@
+/* ====================================================================
+   MEIL ESG & BRSR REPORTING PLATFORM — EHS & SAFETY SPECIALIST
+   MASTER DESIGN SYSTEM: iOS LIQUID GLASS & LIGHT ENTERPRISE SAAS
+   ==================================================================== */
+
+.ehs-module-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  animation: ehsFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ehsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ──── 1. TOP BANNER / HERO (Pixel-Perfect to Master Reference) ──── */
+.ehs-hero-banner {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(28px) saturate(135%);
+  -webkit-backdrop-filter: blur(28px) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.04), 0 1px 3px rgba(15, 23, 42, 0.03);
+  border-radius: 20px;
+  padding: 24px 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ehs-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #10B981, #2563EB, #38BDF8);
+  opacity: 0.85;
+}
+
+.ehs-banner-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.ehs-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ehs-title-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(37, 99, 235, 0.08));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+}
+
+.ehs-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #047857;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.ehs-hero-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px 0;
+  line-height: 1.25;
+}
+
+.ehs-hero-subtitle {
+  font-size: 13.5px;
+  color: #475569;
+  margin: 0;
+  max-width: 820px;
+  line-height: 1.45;
+}
+
+.ehs-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ehs-select-control {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.ehs-select-control:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ehs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  border: none;
+  outline: none;
+}
+
+.ehs-btn:active {
+  transform: scale(0.98);
+}
+
+.ehs-btn-primary {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+.ehs-btn-primary:hover {
+  background: linear-gradient(135deg, #047857 0%, #065F46 100%);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+  transform: translateY(-1px);
+}
+
+.ehs-btn-blue {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.ehs-btn-blue:hover {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+  transform: translateY(-1px);
+}
+
+.ehs-btn-outline {
+  background: #FFFFFF;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ehs-btn-outline:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+  color: #0F172A;
+}
+
+/* Secondary Sub-Tabs Nav within Banner */
+.ehs-subnav-track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  padding-top: 14px;
+  margin-top: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ehs-subnav-track::-webkit-scrollbar {
+  display: none;
+}
+
+.ehs-subnav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748B;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.ehs-subnav-tab:hover {
+  color: #1E293B;
+  background: rgba(241, 245, 249, 0.7);
+}
+
+.ehs-subnav-tab.active {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  font-weight: 700;
+}
+
+/* ──── 2. KPI GRID SYSTEM ──── */
+.ehs-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1400px) {
+  .ehs-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .ehs-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ehs-kpi-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  cursor: default;
+}
+
+.ehs-kpi-card.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.3);
+  cursor: pointer;
+}
+
+.ehs-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ehs-kpi-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748B;
+}
+
+.ehs-kpi-icon-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.ehs-kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ehs-kpi-main-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.ehs-kpi-unit {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.ehs-kpi-subtext {
+  font-size: 11.5px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ehs-trend-up {
+  color: #16A34A;
+  font-weight: 700;
+}
+
+.ehs-trend-down {
+  color: #2563EB;
+  font-weight: 700;
+}
+
+.ehs-trend-warn {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+/* ──── 3. GLASS CARD CONTAINERS ──── */
+.ehs-glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(28px) saturate(135%);
+  -webkit-backdrop-filter: blur(28px) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+  border-radius: 18px;
+  padding: 22px 24px;
+  position: relative;
+}
+
+.ehs-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ehs-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ehs-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.ehs-card-subtitle {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+/* ──── 4. TABLES (Light, Accessible, iOS Liquid Glass) ──── */
+.ehs-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+}
+
+.ehs-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.ehs-data-table thead {
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.ehs-data-table th {
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ehs-data-table tbody tr {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background 0.12s ease;
+}
+
+.ehs-data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ehs-data-table tbody tr:hover {
+  background: #F8FAFC;
+}
+
+.ehs-data-table td {
+  padding: 12px 16px;
+  color: #1E293B;
+  vertical-align: middle;
+}
+
+/* ──── 5. STATUS BADGES / CHIPS ──── */
+.ehs-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ehs-status-verified,
+.ehs-status-completed,
+.ehs-status-approved,
+.ehs-status-compliant {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ehs-status-investigation,
+.ehs-status-pending,
+.ehs-status-under-review,
+.ehs-status-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #B45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.ehs-status-critical,
+.ehs-status-high,
+.ehs-status-overdue,
+.ehs-status-rejected {
+  background: rgba(239, 68, 68, 0.12);
+  color: #B91C1C;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.ehs-status-active,
+.ehs-status-in-progress,
+.ehs-status-reported {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1D4ED8;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+/* ──── 6. RIGHT DETAIL DRAWER (Liquid Glass Slide-over) ──── */
+.ehs-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99990;
+  display: flex;
+  justify-content: flex-end;
+  animation: ehsDrawerBackdropFade 0.2s ease;
+}
+
+@keyframes ehsDrawerBackdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ehs-drawer-panel {
+  width: 100%;
+  max-width: 620px;
+  height: 100%;
+  background: #FFFFFF;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: ehsDrawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  z-index: 99999;
+}
+
+@keyframes ehsDrawerSlide {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.ehs-drawer-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ehs-drawer-body {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ehs-drawer-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #F8FAFC;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+/* ──── 7. MODALS (Full form dialogs with structured validation) ──── */
+.ehs-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 99995;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: ehsFadeIn 0.2s ease;
+}
+
+.ehs-modal-card {
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: ehsScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ehsScaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ehs-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+}
+
+.ehs-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ehs-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #F8FAFC;
+}
+
+/* Form Controls */
+.ehs-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ehs-form-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.ehs-form-label span.required {
+  color: #DC2626;
+  margin-left: 2px;
+}
+
+.ehs-form-input,
+.ehs-form-select,
+.ehs-form-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: #0F172A;
+  background: #FFFFFF;
+  outline: none;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.ehs-form-input:focus,
+.ehs-form-select:focus,
+.ehs-form-textarea:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ehs-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .ehs-form-row {
+    grid-template-columns: 1fr;
+  }
+}

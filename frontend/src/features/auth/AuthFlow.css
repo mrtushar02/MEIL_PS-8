@@ -1,0 +1,1049 @@
+/* ==========================================================================
+   MEIL ESG AUTHENTICATION FLOW — LIQUID GLASS DESIGN SYSTEM
+   MASTER INTERACTIVE ROLE SELECTION EXPERIENCE
+   White Dominant Atmosphere (85–92%) · Muted Sky-Blue Illumination (8–15%)
+   Dribbble-Inspired Stacked & Horizontal Browse · Transparent Character Floating
+   Particle Dissolution & Landscape Morphing Login Panel
+   ========================================================================== */
+
+/* ─────────────────────────────────────────────────────────────
+   1. SHARED ATMOSPHERE, PROCEDURAL GLOW & STEPPER HEADER
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --cursor-x: 50vw;
+  --cursor-y: 50vh;
+}
+
+.auth-flow-root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background: #FFFFFF;
+  overflow-x: hidden;
+  font-family: var(--font-body, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.auth-stage-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #FFFFFF;
+  padding: 80px 24px 32px;
+  box-sizing: border-box;
+}
+
+/* Atmospheric Background Layer */
+.atmospheric-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 65% 45% at 20% 15%, rgba(234, 244, 255, 0.7) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 40% at 80% 25%, rgba(227, 240, 253, 0.55) 0%, transparent 60%),
+    radial-gradient(circle 800px at 50% 85%, rgba(241, 247, 252, 0.8) 0%, transparent 75%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8FBFE 45%, #F1F7FC 100%);
+}
+
+.ambient-light {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.ambient-light-1 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.14) 0%, transparent 70%);
+  top: -10%;
+  left: 15%;
+  animation: ambientFloat1 18s ease-in-out infinite alternate;
+}
+
+.ambient-light-2 {
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.10) 0%, transparent 70%);
+  bottom: -15%;
+  right: 10%;
+  animation: ambientFloat2 22s ease-in-out infinite alternate;
+}
+
+@keyframes ambientFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 30px) scale(1.08); }
+}
+
+@keyframes ambientFloat2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-35px, -25px) scale(1.06); }
+}
+
+/* Subtle Glass Circles / Orbs */
+.ambient-glass-orb {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(220, 238, 252, 0.6);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(234, 244, 255, 0.15) 100%);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.orb-1 { width: 140px; height: 140px; top: 18%; left: 8%; }
+.orb-3 { width: 90px; height: 90px; bottom: 22%; left: 12%; }
+.orb-5 { width: 160px; height: 160px; top: 25%; right: 7%; }
+
+/* Cursor-Following Soft Illumination */
+.cursor-ambient-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    circle 380px at var(--cursor-x) var(--cursor-y),
+    rgba(96, 165, 250, 0.07) 0%,
+    transparent 70%
+  );
+  transition: background 60ms linear;
+}
+
+/* Fixed Minimal Header */
+.auth-header-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+  pointer-events: auto;
+}
+
+.meil-tagline-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.meil-tagline-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.meil-tagline-sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: #2563EB;
+  letter-spacing: 0.02em;
+}
+
+/* Stepper Pill & Heading */
+.auth-stepper-wrap {
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 10;
+  opacity: 0;
+  animation: authTextFadeIn 500ms ease 80ms forwards;
+}
+
+.auth-stepper-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #64748B;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.auth-stepper-bar {
+  width: 40px;
+  height: 2.5px;
+  background: #2563EB;
+  border-radius: 2px;
+  margin: 0 auto 12px;
+}
+
+.auth-main-title {
+  font-family: var(--font-heading, 'Plus Jakarta Sans', 'Inter', sans-serif);
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #0F172A;
+  margin: 0 0 6px;
+}
+
+.auth-main-title .highlight-blue {
+  color: #2563EB;
+}
+
+.auth-subtitle {
+  font-size: 14.5px;
+  font-weight: 400;
+  color: #64748B;
+  margin: 0;
+}
+
+.stack-toggle-pill {
+  border: 1px solid rgba(191, 219, 254, 0.7);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  color: #2563EB;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 180ms ease;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06);
+}
+
+.stack-toggle-pill:hover {
+  background: #FFFFFF;
+  border-color: #2563EB;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+@keyframes authTextFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. HORIZONTAL & STACKED ROLE CARD DECK
+   ───────────────────────────────────────────────────────────── */
+.role-deck-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.deck-carousel-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  padding: 20px 0 40px;
+}
+
+/* Side navigation arrows */
+.deck-nav-arrow {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(215, 235, 250, 0.9);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+  cursor: pointer;
+  z-index: 25;
+  transition: all 200ms ease;
+  outline: none;
+}
+
+.deck-nav-arrow:hover {
+  background: #FFFFFF;
+  border-color: #2563EB;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.16);
+}
+
+.deck-nav-arrow.left { left: 8px; }
+.deck-nav-arrow.right { right: 8px; }
+
+/* Horizontal Track */
+.deck-cards-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Stacked Mode Physics */
+.deck-cards-track.is-stacked-mode {
+  position: relative;
+  width: 320px;
+  height: 290px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-cards-track.is-stacked-mode .role-glass-card {
+  position: absolute;
+  top: 0;
+  left: 40px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. LIQUID GLASS ROLE CARD SPECIFICATION
+   ───────────────────────────────────────────────────────────── */
+.role-glass-card {
+  position: relative;
+  width: 172px;
+  min-height: 260px;
+  flex-shrink: 0;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.98);
+  border-left: 1.2px solid rgba(255, 255, 255, 0.9);
+  border-right: 1px solid rgba(186, 230, 253, 0.65);
+  border-bottom: 1px solid rgba(186, 230, 253, 0.5);
+  box-shadow:
+    0 14px 34px rgba(37, 99, 235, 0.07),
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    inset 0 1.5px 2px rgba(255, 255, 255, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+  transform-origin: center bottom;
+  contain: layout style;
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 280ms ease;
+}
+
+/* Specular Diagonal Reflection Sweep */
+.card-glass-specular-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.0) 45%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
+  opacity: 0.7;
+  transition: opacity 280ms ease, transform 400ms ease;
+}
+
+.role-glass-card:hover .card-glass-specular-sweep {
+  opacity: 1;
+  transform: translateX(10px) translateY(-5px);
+}
+
+/* Card Hover & Focus States (Rebound Physics) */
+.role-glass-card:hover,
+.role-glass-card.is-active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow:
+    0 22px 55px rgba(37, 99, 235, 0.16),
+    0 6px 18px rgba(15, 23, 42, 0.04),
+    inset 0 2px 2px rgba(255, 255, 255, 1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. TRANSPARENT CHARACTER PROFILE ILLUSTRATION STYLING
+   ───────────────────────────────────────────────────────────── */
+.role-illustration-container {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.role-character-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: 50% 85%;
+}
+
+/* Subtle Breathing Floating Motion */
+.role-character-wrap.hovered {
+  transform: translateY(-6px) scale(1.06);
+  animation: characterBreathing 3.6s ease-in-out infinite alternate;
+}
+
+@keyframes characterBreathing {
+  0% { transform: translateY(-6px) scale(1.06); }
+  50% { transform: translateY(-10px) scale(1.08); }
+  100% { transform: translateY(-6px) scale(1.06); }
+}
+
+.character-svg {
+  filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.12));
+  transition: filter 300ms ease;
+}
+
+.role-character-wrap.hovered .character-svg {
+  filter: drop-shadow(0 10px 22px rgba(37, 99, 235, 0.22));
+}
+
+/* Subtle Floating Particles Inside Character */
+.float-particle-1 {
+  animation: floatNode1 4s ease-in-out infinite alternate;
+}
+
+.float-particle-2 {
+  animation: floatNode2 5s ease-in-out infinite alternate;
+}
+
+@keyframes floatNode1 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(4px, -6px); }
+}
+
+@keyframes floatNode2 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-5px, 5px); }
+}
+
+/* Text Meta */
+.role-text-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.role-card-title {
+  font-family: var(--font-heading, 'Plus Jakarta Sans', 'Inter', sans-serif);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.25;
+  margin: 0 0 5px;
+}
+
+.role-card-desc {
+  font-size: 11px;
+  font-weight: 400;
+  color: #64748B;
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Soft Blue Ambient Illumination Underneath */
+.role-card-underglow {
+  position: absolute;
+  bottom: -15px;
+  left: 15%;
+  right: 15%;
+  height: 25px;
+  border-radius: 50%;
+  filter: blur(12px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.role-glass-card:hover .role-card-underglow,
+.role-glass-card.is-active .role-card-underglow {
+  opacity: 1;
+}
+
+/* Pagination Dots */
+.deck-pagination-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  margin-bottom: 24px;
+}
+
+.deck-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(147, 197, 253, 0.55);
+  transition: all 250ms ease;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+}
+
+.deck-dot.active {
+  width: 20px;
+  border-radius: 4px;
+  background: #2563EB;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+/* Footer Tagline */
+.deck-footer-tagline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 600px;
+}
+
+.deck-footer-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(203, 213, 225, 0.5);
+}
+
+.deck-footer-text {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748B;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. PARTICLE DISSOLUTION & RECONSTRUCTION (FRAME 5)
+   ───────────────────────────────────────────────────────────── */
+.morph-particle-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 45;
+  overflow: hidden;
+}
+
+.glass-dissolve-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(219, 234, 254, 0.95) 0%, rgba(255, 255, 255, 0.8) 60%, rgba(59, 130, 246, 0) 100%);
+  backdrop-filter: blur(4px);
+  filter: blur(1px);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  animation: dissolveFly 750ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.glass-dissolve-particle.reconstructing {
+  animation: dissolveReconstruct 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dissolveFly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.15);
+  }
+}
+
+@keyframes dissolveReconstruct {
+  0% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.15);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Dissolving Non-Selected Cards */
+.dissolving-card {
+  animation: dissolveCardOut 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dissolveCardOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85) translateY(18px);
+    filter: blur(12px);
+    pointer-events: none;
+  }
+}
+
+/* Selected Card Centering Morph */
+.morph-selected-card {
+  z-index: 60 !important;
+  animation: cardCenterMorph 750ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardCenterMorph {
+  0% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(1.12) translateY(-10px);
+    box-shadow: 0 32px 80px rgba(37, 99, 235, 0.25);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. EXPANDED LANDSCAPE LOGIN PANEL (FRAME 6)
+   ───────────────────────────────────────────────────────────── */
+.role-login-panel-container {
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  max-width: 820px;
+  min-height: 440px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  border: 1.5px solid rgba(215, 235, 250, 0.95);
+  box-shadow:
+    0 28px 90px rgba(37, 99, 235, 0.12),
+    0 4px 18px rgba(15, 23, 42, 0.03),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.98);
+  display: grid;
+  grid-template-columns: 42% 58%;
+  overflow: hidden;
+  margin-top: 10px;
+  animation: loginPanelAppear 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes loginPanelAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Left Column: Role Identity & Transparent Character */
+.role-identity-col {
+  background: linear-gradient(180deg, rgba(238, 246, 255, 0.85) 0%, rgba(226, 240, 255, 0.5) 100%);
+  border-right: 1px solid rgba(215, 235, 250, 0.8);
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.login-panel-illustration-wrap {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.role-identity-profile {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.role-identity-name {
+  font-family: var(--font-heading, 'Plus Jakarta Sans', 'Inter', sans-serif);
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 3px;
+}
+
+.role-identity-desc {
+  font-size: 11.5px;
+  color: #64748B;
+  margin: 0;
+}
+
+/* Capabilities List (4 Scopes) */
+.role-capabilities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+}
+
+.role-cap-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(215, 235, 250, 0.7);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.role-cap-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.change-role-btn {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(191, 219, 254, 0.7);
+  border-radius: 9999px;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 180ms ease;
+  outline: none;
+}
+
+.change-role-btn:hover {
+  background: #FFFFFF;
+  color: #2563EB;
+  border-color: #2563EB;
+  transform: translateX(-2px);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+/* Right Column: Sign In Form */
+.role-login-form-col {
+  padding: 34px 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-heading {
+  font-family: var(--font-heading, 'Plus Jakarta Sans', 'Inter', sans-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+
+.login-heading .highlight-blue {
+  color: #2563EB;
+}
+
+.login-subheading {
+  font-size: 13.5px;
+  color: #64748B;
+  margin: 0 0 20px;
+}
+
+.login-form-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-input-group {
+  margin-bottom: 13px;
+}
+
+.login-input-box {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(215, 235, 250, 0.85);
+  border-radius: 12px;
+  padding: 0 14px;
+  transition: all 200ms ease;
+  box-sizing: border-box;
+}
+
+.login-input-box:focus-within {
+  background: #FFFFFF;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.login-input-icon {
+  color: #64748B;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.login-input-box:focus-within .login-input-icon {
+  color: #2563EB;
+}
+
+.login-input-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #0F172A;
+  outline: none;
+}
+
+.password-toggle-btn {
+  background: none;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  outline: none;
+}
+
+.password-toggle-btn:hover {
+  color: #2563EB;
+}
+
+.login-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  font-size: 12px;
+}
+
+.remember-me-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me-checkbox {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  accent-color: #2563EB;
+  cursor: pointer;
+}
+
+.forgot-password-link {
+  color: #2563EB;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.forgot-password-link:hover {
+  color: #1D4ED8;
+  text-decoration: underline;
+}
+
+/* Sign In Submit Button */
+.login-submit-btn {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: #2563EB;
+  color: white;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow:
+    0 10px 24px -4px rgba(37, 99, 235, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 200ms ease;
+  outline: none;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background: #1D4ED8;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px -4px rgba(37, 99, 235, 0.5);
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* SSO Divider & Pill Buttons */
+.sso-divider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 14px;
+}
+
+.sso-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(226, 232, 240, 0.8);
+}
+
+.sso-text {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.sso-buttons-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.sso-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(215, 235, 250, 0.9);
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 180ms ease;
+  outline: none;
+}
+
+.sso-pill-btn:hover {
+  background: #FFFFFF;
+  border-color: #2563EB;
+  color: #2563EB;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+/* Error Banner */
+.login-error-banner {
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  color: #DC2626;
+  font-size: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. RESPONSIVE DESIGN & ACCESSIBILITY
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 1180px) {
+  .deck-cards-track:not(.is-stacked-mode) {
+    gap: 10px;
+  }
+  .role-glass-card {
+    width: 154px;
+    min-height: 245px;
+  }
+}
+
+@media (max-width: 860px) {
+  .auth-main-title { font-size: 32px; }
+  .deck-cards-track:not(.is-stacked-mode) {
+    flex-wrap: wrap;
+    max-width: 540px;
+  }
+  .role-login-panel-container {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+  .role-identity-col {
+    border-right: none;
+    border-bottom: 1px solid rgba(215, 235, 250, 0.8);
+    padding: 20px;
+  }
+  .role-login-form-col {
+    padding: 24px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .role-glass-card,
+  .deck-cards-track,
+  .role-character-wrap,
+  .glass-dissolve-particle,
+  .role-login-panel-container {
+    transition: none !important;
+    animation: none !important;
+  }
+}
