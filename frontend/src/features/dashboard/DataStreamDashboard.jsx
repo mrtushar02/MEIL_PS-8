@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import DataStreamSkeleton from './DataStreamSkeleton';
 import { esgStore } from '../../services/esgStore';
+import { api } from '../../services/api';
 import './DataStreamDashboard.css';
 
 export default function DataStreamDashboard({
@@ -45,13 +46,29 @@ export default function DataStreamDashboard({
   });
   const [formSaved, setFormSaved] = useState(false);
 
-  // Subscribe to live ESG store
+  // Subscribe to live ESG store and live backend audit trail
   useEffect(() => {
     const updateStore = () => {
       setKpis(esgStore.getCalculatedKPIs());
       setAuditTrail(esgStore.getState().auditLogs?.slice(0, 4) || []);
     };
     updateStore();
+
+    api.getAuditLogs({ limit: 4 })
+      .then(logs => {
+        if (Array.isArray(logs) && logs.length > 0) {
+          setAuditTrail(logs.slice(0, 4).map(l => ({
+            id: l.id,
+            user: l.user_name || l.user_email || 'Authorized Officer',
+            reason: l.action_type || l.entity_name || 'Operational telemetry logged',
+            timestamp: l.timestamp || new Date().toISOString()
+          })));
+        }
+      })
+      .catch(e => {
+        console.warn('Live audit trail sync fallback:', e.message);
+      });
+
     return esgStore.subscribe(updateStore);
   }, []);
 
@@ -223,7 +240,7 @@ export default function DataStreamDashboard({
     }
   };
 
-  const handleSaveForm = (e) => {
+  const handleSaveForm = async (e) => {
     e.preventDefault();
     const qty = formInputs.division === 'DG Heavy Fleet' ? 2400 : 1800;
     esgStore.addFuelRecord({
@@ -238,6 +255,19 @@ export default function DataStreamDashboard({
 
     setFormSaved(true);
     setTimeout(() => setFormSaved(false), 3000);
+
+    try {
+      await api.createProjectEnergy('site-102', {
+        reporting_period_id: 'period-2025-09',
+        diesel_litres: qty,
+        petrol_litres: 0,
+        natural_gas_m3: 0,
+        grid_electricity_kwh: 0,
+        renewable_electricity_kwh: 0
+      });
+    } catch (err) {
+      console.warn('Backend energy sync fallback:', err.message);
+    }
   };
 
   if (isLoading) {

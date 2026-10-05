@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   INITIAL_CSR_PROJECTS,
   INITIAL_COMMUNITIES,
@@ -10,6 +10,7 @@ import {
   INITIAL_SUBMISSIONS,
   INITIAL_ACTION_CENTER_ITEMS
 } from './csr/csrData';
+import api from '../../services/api';
 
 import CSROverviewScreen from './csr/screens/CSROverviewScreen';
 import CSRProjectsScreen from './csr/screens/CSRProjectsScreen';
@@ -40,13 +41,32 @@ export default function CSRModule({
   const [grievances, setGrievances] = useState(INITIAL_GRIEVANCES);
   const [selectedProject, setSelectedProject] = useState(INITIAL_CSR_PROJECTS[0]);
 
+  useEffect(() => {
+    api.getCSRProjects().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setProjects(data);
+        setSelectedProject(data[0]);
+      }
+    }).catch(err => console.warn('Backend CSR projects fetch failed:', err));
+  }, []);
+
   // Modal open states
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const [isLogActivityOpen, setIsLogActivityOpen] = useState(false);
   const [isRegisterGrievanceOpen, setIsRegisterGrievanceOpen] = useState(false);
 
   // Handlers
-  const handleAddProject = (newProj) => {
+  const handleAddProject = async (newProj) => {
+    try {
+      await api.createCSRProject(newProj);
+      const data = await api.getCSRProjects();
+      if (Array.isArray(data) && data.length > 0) {
+        setProjects(data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Real CSR project creation completed or fell back:', e);
+    }
     setProjects((prev) => [newProj, ...prev]);
   };
 

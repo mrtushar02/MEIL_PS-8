@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import './ReportsModule.css';
 import { esgStore } from '../../services/esgStore';
+import api from '../../services/api';
 
 export default function ReportsModule({ _onNavigate }) {
   // State
@@ -36,6 +37,13 @@ export default function ReportsModule({ _onNavigate }) {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [liveBrsr, setLiveBrsr] = useState(null);
+
+  React.useEffect(() => {
+    api.getBrsrReport('period-2025-09').then(data => {
+      if (data) setLiveBrsr(data);
+    }).catch(e => console.warn('Live BRSR fetch failed:', e));
+  }, []);
 
   // New report form state
   const [newReport, setNewReport] = useState({
@@ -173,8 +181,17 @@ export default function ReportsModule({ _onNavigate }) {
     return reports.find(r => r.id === selectedReportId) || reports[0];
   }, [reports, selectedReportId]);
 
-  // Download logic (creates real downloaded file)
+  // Download logic (creates real downloaded file or triggers statutory backend CSV)
   const handleDownload = (report) => {
+    if (report.type?.includes('BRSR') || report.category?.includes('BRSR') || report.name?.includes('BRSR')) {
+      window.open(api.getBrsrExportCsvUrl('period-2025-09'), '_blank');
+      return;
+    }
+    if (report.type?.includes('Audit') || report.name?.includes('Audit')) {
+      window.open(api.getAuditExportCsvUrl(), '_blank');
+      return;
+    }
+
     const kpis = esgStore.getCalculatedKPIs();
     const content = `====================================================================
 MEIL GROUP OF COMPANIES — ESG & BRSR STATUTORY REPORTING OUTPUT

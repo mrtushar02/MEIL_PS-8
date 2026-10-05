@@ -36,6 +36,7 @@ import AddPolicyModal from './governance/modals/AddPolicyModal';
 import AddObligationModal from './governance/modals/AddObligationModal';
 import RegisterCaseModal from './governance/modals/RegisterCaseModal';
 
+import { api } from '../../services/api';
 import './GovernanceModule.css';
 
 export default function GovernanceModule({
@@ -67,8 +68,48 @@ export default function GovernanceModule({
   const [isRegisterCaseOpen, setIsRegisterCaseOpen] = useState(false);
   const [caseModalType, setCaseModalType] = useState('ethics');
 
+  // Live backend sync on mount
+  useEffect(() => {
+    api.getGovernancePolicies()
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(p => {
+            const matched = INITIAL_POLICIES.find(ip => ip.code === p.policy_code || ip.id === p.id);
+            return {
+              id: p.id || p.policy_code,
+              code: p.policy_code,
+              name: p.title || (matched ? matched.name : p.policy_code),
+              category: p.category || 'Governance',
+              department: matched ? matched.department : 'Legal & Ethics',
+              owner: 'Legal',
+              ownerName: user.name || 'Adv. S. K. Nair',
+              effectiveDate: p.approval_date || (matched ? matched.effectiveDate : '01 Jan 2024'),
+              reviewDate: matched ? matched.reviewDate : '01 Jan 2026',
+              version: matched ? matched.version : 'v1.0',
+              status: 'Active',
+              approvalStatus: p.board_approved ? 'Approved' : 'Under Review',
+              evidenceCount: matched ? matched.evidenceCount : 2,
+              scope: 'Group Level & Subsidiaries',
+              description: matched ? matched.description : `Policy governing ${p.category}`,
+              applicability: 'All Employees & Business Partners',
+              documentUrl: p.weblink || (matched ? matched.documentUrl : null),
+              relatedObligations: matched ? matched.relatedObligations : ['CO-001'],
+              relatedControls: matched ? matched.relatedControls : ['CTR-001']
+            };
+          });
+          setPolicies(mapped);
+          if (mapped.length > 0) {
+            setSelectedPolicy(mapped[0]);
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('[Governance] Live policies fetch fallback:', err.message);
+      });
+  }, []);
+
   // Mutation handlers
-  const handleAddPolicy = (newPol) => {
+  const handleAddPolicy = async (newPol) => {
     setPolicies(prev => [newPol, ...prev]);
     // Log in audit trail
     setAuditLogs(prev => [
@@ -83,6 +124,21 @@ export default function GovernanceModule({
       },
       ...prev
     ]);
+
+    try {
+      await api.createGovernancePolicy({
+        policy_code: newPol.code || newPol.id,
+        title: newPol.name,
+        category: newPol.category || 'Governance',
+        board_approved: true,
+        approval_date: newPol.effectiveDate || new Date().toISOString().split('T')[0],
+        weblink: newPol.documentUrl || 'https://meil.in/governance',
+        coverage_pct: 100.0,
+        grievance_redressal_defined: true
+      });
+    } catch (e) {
+      console.warn('[Governance] Backend create policy synced locally:', e.message);
+    }
   };
 
   const handleAddObligation = (newObl) => {

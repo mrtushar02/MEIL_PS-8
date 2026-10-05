@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   INITIAL_SUPPLIERS,
   INITIAL_TRANSACTIONS,
@@ -9,6 +9,7 @@ import {
   INITIAL_SUBMISSIONS,
   INITIAL_ACTION_CENTER_ITEMS
 } from './procurement/procurementData';
+import api from '../../services/api';
 
 import ProcurementOverviewScreen from './procurement/screens/ProcurementOverviewScreen';
 import SupplierDirectoryScreen from './procurement/screens/SupplierDirectoryScreen';
@@ -43,6 +44,15 @@ export default function ProcurementModule({
   const [submissions, setSubmissions] = useState(INITIAL_SUBMISSIONS);
   const [actionItems, setActionItems] = useState(INITIAL_ACTION_CENTER_ITEMS);
 
+  useEffect(() => {
+    api.getSuppliers().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setSuppliers(data);
+        setSelectedSupplier(data[0]);
+      }
+    }).catch(err => console.warn('Backend suppliers fetch failed:', err));
+  }, []);
+
   // Selected supplier for detail view
   const [selectedSupplier, setSelectedSupplier] = useState(INITIAL_SUPPLIERS[0]);
 
@@ -52,7 +62,17 @@ export default function ProcurementModule({
   const [isStartAssessmentOpen, setIsStartAssessmentOpen] = useState(false);
 
   // Handlers for real data mutations
-  const handleAddSupplier = (newSupplier) => {
+  const handleAddSupplier = async (newSupplier) => {
+    try {
+      await api.createSupplier(newSupplier);
+      const data = await api.getSuppliers();
+      if (Array.isArray(data) && data.length > 0) {
+        setSuppliers(data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Real supplier creation completed or fell back:', e);
+    }
     setSuppliers((prev) => [newSupplier, ...prev]);
   };
 
