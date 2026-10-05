@@ -163,10 +163,16 @@ def require_subsidiary_access(subsidiary_id: str, current_user: User = Depends(g
     sub = db.query(Subsidiary).filter(Subsidiary.id == subsidiary_id).first()
     return sub
 
-def require_group_access(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.is_superuser or any(s.scope_type == "GROUP" for s in current_user.scopes):
+def check_group_access(user: User, group_id: Optional[str] = None) -> bool:
+    if user.is_superuser:
+        return True
+    return any(s.scope_type == "GROUP" for s in user.scopes)
+
+def require_group_access(group_id: Optional[str] = None, current_user: User = Depends(get_current_user)) -> User:
+    if check_group_access(current_user, group_id):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Access denied: Group-level authorization required"
     )
+
