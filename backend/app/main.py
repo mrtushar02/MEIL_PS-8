@@ -5,9 +5,7 @@ from app.core.database import engine, Base
 import app.models  # Ensures all SQLAlchemy models are registered
 from app.api.v1.api import api_router
 
-# Initialize database tables
-Base.metadata.create_all(bind=engine)
-
+# Database schema is migration-controlled via Alembic (alembic upgrade head)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Enterprise ESG Data & SEBI BRSR Audit Engine for Megha Engineering & Infrastructures Limited (MEIL Group)",

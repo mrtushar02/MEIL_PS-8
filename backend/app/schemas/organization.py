@@ -17,6 +17,17 @@ class ProjectCreate(ProjectBase):
     subsidiary_id: str
     business_unit_id: str
 
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    location: Optional[str] = None
+    country: Optional[str] = None
+    project_type: Optional[str] = None
+    status: Optional[str] = None
+    project_director: Optional[str] = None
+    site_esg_officer: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
 class ProjectResponse(ProjectBase):
     id: str
     subsidiary_id: str
@@ -32,6 +43,10 @@ class BusinessUnitBase(BaseModel):
 
 class BusinessUnitCreate(BusinessUnitBase):
     subsidiary_id: str
+
+class BusinessUnitUpdate(BaseModel):
+    name: Optional[str] = None
+    lead_name: Optional[str] = None
 
 class BusinessUnitResponse(BusinessUnitBase):
     id: str
@@ -53,6 +68,13 @@ class SubsidiaryBase(BaseModel):
 class SubsidiaryCreate(SubsidiaryBase):
     group_id: str
 
+class SubsidiaryUpdate(BaseModel):
+    name: Optional[str] = None
+    sector: Optional[str] = None
+    meil_ownership_pct: Optional[float] = None
+    turnover_inr_cr: Optional[float] = None
+    is_listed: Optional[bool] = None
+
 class SubsidiaryResponse(SubsidiaryBase):
     id: str
     group_id: str
@@ -67,6 +89,17 @@ class GroupBase(BaseModel):
     cin: Optional[str] = None
     turnover_inr_cr: Optional[float] = 0.0
     net_worth_inr_cr: Optional[float] = 0.0
+    headquarters: Optional[str] = None
+    contact_person: Optional[str] = None
+    contact_email: Optional[str] = None
+
+class GroupCreate(GroupBase):
+    pass
+
+class GroupUpdate(BaseModel):
+    name: Optional[str] = None
+    turnover_inr_cr: Optional[float] = None
+    net_worth_inr_cr: Optional[float] = None
     headquarters: Optional[str] = None
     contact_person: Optional[str] = None
     contact_email: Optional[str] = None

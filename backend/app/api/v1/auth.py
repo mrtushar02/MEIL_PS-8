@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import verify_password, create_access_token, get_password_hash
+from app.core.security import verify_password, create_access_token
 from app.models.user import User, Role, UserScope
 from app.schemas.auth import LoginRequest, Token, UserResponse
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -13,10 +14,14 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(request.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user account")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user account"
+        )
 
     role_name = user.role.name if user.role else "USER"
     scopes = [{"type": s.scope_type, "id": s.scope_id} for s in user.scopes]
@@ -32,19 +37,37 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     )
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user_profile(user_id: str = None, db: Session = Depends(get_db)):
-    # Fallback to demo admin if user_id is not supplied for quick testing
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="No users initialized")
+def get_current_user_profile(current_user: User = Depends(get_current_user)):
+    role_name = current_user.role.name if current_user.role else "USER"
+    role_code = current_user.role.code if current_user.role else None
+    permissions = [p.code for p in current_user.role.permissions] if (current_user.role and current_user.role.permissions) else []
+    scopes = [{"type": s.scope_type, "id": s.scope_id} for s in current_user.scopes]
     
-    role_name = user.role.name if user.role else "SUPER_ADMIN"
-    scopes = [{"type": s.scope_type, "id": s.scope_id} for s in user.scopes]
     return UserResponse(
-        id=user.id,
-        email=user.email,
-        full_name=user.full_name,
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
         role=role_name,
-        is_active=user.is_active,
+        role_code=role_code,
+        is_active=current_user.is_active,
+        scopes=scopes,
+        permissions=permissions
+    )
+
+@router.post("/refresh", response_model=Token)
+def refresh_token(current_user: User = Depends(get_current_user)):
+    role_name = current_user.role.name if current_user.role else "USER"
+    scopes = [{"type": s.scope_type, "id": s.scope_id} for s in current_user.scopes]
+    access_token = create_access_token(subject=current_user.id)
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        user_id=current_user.id,
+        full_name=current_user.full_name,
+        role=role_name,
         scopes=scopes
     )
+
+@router.post("/logout")
+def logout(current_user: User = Depends(get_current_user)):
+    return {"message": "Successfully logged out", "user_id": current_user.id}

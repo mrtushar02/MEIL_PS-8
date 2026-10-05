@@ -54,43 +54,29 @@ class ApiService {
 
   // 1. Authentication
   async login(email, password) {
+    const data = await this.request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    if (data && data.access_token) {
+      this.setToken(data.access_token);
+    }
+    return data;
+  }
+
+  async getCurrentUser() {
+    return await this.request('/auth/me');
+  }
+
+  async logout() {
     try {
-      const data = await this.request('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-      if (data && data.access_token) {
-        this.setToken(data.access_token);
+      if (this.token) {
+        await this.request('/auth/logout', { method: 'POST' });
       }
-      return data;
-    } catch (error) {
-      // Fallback local auth for smooth demo if backend server is offline
-      const mockRoles = {
-        'site.officer@meilgroup.in': { full_name: 'Rohit Kumar', role: 'PROJECT_OFFICER', role_title: 'Project / Site User', scope: 'Hyderabad Metro Rail Project' },
-        'hr.director@meilgroup.in': { full_name: 'Sunita Raman', role: 'HR_OFFICER', role_title: 'HR & Workforce Manager', scope: 'MEIL Group HR' },
-        'ehs.head@meilgroup.in': { full_name: 'Rajeshwar K.', role: 'EHS_OFFICER', role_title: 'EHS & Safety Specialist', scope: 'Group Safety Division' },
-        'procurement@meilgroup.in': { full_name: 'Anand Mahindra V.', role: 'PROCUREMENT_OFFICER', role_title: 'Procurement & Scope 3 Officer', scope: 'Group Supply Chain' },
-        'csr.lead@meilgroup.in': { full_name: 'K. Meenakshi', role: 'CSR_OFFICER', role_title: 'CSR & Community Officer', scope: 'MEIL Foundation' },
-        'compliance@meilgroup.in': { full_name: 'Adv. S. K. Nair', role: 'COMPLIANCE_OFFICER', role_title: 'Governance & Compliance Auditor', scope: 'Corporate Secretarial' },
-        'admin@meilgroup.in': { full_name: 'System Super Administrator', role: 'SUPER_ADMIN', role_title: 'Executive ESG Admin', scope: 'MEIL Group HQ' }
-      };
-
-      const user = mockRoles[email] || {
-        full_name: 'Authorized ESG Officer',
-        role: 'PROJECT_OFFICER',
-        role_title: 'Project / Site Officer',
-        scope: 'Project Site Kaleshwaram'
-      };
-
-      return {
-        access_token: 'demo-meil-jwt-token',
-        token_type: 'bearer',
-        user_id: 'user-demo',
-        full_name: user.full_name,
-        role: user.role,
-        role_title: user.role_title,
-        scopes: [{ type: 'PROJECT', id: 'site-101' }]
-      };
+    } catch (e) {
+      console.warn('Logout notification failed on backend:', e);
+    } finally {
+      this.setToken(null);
     }
   }
 

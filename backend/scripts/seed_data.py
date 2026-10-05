@@ -15,15 +15,16 @@ from app.models.factors import EmissionFactor, UnitConversion
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
 from app.models.audit import AuditLog
 
+from scripts.seed_rbac_and_users import seed_rbac
+
 def seed():
-    print("Creating all database tables...")
-    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
     try:
         # Check if already seeded
         if db.query(Group).first():
-            print("Database already contains organization records. Skipping seed.")
+            print("Database already contains organization records. Ensuring RBAC is seeded...")
+            seed_rbac()
             return
 
         print("Seeding MEIL Organization Hierarchy...")

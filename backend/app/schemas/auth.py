@@ -34,8 +34,10 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     role: str
+    role_code: Optional[str] = None
     is_active: bool
     scopes: List[dict] = []
+    permissions: List[str] = []
 
     class Config:
         from_attributes = True

@@ -1,6 +1,6 @@
 from app.core.database import Base
 from app.models.organization import Group, Subsidiary, BusinessUnit, Project
-from app.models.user import Role, User, UserScope
+from app.models.user import Role, User, UserScope, Permission, role_permissions
 from app.models.reporting import ReportingPeriod, Submission
 from app.models.factors import EmissionFactor, UnitConversion
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
