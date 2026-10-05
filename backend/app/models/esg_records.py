@@ -17,9 +17,9 @@ class FuelRecord(Base):
     fuel_type = Column(String, nullable=False)         # Diesel, Petrol, Natural Gas, LPG
     quantity = Column(Float, nullable=False)           # Raw measured quantity
     unit = Column(String, nullable=False)              # Litres, m3, kg
-    scope1_co2e_tonnes = Column(Float, nullable=False) # Derived Scope 1 output
-    factor_id = Column(String, nullable=False)         # Versioned factor foreign key
-    factor_version = Column(String, nullable=False)
+    scope1_co2e_tonnes = Column(Float, nullable=True, default=0.0) # Derived Scope 1 output
+    factor_id = Column(String, nullable=True)         # Versioned factor foreign key
+    factor_version = Column(String, nullable=True)
     evidence_id = Column(String, nullable=True)        # Linked proof document
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -35,10 +35,11 @@ class EnergyRecord(Base):
     energy_source = Column(String, nullable=False)     # Grid Electricity, Captive Solar, Captive Wind, Diesel DG
     quantity_kwh = Column(Float, nullable=False)       # Total units consumed
     renewable_kwh = Column(Float, default=0.0)         # Renewable portion
-    scope2_co2e_tonnes = Column(Float, nullable=False) # Derived Scope 2 output
-    energy_gj = Column(Float, nullable=False)          # Converted to GigaJoules
-    factor_id = Column(String, nullable=False)
-    factor_version = Column(String, nullable=False)
+    scope2_co2e_tonnes = Column(Float, nullable=True, default=0.0) # Derived Scope 2 output
+    energy_gj = Column(Float, nullable=True, default=0.0)          # Converted to GigaJoules
+    factor_id = Column(String, nullable=True)
+    factor_version = Column(String, nullable=True)
+
     evidence_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 

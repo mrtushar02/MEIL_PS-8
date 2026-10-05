@@ -7,13 +7,16 @@ from app.models.reporting import Submission, ReportingPeriod
 from app.models.organization import Project
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
 from app.models.user import User
+from app.models.engine import CalculationRun, CalculationResult, ValidationRun, ValidationResult
 from app.schemas.reporting import ProjectMonthlySubmissionInput, SubmissionResponse, SubmissionStatusUpdate
+from app.schemas.engine import CalculationRunResponse, ValidationRunResponse
 from app.services.validation_engine import ValidationEngine
 from app.services.emission_engine import EmissionEngine
 from app.services.audit_service import AuditService
 from app.api.deps import get_current_user, require_project_access
 
 router = APIRouter(prefix="/submissions", tags=["ESG Data Submissions & Workflow"])
+
 
 @router.get("", response_model=List[SubmissionResponse])
 def list_submissions(
@@ -261,3 +264,101 @@ def update_submission_status(
     )
 
     return submission
+ 
+@router.post("/{submission_id}/calculate", response_model=CalculationRunResponse)
+def calculate_submission_metrics(
+    submission_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    submission = db.query(Submission).filter(Submission.id == submission_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    require_project_access(submission.project_id, current_user, db)
+
+    run = EmissionEngine.execute_submission_calculations(db, submission_id, current_user.id)
+
+    # Log Calculation Run in Audit Trail
+    user_role_name = current_user.role.name if current_user.role else "USER"
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=user_role_name,
+        action="CALCULATION_ENGINE_EXECUTED",
+        entity_type="CalculationRun",
+        entity_id=run.id,
+        new_state="COMPLETED",
+        details=f"Calculated Scope 1, Scope 2, GJ, LTIFR for submission {submission_id} (Version: {run.engine_version})"
+    )
+
+    return run
+
+@router.get("/{submission_id}/calculations", response_model=List[CalculationRunResponse])
+def get_submission_calculations(
+    submission_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    submission = db.query(Submission).filter(Submission.id == submission_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    require_project_access(submission.project_id, current_user, db)
+
+    runs = db.query(CalculationRun).options(
+        joinedload(CalculationRun.results)
+    ).filter(CalculationRun.submission_id == submission_id).order_by(CalculationRun.started_at.desc()).all()
+
+    return runs
+
+@router.post("/{submission_id}/validate", response_model=ValidationRunResponse)
+def validate_submission_data(
+    submission_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    submission = db.query(Submission).options(
+        joinedload(Submission.fuel_records),
+        joinedload(Submission.energy_records),
+        joinedload(Submission.water_records),
+        joinedload(Submission.waste_records),
+        joinedload(Submission.safety_records)
+    ).filter(Submission.id == submission_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    require_project_access(submission.project_id, current_user, db)
+
+    # Serialize submission records for validation engine
+    submission_data = {
+        "reporting_period_id": submission.reporting_period_id,
+        "fuel_records": [{"quantity": f.quantity, "fuel_type": f.fuel_type, "unit": f.unit, "evidence_id": f.evidence_id} for f in submission.fuel_records],
+        "energy_records": [{"quantity_kwh": e.quantity_kwh, "renewable_kwh": e.renewable_kwh, "energy_source": e.energy_source} for e in submission.energy_records],
+        "water_records": [{"withdrawal_kl": w.withdrawal_kl, "recycled_kl": w.recycled_kl, "discharged_kl": w.discharged_kl, "source_type": w.source_type} for w in submission.water_records],
+        "waste_records": [{"quantity_metric_tonnes": wst.quantity_metric_tonnes, "waste_category": wst.waste_category, "disposal_route": wst.disposal_route} for wst in submission.waste_records],
+        "safety_records": [{"safe_man_hours": s.safe_man_hours, "lost_time_injuries": s.lost_time_injuries, "fatalities": s.fatalities} for s in submission.safety_records]
+    }
+
+    val_res = ValidationEngine.validate_monthly_submission(submission_data, db=db, submission_id=submission_id)
+    val_run = db.query(ValidationRun).options(
+        joinedload(ValidationRun.results)
+    ).filter(ValidationRun.id == val_res["validation_run_id"]).first()
+
+    return val_run
+
+@router.get("/{submission_id}/validation", response_model=List[ValidationRunResponse])
+def get_submission_validation_runs(
+    submission_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    submission = db.query(Submission).filter(Submission.id == submission_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    require_project_access(submission.project_id, current_user, db)
+
+    runs = db.query(ValidationRun).options(
+        joinedload(ValidationRun.results)
+    ).filter(ValidationRun.submission_id == submission_id).order_by(ValidationRun.started_at.desc()).all()
+
+    return runs
+

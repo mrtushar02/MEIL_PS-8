@@ -75,7 +75,7 @@ class RequirePermission:
         )
 
 def require_permission(permission_code: str):
-    return Depends(RequirePermission(permission_code))
+    return RequirePermission(permission_code)
 
 def check_project_access(user: User, project_id: str, db: Session) -> bool:
     if user.is_superuser:
