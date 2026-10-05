@@ -7,8 +7,12 @@ from app.models.engine import CalculationRun, CalculationResult, ValidationRule,
 from app.models.workflow import WorkflowTransition, ApprovalAction, SubmissionVersion, ComplianceException
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
 from app.models.evidence import EvidenceDocument, EvidenceLink, EvidenceHistory
-from app.models.brsr import BrsrFramework, BrsrSection, BrsrIndicator, BrsrMapping
+from app.models.brsr import (
+    BrsrFramework, BrsrSection, BrsrPrinciple, BrsrIndicator,
+    BrsrMapping, BrsrAnswer, BrsrAnswerSource
+)
 from app.models.audit import AuditLog
+
 
 
 from app.models.hr import (
