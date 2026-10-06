@@ -1,0 +1,199 @@
+/* ==========================================================================
+   MEIL ESG MANAGER WORKSPACE STYLES
+   Theme: Emerald Green (#047857) & Mint, White-dominant Liquid Glass
+   ========================================================================== */
+
+.esg-mgr-container {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0F172A;
+  padding: 1.25rem 2rem;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+.esg-mgr-card {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px -2px rgba(4, 120, 87, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.esg-mgr-card:hover {
+  box-shadow: 0 10px 30px -4px rgba(4, 120, 87, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+  border-color: rgba(167, 243, 208, 0.9);
+}
+
+.esg-mgr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.esg-mgr-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.esg-mgr-card-subtitle {
+  font-size: 0.82rem;
+  color: #64748B;
+  margin: 0.2rem 0 0 0;
+  font-weight: 500;
+}
+
+.esg-mgr-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.esg-mgr-stat-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 16px -2px rgba(4, 120, 87, 0.04);
+  transition: all 0.2s ease;
+}
+
+.esg-mgr-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(4, 120, 87, 0.08);
+}
+
+.esg-mgr-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.esg-mgr-stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.esg-mgr-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.esg-mgr-stat-subtext {
+  font-size: 0.75rem;
+  color: #047857;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.esg-mgr-table-container {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid #F1F5F9;
+}
+
+.esg-mgr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: left;
+}
+
+.esg-mgr-table thead th {
+  background: #F8FAFC;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 1px solid #E2E8F0;
+  white-space: nowrap;
+}
+
+.esg-mgr-table tbody tr {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background 0.15s ease;
+}
+
+.esg-mgr-table tbody tr:hover {
+  background: rgba(236, 253, 245, 0.6);
+}
+
+.esg-mgr-table tbody td {
+  padding: 0.95rem 1rem;
+  vertical-align: middle;
+}
+
+.esg-mgr-badge-emerald {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.esg-mgr-btn-primary {
+  background: linear-gradient(135deg, #047857 0%, #065F46 100%);
+  color: #FFFFFF;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.esg-mgr-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(4, 120, 87, 0.35);
+}
+
+.esg-mgr-btn-outline {
+  background: #FFFFFF;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  padding: 0.55rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.esg-mgr-btn-outline:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}

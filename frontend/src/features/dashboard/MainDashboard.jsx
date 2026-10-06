@@ -19,6 +19,11 @@ import AuditTraceabilityModule from '../audit/AuditTraceabilityModule';
 import BUCoordinatorModule from '../reviewers/bu/BUCoordinatorModule';
 import SubsidiaryHeadModule from '../reviewers/subsidiary/SubsidiaryHeadModule';
 import GroupCSOModule from '../reviewers/group/GroupCSOModule';
+import ESGManagerModule from '../strategy/esg_manager/ESGManagerModule';
+import ESGAnalystModule from '../strategy/esg_analyst/ESGAnalystModule';
+import BRSRManagerModule from '../strategy/brsr_manager/BRSRManagerModule';
+import AuditorAssuranceModule from '../strategy/auditor/AuditorAssuranceModule';
+import ExecutiveBoardModule from '../strategy/executive/ExecutiveBoardModule';
 
 export default function MainDashboard({
   user = { name: 'Rohit Kumar', email: 'rohit.kumar@meil.in' },
@@ -74,6 +79,46 @@ export default function MainDashboard({
       ) : role?.id === 'GROUP_CSO' ? (
         <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
           <GroupCSOModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'ESG_MANAGER' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <ESGManagerModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'ESG_ANALYST' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <ESGAnalystModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'BRSR_MANAGER' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <BRSRManagerModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'ASSURANCE_AUDITOR' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <AuditorAssuranceModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'EXECUTIVE' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <ExecutiveBoardModule 
             user={user} 
             activeTab={activeTab} 
             onTabChange={onTabChange} 

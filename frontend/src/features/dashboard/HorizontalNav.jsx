@@ -28,7 +28,12 @@ import {
   Inbox,
   Shield,
   Lock,
-  Award
+  Award,
+  Cpu,
+  Database,
+  Search,
+  Eye,
+  Sun
 } from 'lucide-react';
 
 export default function HorizontalNav({
@@ -156,6 +161,55 @@ export default function HorizontalNav({
           { id: 'panoramic', label: 'Executive Panoramic', icon: Home },
           { id: 'more', label: 'More', icon: MoreHorizontal }
         ];
+      case 'ESG_MANAGER':
+        return [
+          { id: 'overview', label: 'Overview', icon: Home },
+          { id: 'roadmap', label: 'Decarbonization Roadmap', icon: TrendingDown },
+          { id: 'renewables', label: 'Clean Power Transition', icon: Sun },
+          { id: 'committee', label: 'ESG Committee Desk', icon: FileText },
+          { id: 'suppliers', label: 'Scope 3 Supply Chain', icon: Truck },
+          { id: 'targets', label: 'Targets & Net Zero 2045', icon: Target },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
+      case 'ESG_ANALYST':
+        return [
+          { id: 'overview', label: 'Analytics Lab', icon: Home },
+          { id: 'factors', label: 'Emission Factor Studio', icon: Database },
+          { id: 'diagnostics', label: 'Data Diagnostics', icon: Cpu },
+          { id: 'intensity', label: 'Intensity Models', icon: BarChart3 },
+          { id: 'forecasting', label: 'Scenario Simulator', icon: TrendingUp },
+          { id: 'workbench', label: 'Query Workbench', icon: Search },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
+      case 'BRSR_MANAGER':
+        return [
+          { id: 'overview', label: 'Overview', icon: Home },
+          { id: 'principles', label: 'NGRBC 9 Principles', icon: Scale },
+          { id: 'core-assurance', label: 'BRSR Core Assurance', icon: Award },
+          { id: 'xbrl', label: 'XBRL Taxonomy', icon: Layers },
+          { id: 'gaps', label: 'Gap Analysis', icon: AlertCircle },
+          { id: 'filing', label: 'SEBI Filing Center', icon: CheckSquare },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
+      case 'ASSURANCE_AUDITOR':
+        return [
+          { id: 'overview', label: 'Audit Cockpit', icon: Home },
+          { id: 'samples', label: 'Sample Selection', icon: Search },
+          { id: 'scrutiny', label: 'Evidence Scrutiny', icon: Paperclip },
+          { id: 'findings', label: 'Audit Findings', icon: AlertCircle },
+          { id: 'opinion', label: 'Assurance Statement', icon: Award },
+          { id: 'ledger', label: 'Workpaper Ledger', icon: Clock },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
+      case 'EXECUTIVE':
+        return [
+          { id: 'overview', label: 'Board Briefing', icon: Home },
+          { id: 'ratings', label: 'ESG Ratings Benchmark', icon: Award },
+          { id: 'capex', label: 'Green Capex Allocation', icon: BarChart3 },
+          { id: 'risk', label: 'Climate Risk Exposure', icon: ShieldAlert },
+          { id: 'dossier', label: 'Board Packs & Export', icon: FileText },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
       case 'PROJECT_OFFICER':
       default:
         return [
@@ -241,6 +295,31 @@ export default function HorizontalNav({
           { id: 'assurance', label: 'PwC Assurance Workstreams', icon: CheckSquare, tag: 'AUDIT' },
           { id: 'final-lock', label: 'Period Lock Ceremony', icon: Lock, tag: 'SEAL' },
           { id: 'panoramic', label: 'Executive Panoramic View', icon: Home, tag: 'BOARD' }
+        ];
+      case 'ESG_MANAGER':
+        return [
+          { id: 'suppliers', label: 'Scope 3 Supply Chain', icon: Truck, tag: 'VENDORS' },
+          { id: 'targets', label: 'Targets & Net Zero 2045', icon: Target, tag: 'TARGETS' }
+        ];
+      case 'ESG_ANALYST':
+        return [
+          { id: 'forecasting', label: 'Scenario Simulator', icon: TrendingUp, tag: 'MODELS' },
+          { id: 'workbench', label: 'Query Workbench', icon: Search, tag: 'DRILL' }
+        ];
+      case 'BRSR_MANAGER':
+        return [
+          { id: 'gaps', label: 'Regulatory Gap Analysis', icon: AlertCircle, tag: 'GAPS' },
+          { id: 'filing', label: 'SEBI Filing Center', icon: CheckSquare, tag: 'FILING' }
+        ];
+      case 'ASSURANCE_AUDITOR':
+        return [
+          { id: 'opinion', label: 'Assurance Statement', icon: Award, tag: 'OPINION' },
+          { id: 'ledger', label: 'Workpaper Ledger', icon: Clock, tag: 'HASH' }
+        ];
+      case 'EXECUTIVE':
+        return [
+          { id: 'risk', label: 'Climate Risk Briefing', icon: ShieldAlert, tag: 'RISK' },
+          { id: 'dossier', label: 'Board Pack Dossiers', icon: FileText, tag: 'PACK' }
         ];
       case 'PROJECT_OFFICER':
       default:
