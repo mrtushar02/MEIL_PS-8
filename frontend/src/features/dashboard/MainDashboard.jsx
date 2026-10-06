@@ -16,6 +16,7 @@ import MyProjectModule from '../organization/MyProjectModule';
 import ReportsModule from '../reports/ReportsModule';
 import AnalyticsModule from '../analytics/AnalyticsModule';
 import AuditTraceabilityModule from '../audit/AuditTraceabilityModule';
+import BUCoordinatorModule from '../reviewers/bu/BUCoordinatorModule';
 
 export default function MainDashboard({
   user = { name: 'Rohit Kumar', email: 'rohit.kumar@meil.in' },
@@ -52,7 +53,15 @@ export default function MainDashboard({
       />
 
       {/* 3. Tab Content Router */}
-      {role?.id === 'EHS_OFFICER' && activeTab !== 'reports' ? (
+      {role?.id === 'BU_COORDINATOR' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <BUCoordinatorModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'EHS_OFFICER' && activeTab !== 'reports' ? (
         <div style={{ maxWidth: '1680px', width: '96%', margin: '14px auto 0', padding: '0 12px', position: 'relative', zIndex: 10 }}>
           <EHSModule 
             activeTab={activeTab} 

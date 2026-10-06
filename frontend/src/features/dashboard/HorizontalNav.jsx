@@ -24,7 +24,8 @@ import {
   MapPin,
   Target,
   Users2,
-  AlertCircle
+  AlertCircle,
+  Inbox
 } from 'lucide-react';
 
 export default function HorizontalNav({
@@ -109,6 +110,19 @@ export default function HorizontalNav({
           { id: 'submissions', label: 'Submissions', icon: Send },
           { id: 'analytics', label: 'Analytics', icon: TrendingUp }
         ];
+      case 'BU_COORDINATOR':
+        return [
+          { id: 'overview', label: 'Overview', icon: Home },
+          { id: 'review-queue', label: 'Review Queue', icon: Inbox },
+          { id: 'my-bu', label: 'My Business Unit', icon: Building2 },
+          { id: 'submissions', label: 'Submissions', icon: Send },
+          { id: 'evidence', label: 'Evidence', icon: Paperclip },
+          { id: 'consolidation', label: 'Consolidation', icon: BarChart3 },
+          { id: 'exceptions', label: 'Exceptions', icon: AlertCircle },
+          { id: 'reports', label: 'Reports', icon: FileText },
+          { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+          { id: 'audit', label: 'Audit & Traceability', icon: Clock }
+        ];
       case 'PROJECT_OFFICER':
       default:
         return [
@@ -126,8 +140,12 @@ export default function HorizontalNav({
 
   const getTabBadge = (tabId) => {
     switch (tabId) {
+      case 'review-queue':
+        return { text: '8', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)' };
+      case 'exceptions':
+        return { text: '3', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)' };
       case 'data-entry':
-        return { text: 'New', color: '#16A34A', bg: 'rgba(22, 163, 74, 0.12)' };
+        return { text: 'New', color: '#16A34A', bg: 'rgba(220, 163, 74, 0.12)' };
       case 'evidence':
         return { text: '12', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)' };
       case 'submissions':

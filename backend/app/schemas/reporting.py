@@ -63,8 +63,8 @@ class EnergyRecordResponse(BaseModel):
     renewable_kwh: float
     scope2_co2e_tonnes: float
     energy_gj: float
-    factor_id: str
-    factor_version: str
+    factor_id: Optional[str] = None
+    factor_version: Optional[str] = None
     evidence_id: Optional[str] = None
     created_at: datetime
 

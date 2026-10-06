@@ -47,7 +47,7 @@ class TestPhase10ScopeIsolation(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         # All visible projects must be under sub-meil-core
         for sub in resp.json():
-            self.assertIn(sub["project_id"], ["site-101", "site-102", "site-test-tunnel-b"])
+            self.assertIn(sub["project_id"], ["site-101", "site-102", "site-test-tunnel-b", "site-gayatri-link", "site-river-link", "site-metro-p1", "site-expressway"])
 
     def test_evidence_download_scope_isolation(self):
         """Item 47 & 69: Evidence documents are scoped and unauthorized users cannot query unrelated projects"""
