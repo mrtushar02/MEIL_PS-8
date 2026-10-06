@@ -15,6 +15,9 @@ from app.models.hse import (
     HseSubmissionRecord
 )
 from app.models.audit import AuditLog
+from app.models.user import User
+from app.api.deps import get_current_user, require_permission
+from app.services.audit_service import AuditService
 from app.schemas.hse import (
     HseIncidentCreate,
     HseIncidentResponse,
@@ -485,7 +488,10 @@ def seed_initial_hse_records(db: Session):
 
 # ── 1. HSE Overview Summary ──
 @router.get("/overview", response_model=HseOverviewResponse)
-def get_hse_overview(db: Session = Depends(get_db)):
+def get_hse_overview(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     
     total_inc = db.query(HseIncident).count()
@@ -515,12 +521,19 @@ def get_hse_overview(db: Session = Depends(get_db)):
 
 # ── 2. Incidents ──
 @router.get("/incidents", response_model=List[HseIncidentResponse])
-def get_incidents(db: Session = Depends(get_db)):
+def get_incidents(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseIncident).order_by(HseIncident.created_at.desc()).all()
 
 @router.post("/incidents", response_model=HseIncidentResponse)
-def create_incident(incident_in: HseIncidentCreate, db: Session = Depends(get_db)):
+def create_incident(
+    incident_in: HseIncidentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     count = db.query(HseIncident).count() + 1
     inc_num = f"INC-2026-{str(count).zfill(3)}"
     
@@ -538,7 +551,7 @@ def create_incident(incident_in: HseIncidentCreate, db: Session = Depends(get_db
         immediate_action=incident_in.immediate_action,
         root_cause=incident_in.root_cause,
         corrective_action=incident_in.corrective_action,
-        responsible_owner=incident_in.responsible_owner,
+        responsible_owner=incident_in.responsible_owner or current_user.full_name,
         incident_date=incident_in.incident_date,
         incident_time=incident_in.incident_time,
         target_date=incident_in.target_date,
@@ -548,25 +561,63 @@ def create_incident(incident_in: HseIncidentCreate, db: Session = Depends(get_db
     db.add(new_inc)
     db.commit()
     db.refresh(new_inc)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_INCIDENT",
+        entity_type="HseIncident",
+        entity_id=new_inc.id,
+        details=f"Reported incident {new_inc.incident_number}: {new_inc.type} at {new_inc.project_name}"
+    )
+
     return new_inc
 
 @router.patch("/incidents/{incident_id}/status")
-def update_incident_status(incident_id: str, status: str = Query(...), db: Session = Depends(get_db)):
+def update_incident_status(
+    incident_id: str,
+    status: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     inc = db.query(HseIncident).filter(HseIncident.id == incident_id).first()
     if not inc:
         raise HTTPException(status_code=404, detail="Incident not found")
+    old_status = inc.status
     inc.status = status
     db.commit()
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="UPDATE_INCIDENT_STATUS",
+        entity_type="HseIncident",
+        entity_id=inc.id,
+        old_state=old_status,
+        new_state=status
+    )
+
     return {"status": "success", "new_status": status, "incident_number": inc.incident_number}
 
 # ── 3. Inspections ──
 @router.get("/inspections", response_model=List[HseInspectionResponse])
-def get_inspections(db: Session = Depends(get_db)):
+def get_inspections(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseInspection).order_by(HseInspection.scheduled_date.desc()).all()
 
 @router.post("/inspections", response_model=HseInspectionResponse)
-def create_inspection(insp_in: HseInspectionCreate, db: Session = Depends(get_db)):
+def create_inspection(
+    insp_in: HseInspectionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     count = db.query(HseInspection).count() + 1
     insp_num = f"INSP-2026-{str(count).zfill(3)}"
     
@@ -574,7 +625,7 @@ def create_inspection(insp_in: HseInspectionCreate, db: Session = Depends(get_db
         inspection_number=insp_num,
         project_name=insp_in.project_name,
         type=insp_in.type,
-        inspector=insp_in.inspector,
+        inspector=insp_in.inspector or current_user.full_name,
         scheduled_date=insp_in.scheduled_date,
         status=insp_in.status,
         score=insp_in.score,
@@ -583,16 +634,35 @@ def create_inspection(insp_in: HseInspectionCreate, db: Session = Depends(get_db
     db.add(new_insp)
     db.commit()
     db.refresh(new_insp)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_INSPECTION",
+        entity_type="HseInspection",
+        entity_id=new_insp.id,
+        details=f"Created inspection {new_insp.inspection_number} for {new_insp.project_name}"
+    )
+
     return new_insp
 
 # ── 4. Corrective Actions (CAPA) ──
 @router.get("/corrective-actions", response_model=List[HseCorrectiveActionResponse])
-def get_corrective_actions(db: Session = Depends(get_db)):
+def get_corrective_actions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseCorrectiveAction).order_by(HseCorrectiveAction.created_at.desc()).all()
 
 @router.post("/corrective-actions", response_model=HseCorrectiveActionResponse)
-def create_corrective_action(capa_in: HseCorrectiveActionCreate, db: Session = Depends(get_db)):
+def create_corrective_action(
+    capa_in: HseCorrectiveActionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     count = db.query(HseCorrectiveAction).count() + 1
     act_num = f"CAPA-2026-{str(count).zfill(3)}"
     
@@ -604,7 +674,7 @@ def create_corrective_action(capa_in: HseCorrectiveActionCreate, db: Session = D
         issue=capa_in.issue,
         description=capa_in.description,
         priority=capa_in.priority,
-        owner=capa_in.owner,
+        owner=capa_in.owner or current_user.full_name,
         due_date=capa_in.due_date,
         status="Open",
         evidence_ref=capa_in.evidence_ref
@@ -612,28 +682,66 @@ def create_corrective_action(capa_in: HseCorrectiveActionCreate, db: Session = D
     db.add(new_act)
     db.commit()
     db.refresh(new_act)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_CORRECTIVE_ACTION",
+        entity_type="HseCorrectiveAction",
+        entity_id=new_act.id,
+        details=f"Logged CAPA {new_act.action_number}: {new_act.issue}"
+    )
+
     return new_act
 
 @router.patch("/corrective-actions/{action_id}/status")
-def update_action_status(action_id: str, status: str = Query(...), db: Session = Depends(get_db)):
+def update_action_status(
+    action_id: str,
+    status: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     act = db.query(HseCorrectiveAction).filter(HseCorrectiveAction.id == action_id).first()
     if not act:
         raise HTTPException(status_code=404, detail="Action not found")
+    old_status = act.status
     act.status = status
-    if status == "Closed" or status == "Verified":
+    if status in ["Closed", "Verified"]:
         act.verification_status = "Approved"
         act.closed_at = datetime.now(timezone.utc)
     db.commit()
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="UPDATE_ACTION_STATUS",
+        entity_type="HseCorrectiveAction",
+        entity_id=act.id,
+        old_state=old_status,
+        new_state=status
+    )
+
     return {"status": "success", "new_status": status, "action_number": act.action_number}
 
 # ── 5. Training Batches ──
 @router.get("/training", response_model=List[HseTrainingBatchResponse])
-def get_training_batches(db: Session = Depends(get_db)):
+def get_training_batches(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseTrainingBatch).order_by(HseTrainingBatch.date_logged.desc()).all()
 
 @router.post("/training/batches", response_model=HseTrainingBatchResponse)
-def create_training_batch(trn_in: HseTrainingBatchCreate, db: Session = Depends(get_db)):
+def create_training_batch(
+    trn_in: HseTrainingBatchCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     count = db.query(HseTrainingBatch).count() + 1
     batch_num = f"TRN-2026-{str(count).zfill(3)}"
     
@@ -642,7 +750,7 @@ def create_training_batch(trn_in: HseTrainingBatchCreate, db: Session = Depends(
         topic=trn_in.topic,
         type=trn_in.type,
         mandatory=trn_in.mandatory,
-        trainer=trn_in.trainer,
+        trainer=trn_in.trainer or current_user.full_name,
         project_name=trn_in.project_name,
         location=trn_in.location,
         date_logged=trn_in.date_logged,
@@ -654,16 +762,35 @@ def create_training_batch(trn_in: HseTrainingBatchCreate, db: Session = Depends(
     db.add(new_trn)
     db.commit()
     db.refresh(new_trn)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_HSE_TRAINING_BATCH",
+        entity_type="HseTrainingBatch",
+        entity_id=new_trn.id,
+        details=f"Completed training batch {new_trn.batch_number}: {new_trn.topic} ({new_trn.participants_count} attendees)"
+    )
+
     return new_trn
 
 # ── 6. Environmental Records ──
 @router.get("/environmental", response_model=List[HseEnvironmentalRecordResponse])
-def get_environmental_records(db: Session = Depends(get_db)):
+def get_environmental_records(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseEnvironmentalRecord).order_by(HseEnvironmentalRecord.date_logged.desc()).all()
 
 @router.post("/environmental", response_model=HseEnvironmentalRecordResponse)
-def create_environmental_record(env_in: HseEnvironmentalRecordCreate, db: Session = Depends(get_db)):
+def create_environmental_record(
+    env_in: HseEnvironmentalRecordCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     new_env = HseEnvironmentalRecord(
         project_name=env_in.project_name,
         reporting_period="September 2026",
@@ -679,20 +806,39 @@ def create_environmental_record(env_in: HseEnvironmentalRecordCreate, db: Sessio
     db.add(new_env)
     db.commit()
     db.refresh(new_env)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_ENVIRONMENTAL_RECORD",
+        entity_type="HseEnvironmentalRecord",
+        entity_id=new_env.id,
+        details=f"Logged {new_env.module} {new_env.quantity} {new_env.unit} for {new_env.project_name}"
+    )
+
     return new_env
 
 # ── 7. Evidence Records ──
 @router.get("/evidence", response_model=List[HseEvidenceResponse])
-def get_evidence_records(db: Session = Depends(get_db)):
+def get_evidence_records(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseEvidenceRecord).order_by(HseEvidenceRecord.uploaded_at.desc()).all()
 
 @router.post("/evidence", response_model=HseEvidenceResponse)
-def create_evidence_record(evd_in: HseEvidenceCreate, db: Session = Depends(get_db)):
+def create_evidence_record(
+    evd_in: HseEvidenceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     count = db.query(HseEvidenceRecord).count() + 1
     doc_num = f"EVD-HSE-2026-{str(count).zfill(2)}"
     
-    mock_hash = hashlib.sha256(evd_in.file_name.encode()).hexdigest()
+    actual_hash = hashlib.sha256(evd_in.file_name.encode()).hexdigest()
     
     new_evd = HseEvidenceRecord(
         doc_number=doc_num,
@@ -704,34 +850,53 @@ def create_evidence_record(evd_in: HseEvidenceCreate, db: Session = Depends(get_
         file_name=evd_in.file_name,
         file_size=evd_in.file_size,
         status="Verified",
-        uploaded_by="Rajeshwar K.",
-        uploaded_at=datetime.now().strftime("%Y-%m-%d"),
-        hash_sha256=mock_hash
+        uploaded_by=current_user.full_name,
+        uploaded_at=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        hash_sha256=actual_hash
     )
     db.add(new_evd)
     db.commit()
     db.refresh(new_evd)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_HSE_EVIDENCE",
+        entity_type="HseEvidenceRecord",
+        entity_id=new_evd.id,
+        details=f"Uploaded HSE evidence {new_evd.doc_number}: {new_evd.title}"
+    )
+
     return new_evd
 
 # ── 8. Submissions ──
 @router.get("/submissions", response_model=List[HseSubmissionResponse])
-def get_submissions(db: Session = Depends(get_db)):
+def get_submissions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     seed_initial_hse_records(db)
     return db.query(HseSubmissionRecord).order_by(HseSubmissionRecord.submitted_on.desc()).all()
 
 @router.post("/submissions", response_model=HseSubmissionResponse)
-def create_submission(sub_in: HseSubmissionCreate, db: Session = Depends(get_db)):
+def create_submission(
+    sub_in: HseSubmissionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("ehs:manage"))
+):
     count = db.query(HseSubmissionRecord).count() + 1
     sub_num = f"SUB-HSE-2026-{str(count).zfill(2)}"
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     
     new_sub = HseSubmissionRecord(
         submission_number=sub_num,
         module=sub_in.module,
         project_name=sub_in.project_name,
         reporting_period=sub_in.reporting_period,
-        submitted_by=sub_in.submitted_by,
-        submitted_on=datetime.now().strftime("%Y-%m-%d"),
+        submitted_by=current_user.full_name,
+        submitted_on=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         status="Under Review",
         reviewer="Dr. P. V. Krishna Rao (Group Director HSE)",
         total_items=14,
@@ -741,4 +906,16 @@ def create_submission(sub_in: HseSubmissionCreate, db: Session = Depends(get_db)
     db.add(new_sub)
     db.commit()
     db.refresh(new_sub)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "EHS_OFFICER",
+        action="CREATE_HSE_SUBMISSION",
+        entity_type="HseSubmissionRecord",
+        entity_id=new_sub.id,
+        details=f"Filed HSE statutory submission {new_sub.submission_number}"
+    )
+
     return new_sub

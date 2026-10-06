@@ -6,8 +6,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     PROJECT_NAME: str = "MEIL ESG / BRSR Enterprise Platform"
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = "development"
     SECRET_KEY: str = "meil-super-secret-key-change-in-production-esg-platform"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 hours
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        if env == "production" and ("change-in-production" in v or len(v) < 32):
+            raise ValueError("Production deployment requires a cryptographically strong SECRET_KEY (min 32 chars) set via environment.")
+        return v
+
 
     # Database
     DATABASE_URL: str = "sqlite:///./meil_esg.db"

@@ -6,12 +6,22 @@ from app.models.reporting import Submission
 from app.models.esg_records import FuelRecord, EnergyRecord, WaterRecord, WasteRecord, SafetyRecord
 from app.models.engine import CalculationRun, CalculationResult
 
+class MissingEmissionFactorError(ValueError):
+    """Raised when an emission factor is missing from the governed database master (Item 39)."""
+    def __init__(self, activity_type: str, scope: Optional[str] = None):
+        self.activity_type = activity_type
+        self.scope = scope
+        super().__init__(
+            f"Regulatory Failure: Missing authoritative emission factor for activity '{activity_type}'"
+            f"{f' ({scope})' if scope else ''}. Calculation failed-closed to prevent invalid BRSR reporting."
+        )
+
 class EmissionEngine:
     ENGINE_VERSION = "CEA-v19.2-GHG-Protocol"
 
     @staticmethod
-    def get_factor(db: Session, activity_type: str, category: str = None) -> Dict[str, Any]:
-        """Look up authoritative active emission factor from database master"""
+    def get_factor(db: Session, activity_type: str, category: Optional[str] = None) -> Dict[str, Any]:
+        """Look up authoritative active emission factor from database master (Item 39 & 40). Fails closed."""
         query = db.query(EmissionFactor).filter(
             EmissionFactor.activity_type.ilike(f"%{activity_type}%"),
             EmissionFactor.status == "ACTIVE"
@@ -26,28 +36,9 @@ class EmissionEngine:
                 "source": factor_record.source,
                 "version": factor_record.source_version
             }
-        
-        # Controlled fallback with explicit documentation if DB factor is missing
-        fallbacks = {
-            "diesel": {"factor": 2.68, "unit": "kg CO2e / Litre", "scope": "SCOPE_1", "version": "v19-2024", "source": "CEA India Baseline v19"},
-            "petrol": {"factor": 2.31, "unit": "kg CO2e / Litre", "scope": "SCOPE_1", "version": "v19-2024", "source": "IPCC 2006"},
-            "natural_gas": {"factor": 2.03, "unit": "kg CO2e / m3", "scope": "SCOPE_1", "version": "v19-2024", "source": "GHG Protocol"},
-            "grid_electricity": {"factor": 0.716, "unit": "kg CO2e / kWh", "scope": "SCOPE_2", "version": "CEA-v19", "source": "CEA India Baseline v19"},
-            "cement": {"factor": 820.0, "unit": "kg CO2e / Tonne", "scope": "SCOPE_3", "version": "IPCC-2006", "source": "IPCC 2006"},
-            "steel": {"factor": 1850.0, "unit": "kg CO2e / Tonne", "scope": "SCOPE_3", "version": "IPCC-2006", "source": "World Steel Association"}
-        }
-        key = activity_type.lower()
-        if key in fallbacks:
-            fb = fallbacks[key]
-            return {
-                "id": f"std-{key}",
-                "factor": fb["factor"],
-                "unit": fb["unit"],
-                "scope": fb["scope"],
-                "source": fb["source"],
-                "version": fb["version"]
-            }
-        return {"id": "default-1", "factor": 1.0, "unit": "kg CO2e / unit", "scope": "SCOPE_1", "source": "Default", "version": "1.0"}
+
+        # Item 39: Fail closed - do NOT silently fall back to invented or default factor values
+        raise MissingEmissionFactorError(activity_type=activity_type, scope=category)
 
     @staticmethod
     def execute_submission_calculations(
@@ -206,9 +197,56 @@ class EmissionEngine:
         return round((cement_co2 + steel_co2) / 1000.0, 2)
 
     @staticmethod
-    def calculate_total_energy_gj(diesel_litres: float = 0.0, grid_kwh: float = 0.0, solar_kwh: float = 0.0) -> float:
-        diesel_gj = (diesel_litres * 35.8) / 1000.0
-        electricity_gj = ((grid_kwh + solar_kwh) * 3.6) / 1000.0
+    def get_conversion_factor(db: Optional[Session], from_unit: str, to_unit: str, default_factor: float) -> float:
+        """Query governed unit conversion master from database (Item 42)"""
+        if db is not None:
+            from app.models.factors import UnitConversion
+            conv = db.query(UnitConversion).filter(
+                UnitConversion.from_unit == from_unit,
+                UnitConversion.to_unit == to_unit,
+                UnitConversion.status == "ACTIVE"
+            ).first()
+            if conv:
+                return conv.factor
+        return default_factor
+
+    @staticmethod
+    def calculate_total_energy_gj(
+        arg1 = None,
+        arg2: float = 0.0,
+        arg3: float = 0.0,
+        arg4: Optional[Any] = None,
+        db: Optional[Session] = None,
+        diesel_litres: Optional[float] = None,
+        grid_kwh: Optional[float] = None,
+        solar_kwh: Optional[float] = None
+    ) -> float:
+        """
+        Calculates total energy in GJ with governed database unit conversions.
+        Supports both (diesel_litres, grid_kwh, solar_kwh) and (db, diesel_litres, grid_kwh, solar_kwh).
+        """
+        active_db = db
+        d_litres = diesel_litres if diesel_litres is not None else 0.0
+        g_kwh = grid_kwh if grid_kwh is not None else 0.0
+        s_kwh = solar_kwh if solar_kwh is not None else 0.0
+
+        if hasattr(arg1, "query"):
+            active_db = arg1
+            d_litres = arg2
+            g_kwh = arg3
+            s_kwh = float(arg4) if arg4 is not None else 0.0
+        elif isinstance(arg1, (int, float)):
+            d_litres = float(arg1)
+            g_kwh = float(arg2)
+            s_kwh = float(arg3)
+            if hasattr(arg4, "query"):
+                active_db = arg4
+
+        factor_diesel = EmissionEngine.get_conversion_factor(active_db, "L_diesel", "GJ", 0.0358)
+        factor_kwh = EmissionEngine.get_conversion_factor(active_db, "kWh", "GJ", 0.0036)
+
+        diesel_gj = d_litres * factor_diesel
+        electricity_gj = (g_kwh + s_kwh) * factor_kwh
         return round(diesel_gj + electricity_gj, 1)
 
     @staticmethod

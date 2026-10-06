@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
-from app.models.reporting import ReportingPeriod, Submission
+from app.models.reporting import ReportingPeriod, Submission, IssuedReport
 from app.models.organization import Group
 from app.models.audit import AuditLog
 from app.models.brsr import BrsrFramework, BrsrIndicator, BrsrAnswer, BrsrAnswerSource
@@ -14,7 +14,9 @@ from app.schemas.calculation import EmissionCalculationRequest, EmissionCalculat
 from app.services.consolidation_engine import ConsolidationEngine
 from app.services.emission_engine import EmissionEngine
 from app.services.brsr_engine import BrsrEngine
-from app.api.deps import get_current_user
+from app.services.report_generator import ReportGenerator
+from app.api.deps import get_current_user, require_group_access, require_bu_access
+
 
 router = APIRouter(prefix="/reports", tags=["Reporting & Consolidation Engine"])
 
@@ -25,6 +27,7 @@ def get_group_consolidation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    require_group_access(group_id, current_user)
     period = db.query(ReportingPeriod).filter(ReportingPeriod.id == reporting_period_id).first()
     if not period:
         raise HTTPException(status_code=404, detail="Reporting period not found")
@@ -40,13 +43,18 @@ def get_bu_consolidation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    require_bu_access(bu_id, current_user, db)
     try:
         return ConsolidationEngine.consolidate_business_unit(db, bu_id, reporting_period_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.post("/calculator", response_model=EmissionCalculationResponse)
-def calculate_emissions(req: EmissionCalculationRequest, db: Session = Depends(get_db)):
+def calculate_emissions(
+    req: EmissionCalculationRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     scope1 = EmissionEngine.calculate_scope1(db, req.diesel_litres, req.petrol_litres, req.natural_gas_m3)
     scope2 = EmissionEngine.calculate_scope2(db, req.grid_kwh, req.renewable_kwh)
     scope3 = EmissionEngine.calculate_scope3(db, req.cement_tonnes, req.steel_tonnes)
@@ -231,3 +239,170 @@ def get_executive_summary(
             "audit_trail_integrity": "Cryptographically Sealed (SHA-256 Chained)"
         }
     }
+
+@router.get("/export/brsr.pdf")
+def export_brsr_pdf(
+    reporting_period_id: str = Query("period-2025-09"),
+    framework_code: str = Query("SEBI_BRSR_2021"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Statutory-grade BRSR PDF Generation with PyMuPDF.
+    Creates an immutable issued report record sealed with SHA-256 hash.
+    """
+    try:
+        pdf_bytes, issued_report = ReportGenerator.generate_brsr_pdf(
+            db=db,
+            reporting_period_id=reporting_period_id,
+            framework_code=framework_code,
+            issued_by=f"{current_user.full_name} ({current_user.email})"
+        )
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=BRSR_Statutory_{reporting_period_id}_v{issued_report.version}.pdf",
+                "X-Report-Id": issued_report.id,
+                "X-Report-SHA256": issued_report.sha256_hash,
+                "X-Report-Version": str(issued_report.version)
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate BRSR PDF: {str(e)}")
+
+@router.get("/export/brsr.xlsx")
+def export_brsr_xlsx(
+    reporting_period_id: str = Query("period-2025-09"),
+    framework_code: str = Query("SEBI_BRSR_2021"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Statutory-grade BRSR XLSX Generation with openpyxl.
+    Creates an immutable issued report record sealed with SHA-256 hash.
+    """
+    try:
+        xlsx_bytes, issued_report = ReportGenerator.generate_brsr_xlsx(
+            db=db,
+            reporting_period_id=reporting_period_id,
+            framework_code=framework_code,
+            issued_by=f"{current_user.full_name} ({current_user.email})"
+        )
+        return Response(
+            content=xlsx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename=BRSR_Statutory_{reporting_period_id}_v{issued_report.version}.xlsx",
+                "X-Report-Id": issued_report.id,
+                "X-Report-SHA256": issued_report.sha256_hash,
+                "X-Report-Version": str(issued_report.version)
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate BRSR XLSX: {str(e)}")
+
+@router.get("/issued")
+def list_issued_reports(
+    reporting_period_id: Optional[str] = Query(None),
+    report_type: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    List all officially issued statutory reports with cryptographic hash and versioning.
+    """
+    query = db.query(IssuedReport)
+    if reporting_period_id:
+        query = query.filter(IssuedReport.reporting_period_id == reporting_period_id)
+    if report_type:
+        query = query.filter(IssuedReport.report_type == report_type)
+
+    reports = query.order_by(IssuedReport.issued_at.desc()).all()
+    return [
+        {
+            "id": r.id,
+            "report_title": r.report_title,
+            "report_type": r.report_type,
+            "reporting_period_id": r.reporting_period_id,
+            "version": r.version,
+            "status": r.status,
+            "file_format": r.file_format,
+            "file_size_bytes": r.file_size_bytes,
+            "sha256_hash": r.sha256_hash,
+            "issued_by": r.issued_by,
+            "issued_at": r.issued_at.isoformat() if r.issued_at else None,
+            "is_locked": r.is_locked
+        }
+        for r in reports
+    ]
+
+@router.get("/issued/{report_id}/download")
+def download_issued_report(
+    report_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Download an immutable issued report by ID.
+    Guarantees bit-for-bit reproducibility bound to locked reporting period.
+    """
+    report = db.query(IssuedReport).filter(IssuedReport.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Issued report not found")
+
+    import os
+    if not report.file_path or not os.path.exists(report.file_path):
+        raise HTTPException(status_code=404, detail="Physical report file not found on storage")
+
+    with open(report.file_path, "rb") as f:
+        file_bytes = f.read()
+
+    media_type = "application/pdf" if report.file_format == "PDF" else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    file_ext = report.file_format.lower()
+    return Response(
+        content=file_bytes,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f"attachment; filename=Issued_Report_{report.id}.{file_ext}",
+            "X-Report-Id": report.id,
+            "X-Report-SHA256": report.sha256_hash,
+            "X-Report-Version": str(report.version)
+        }
+    )
+
+@router.post("/issued/{report_id}/verify")
+def verify_issued_report_integrity(
+    report_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Verify the cryptographic physical byte SHA-256 hash of an issued report against its sealed database record.
+    """
+    report = db.query(IssuedReport).filter(IssuedReport.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Issued report not found")
+
+    import os
+    import hashlib
+    if not report.file_path or not os.path.exists(report.file_path):
+        raise HTTPException(status_code=404, detail="Physical report file missing from storage")
+
+    with open(report.file_path, "rb") as f:
+        actual_bytes = f.read()
+
+    actual_hash = hashlib.sha256(actual_bytes).hexdigest()
+    is_valid = (actual_hash == report.sha256_hash)
+
+    return {
+        "report_id": report.id,
+        "report_title": report.report_title,
+        "version": report.version,
+        "is_intact": is_valid,
+        "stored_hash": report.sha256_hash,
+        "computed_byte_hash": actual_hash,
+        "file_size_bytes": len(actual_bytes),
+        "status": "SEAL_VERIFIED" if is_valid else "CORRUPTION_DETECTED"
+    }
+

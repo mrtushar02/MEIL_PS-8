@@ -9,7 +9,8 @@ from app.models.csr_projects import (
     CommunityGrievance, Stakeholder, StakeholderEngagement,
     SocialImpactIndicator, SocialImpactRecord, CsrAction
 )
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_permission
+from app.services.audit_service import AuditService
 
 router = APIRouter(prefix="/csr", tags=["Corporate Social Responsibility (Section 135)"])
 
@@ -32,8 +33,8 @@ def get_csr_overview(
         "reporting_period_id": reporting_period_id,
         "total_active_projects": len([p for p in projects if p.status == "Active"]),
         "total_categories": len(categories),
-        "period_spend_inr_cr": round(total_spend_period, 2) if total_spend_period > 0 else 48.5,
-        "total_beneficiaries_served": total_beneficiaries if total_beneficiaries > 0 else 284000,
+        "period_spend_inr_cr": round(total_spend_period, 2) if total_spend_period > 0 else 0.0,
+        "total_beneficiaries_served": total_beneficiaries,
         "section_135_compliance_pct": 100.0
     }
 
@@ -87,7 +88,7 @@ def list_csr_projects(
 def create_csr_project(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("csr:manage"))
 ) -> Dict[str, Any]:
     count = db.query(CsrProject).count()
     code = payload.get("project_code") or payload.get("id") or f"CSR-00{count+1}"
@@ -118,6 +119,18 @@ def create_csr_project(
     db.add(p)
     db.commit()
     db.refresh(p)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "CSR_OFFICER",
+        action="CREATE_CSR_PROJECT",
+        entity_type="CsrProject",
+        entity_id=p.id,
+        details=f"Created CSR project {p.project_code}: {p.name} budget ₹{p.budget} Cr"
+    )
+
     return {"message": "CSR Project created successfully", "id": p.id, "project_code": p.project_code}
 
 # 3. Spend Records
@@ -166,7 +179,7 @@ def list_communities(
 def create_community(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("csr:manage"))
 ) -> Dict[str, Any]:
     c = Community(
         name=payload["name"],
@@ -180,6 +193,18 @@ def create_community(
     db.add(c)
     db.commit()
     db.refresh(c)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "CSR_OFFICER",
+        action="CREATE_CSR_COMMUNITY",
+        entity_type="Community",
+        entity_id=c.id,
+        details=f"Added community {c.name} in {c.district}, {c.state}"
+    )
+
     return {"message": "Community added successfully", "id": c.id}
 
 # 5. Grievances
@@ -209,7 +234,7 @@ def list_community_grievances(
 def create_community_grievance(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("csr:manage"))
 ) -> Dict[str, Any]:
     count = db.query(CommunityGrievance).count()
     code = payload.get("id") or payload.get("grievance_number") or f"GRV-2026-{count+1:03d}"
@@ -227,6 +252,18 @@ def create_community_grievance(
     db.add(g)
     db.commit()
     db.refresh(g)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "CSR_OFFICER",
+        action="CREATE_COMMUNITY_GRIEVANCE",
+        entity_type="CommunityGrievance",
+        entity_id=g.id,
+        details=f"Logged community grievance {g.grievance_number}: {g.description[:50]}"
+    )
+
     return {"message": "Grievance registered successfully", "id": g.grievance_number}
 
 # 6. Stakeholders
@@ -255,7 +292,7 @@ def list_stakeholders(
 def create_stakeholder_engagement(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("csr:manage"))
 ) -> Dict[str, Any]:
     e = StakeholderEngagement(
         stakeholder_type=payload.get("stakeholder_type", "Community"),
@@ -270,6 +307,18 @@ def create_stakeholder_engagement(
     db.add(e)
     db.commit()
     db.refresh(e)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "CSR_OFFICER",
+        action="CREATE_STAKEHOLDER_ENGAGEMENT",
+        entity_type="StakeholderEngagement",
+        entity_id=e.id,
+        details=f"Recorded engagement with {e.stakeholder_group} on {e.purpose}"
+    )
+
     return {"message": "Stakeholder engagement logged successfully", "id": e.id}
 
 # 7. Beneficiaries & Social Impact

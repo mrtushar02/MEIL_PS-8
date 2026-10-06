@@ -16,7 +16,16 @@ import {
   Target,
   Truck,
   Heart,
-  Scale
+  Scale,
+  Briefcase,
+  TrendingUp,
+  FileCheck,
+  Search,
+  Settings,
+  Eye,
+  BarChart3,
+  Layers,
+  ShieldAlert
 } from 'lucide-react';
 
 import ProjectIllustration from './illustrations/ProjectIllustration';
@@ -27,11 +36,14 @@ import CSRIllustration from './illustrations/CSRIllustration';
 import ComplianceIllustration from './illustrations/ComplianceIllustration';
 
 export const ROLES_DATA = [
+  // ── PHASE 1: OPERATIONAL DATA ENTRY ROLES ──
   {
     id: 'PROJECT_OFFICER',
+    category: 'OPERATIONS',
+    phase: 'Phase 1',
     title: 'Project / Site User',
     shortName: 'Project / Site',
-    desc: 'Enter project level ESG data',
+    desc: 'Enter on-site fuel, grid, water, waste & safety incident logs',
     illustration: ProjectIllustration,
     icon: Building2,
     color: '#0284C7',
@@ -45,9 +57,11 @@ export const ROLES_DATA = [
   },
   {
     id: 'HR_OFFICER',
+    category: 'OPERATIONS',
+    phase: 'Phase 1',
     title: 'HR User',
     shortName: 'HR',
-    desc: 'Manage workforce and people data',
+    desc: 'Manage workforce demographics, training, POSH & fair wages',
     illustration: HRIllustration,
     icon: Users,
     color: '#2563EB',
@@ -61,9 +75,11 @@ export const ROLES_DATA = [
   },
   {
     id: 'EHS_OFFICER',
+    category: 'OPERATIONS',
+    phase: 'Phase 1',
     title: 'EHS / Safety User',
     shortName: 'EHS / Safety',
-    desc: 'Environment, Health and Safety data',
+    desc: 'Environment, Health and Safety zero-harm monitoring',
     illustration: EHSIllustration,
     icon: ShieldCheck,
     color: '#059669',
@@ -77,9 +93,11 @@ export const ROLES_DATA = [
   },
   {
     id: 'PROCUREMENT_OFFICER',
+    category: 'OPERATIONS',
+    phase: 'Phase 1',
     title: 'Procurement User',
     shortName: 'Procurement',
-    desc: 'Supplier and procurement data',
+    desc: 'Sustainable supply chain, Tier-1 vendor ESG & Scope 3 logistics',
     illustration: ProcurementIllustration,
     icon: Package,
     color: '#D97706',
@@ -93,9 +111,11 @@ export const ROLES_DATA = [
   },
   {
     id: 'CSR_OFFICER',
+    category: 'OPERATIONS',
+    phase: 'Phase 1',
     title: 'CSR / Community User',
-    shortName: 'CSR / Community',
-    desc: 'Social impact and CSR data',
+    shortName: 'CSR & Community',
+    desc: 'Social impact, community development & Section 135 projects',
     illustration: CSRIllustration,
     icon: HeartHandshake,
     color: '#DB2777',
@@ -109,9 +129,11 @@ export const ROLES_DATA = [
   },
   {
     id: 'COMPLIANCE_OFFICER',
+    category: 'OPERATIONS',
+    phase: 'Phase 1',
     title: 'Governance & Compliance Lead',
     shortName: 'Governance',
-    desc: 'Governance, compliance, ethics, policies and disclosures',
+    desc: 'Governance, ethics, board charters & regulatory compliance',
     illustration: ComplianceIllustration,
     icon: ClipboardCheck,
     color: '#1E40AF',
@@ -122,8 +144,168 @@ export const ROLES_DATA = [
       { icon: FileText, label: 'Statutory Assurance Tracking' },
       { icon: Scale, label: 'Governance Board Disclosures' }
     ]
+  },
+
+  // ── PHASE 2: REVIEW & APPROVAL WORKFLOW ROLES ──
+  {
+    id: 'BU_COORDINATOR',
+    category: 'REVIEWERS',
+    phase: 'Phase 2',
+    title: 'Business Unit Reviewer / Coordinator',
+    shortName: 'BU Coordinator',
+    desc: 'Review and approve site submissions across Business Unit projects',
+    icon: Layers,
+    color: '#0D9488',
+    email: 'bu.coordinator@meilgroup.in',
+    capabilities: [
+      { icon: Layers, label: 'Multi-Project Review & Batching' },
+      { icon: FileCheck, label: 'Level-1 Approval & Rework Request' },
+      { icon: Activity, label: 'BU Consolidation Tracking' },
+      { icon: ShieldCheck, label: 'Pre-Assurance Quality Gates' }
+    ]
+  },
+  {
+    id: 'SUBSIDIARY_HEAD',
+    category: 'REVIEWERS',
+    phase: 'Phase 2',
+    title: 'Subsidiary ESG Reviewer / Head',
+    shortName: 'Subsidiary Head',
+    desc: 'Approve BU submissions and oversee subsidiary-level ESG integrity',
+    icon: Briefcase,
+    color: '#7C3AED',
+    email: 'sub.head@meilgroup.in',
+    capabilities: [
+      { icon: Briefcase, label: 'Subsidiary Scope Governance' },
+      { icon: FileCheck, label: 'Level-2 Statutory Sign-Off' },
+      { icon: TrendingUp, label: 'Division Decarbonization Roadmap' },
+      { icon: Scale, label: 'Subsidiary BRSR Compliance' }
+    ]
+  },
+  {
+    id: 'GROUP_CSO',
+    category: 'REVIEWERS',
+    phase: 'Phase 2',
+    title: 'Group / HQ ESG Reviewer / CSO',
+    shortName: 'Group CSO',
+    desc: 'Group Chief Sustainability Officer enterprise review & locking',
+    icon: ShieldCheck,
+    color: '#4338CA',
+    email: 'cso@meilgroup.in',
+    capabilities: [
+      { icon: ShieldCheck, label: 'Group-Wide Final Locking' },
+      { icon: BarChart3, label: 'Consolidated Enterprise Carbon' },
+      { icon: Award, label: 'Statutory BRSR Attestation' },
+      { icon: FileText, label: 'Auditor Engagement Sign-Off' }
+    ]
+  },
+
+  // ── PHASE 3: STRATEGY & ASSURANCE ROLES ──
+  {
+    id: 'ESG_MANAGER',
+    category: 'STRATEGY',
+    phase: 'Phase 3',
+    title: 'ESG / Sustainability Manager',
+    shortName: 'ESG Manager',
+    desc: 'Lead enterprise sustainability initiatives, Net Zero targets & KPIs',
+    icon: Target,
+    color: '#047857',
+    email: 'esg.manager@meilgroup.in',
+    capabilities: [
+      { icon: Target, label: 'Net Zero & Science-Based Targets' },
+      { icon: Activity, label: 'Cross-Functional ESG Orchestration' },
+      { icon: Leaf, label: 'Renewable Transition Strategy' },
+      { icon: FileText, label: 'ESG Committee Reporting' }
+    ]
+  },
+  {
+    id: 'ESG_ANALYST',
+    category: 'STRATEGY',
+    phase: 'Phase 3',
+    title: 'ESG Analyst',
+    shortName: 'ESG Analyst',
+    desc: 'Quantitative modeling, CEA baseline auditing & emission analytics',
+    icon: BarChart3,
+    color: '#0891B2',
+    email: 'esg.analyst@meilgroup.in',
+    capabilities: [
+      { icon: BarChart3, label: 'Scope 1, 2, 3 Intensity Models' },
+      { icon: Activity, label: 'Grid Baseline v19 Variance' },
+      { icon: TrendingUp, label: 'Year-on-Year Trend Forecasts' },
+      { icon: Search, label: 'Deep Data Diagnostics' }
+    ]
+  },
+  {
+    id: 'BRSR_MANAGER',
+    category: 'STRATEGY',
+    phase: 'Phase 3',
+    title: 'BRSR Manager',
+    shortName: 'BRSR Manager',
+    desc: 'SEBI BRSR Statutory filings, circulars & Core 9 indicator assurance',
+    icon: FileCheck,
+    color: '#3B82F6',
+    email: 'brsr.manager@meilgroup.in',
+    capabilities: [
+      { icon: FileCheck, label: 'SEBI Circular 2021/2023/2025' },
+      { icon: Scale, label: 'NGRBC 9 Principles Inventory' },
+      { icon: Award, label: 'BRSR Core Assurance Packaging' },
+      { icon: FileText, label: 'Statutory XBRL / PDF Exports' }
+    ]
+  },
+  {
+    id: 'ASSURANCE_AUDITOR',
+    category: 'STRATEGY',
+    phase: 'Phase 3',
+    title: 'Auditor / Assurance User',
+    shortName: 'Auditor',
+    desc: 'Independent third-party verification, sample auditing & evidence seals',
+    icon: Search,
+    color: '#B45309',
+    email: 'auditor@meilgroup.in',
+    capabilities: [
+      { icon: Search, label: 'Independent Reasonable Assurance' },
+      { icon: ShieldCheck, label: 'Cryptographic Byte Hash Audit' },
+      { icon: FileText, label: 'Sample Evidence Scrutiny' },
+      { icon: Award, label: 'Assurance Opinion Issuance' }
+    ]
+  },
+  {
+    id: 'EXECUTIVE',
+    category: 'STRATEGY',
+    phase: 'Phase 3',
+    title: 'Management / Executive User',
+    shortName: 'Executive',
+    desc: 'Board & C-Suite executive briefing, ESG rating & capital allocation',
+    icon: Eye,
+    color: '#1E293B',
+    email: 'executive@meilgroup.in',
+    capabilities: [
+      { icon: Eye, label: 'Executive Board Overview' },
+      { icon: Award, label: 'Global ESG Rating Scores' },
+      { icon: TrendingUp, label: 'Green Finance & CapEx Tracking' },
+      { icon: Scale, label: 'Group Reputational Governance' }
+    ]
+  },
+
+  // ── SYSTEM ADMINISTRATION ──
+  {
+    id: 'SUPER_ADMIN',
+    category: 'ADMIN',
+    phase: 'System',
+    title: 'Super Administrator',
+    shortName: 'Super Admin',
+    desc: 'Full enterprise control, RBAC scopes, factor governance & WORM audit',
+    icon: Settings,
+    color: '#6366F1',
+    email: 'admin@meilgroup.in',
+    capabilities: [
+      { icon: Settings, label: 'RBAC Master Management' },
+      { icon: ShieldAlert, label: 'WORM Immutable Audit Archive' },
+      { icon: Layers, label: 'Organization Tree Administration' },
+      { icon: Scale, label: 'Governed Emission Factor Master' }
+    ]
   }
 ];
+
 
 export function RoleCardDeck({
   onSelectRole,
@@ -326,14 +508,31 @@ export function RoleCardDeck({
 
                 {/* ── Profile Illustration (Dominant Card Element, No Background Box) ── */}
                 <div className="role-illustration-container">
-                  <IllustrationComp
-                    isHovered={isHovered}
-                    isSelected={isSelected}
-                  />
+                  {IllustrationComp ? (
+                    <IllustrationComp
+                      isHovered={isHovered}
+                      isSelected={isSelected}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '22px',
+                      background: `radial-gradient(circle at 30% 30%, ${role.color}20, ${role.color}06)`,
+                      border: `1.5px solid ${role.color}35`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 8px 24px -6px ${role.color}30`
+                    }}>
+                      {role.icon ? React.createElement(role.icon, { size: 40, color: role.color }) : <Building2 size={40} color={role.color} />}
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Role Title & Description ── */}
                 <div className="role-text-meta">
+
                   <h3 className="role-card-title">{role.title}</h3>
                   <p className="role-card-desc">{role.desc}</p>
                 </div>

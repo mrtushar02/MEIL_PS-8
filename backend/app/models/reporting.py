@@ -35,6 +35,8 @@ class Submission(Base):
     reviewed_at = Column(DateTime, nullable=True)
     approved_by = Column(String, nullable=True)
     approved_at = Column(DateTime, nullable=True)
+    audited_by = Column(String, nullable=True)
+    audited_at = Column(DateTime, nullable=True)
     rejection_reason = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -46,3 +48,26 @@ class Submission(Base):
     water_records = relationship("WaterRecord", back_populates="submission", cascade="all, delete-orphan")
     waste_records = relationship("WasteRecord", back_populates="submission", cascade="all, delete-orphan")
     safety_records = relationship("SafetyRecord", back_populates="submission", cascade="all, delete-orphan")
+
+class IssuedReport(Base):
+    __tablename__ = "issued_reports"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    report_title = Column(String, nullable=False)
+    report_type = Column(String, nullable=False)  # BRSR_PDF, BRSR_XLSX, AUDIT_CSV, EXECUTIVE_PDF
+    reporting_period_id = Column(String, ForeignKey("reporting_periods.id"), nullable=False)
+    framework_code = Column(String, default="SEBI_BRSR_2021")
+    version = Column(Integer, default=1)
+    status = Column(String, default="ISSUED")  # DRAFT, ISSUED, ARCHIVED
+    file_path = Column(String, nullable=True)
+    file_format = Column(String, nullable=False)  # PDF, XLSX, CSV
+    file_size_bytes = Column(Integer, nullable=True)
+    sha256_hash = Column(String, nullable=True)  # Immutable byte hash
+    snapshot_data_json = Column(String, nullable=True)  # Full locked data snapshot JSON
+    issued_by = Column(String, nullable=True)
+    issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    is_locked = Column(Boolean, default=True)
+    metadata_json = Column(String, nullable=True)
+
+    reporting_period = relationship("ReportingPeriod")
+

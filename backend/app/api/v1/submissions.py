@@ -16,7 +16,7 @@ from app.services.validation_engine import ValidationEngine
 from app.services.emission_engine import EmissionEngine
 from app.services.workflow_engine import WorkflowEngine
 from app.services.audit_service import AuditService
-from app.api.deps import get_current_user, require_project_access
+from app.api.deps import get_current_user, require_project_access, get_user_authorized_project_ids
 
 router = APIRouter(prefix="/submissions", tags=["ESG Data Submissions & Workflow"])
 
@@ -40,6 +40,12 @@ def list_submissions(
     if project_id:
         require_project_access(project_id, current_user, db)
         query = query.filter(Submission.project_id == project_id)
+    else:
+        # Enforce scope isolation when project_id is omitted (Item 24 & 69)
+        allowed_pids = get_user_authorized_project_ids(current_user, db)
+        if allowed_pids is not None:
+            query = query.filter(Submission.project_id.in_(allowed_pids))
+
     if reporting_period_id:
         query = query.filter(Submission.reporting_period_id == reporting_period_id)
     if status:

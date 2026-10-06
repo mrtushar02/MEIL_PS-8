@@ -29,6 +29,8 @@ ENV/
 *.db-wal
 backend/storage/evidence/*
 !backend/storage/evidence/.gitkeep
+backend/reports_storage/*
+!backend/reports_storage/.gitkeep
 
 # Editor & OS
 .vscode/*

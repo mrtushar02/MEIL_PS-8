@@ -106,19 +106,47 @@ export function App() {
       },
       'CSR_OFFICER': {
         email: 'csr.lead@meilgroup.in',
-        role: { id: 'CSR_OFFICER', title: 'CSR & Community Lead', shortName: 'CSR & Community', color: '#2563EB' }
+        role: { id: 'CSR_OFFICER', title: 'CSR & Community Lead', shortName: 'CSR & Community', color: '#DB2777' }
       },
       'COMPLIANCE_OFFICER': {
-        email: 'governance.lead@meilgroup.in',
+        email: 'compliance@meilgroup.in',
         role: { id: 'COMPLIANCE_OFFICER', title: 'Governance & Compliance Lead', shortName: 'Governance', color: '#1E40AF' }
+      },
+      'BU_COORDINATOR': {
+        email: 'bu.coordinator@meilgroup.in',
+        role: { id: 'BU_COORDINATOR', title: 'BU Reviewer / Coordinator', shortName: 'BU Coordinator', color: '#0D9488' }
+      },
+      'SUBSIDIARY_HEAD': {
+        email: 'sub.head@meilgroup.in',
+        role: { id: 'SUBSIDIARY_HEAD', title: 'Subsidiary ESG Reviewer / Head', shortName: 'Subsidiary Head', color: '#7C3AED' }
       },
       'GROUP_CSO': {
         email: 'cso@meilgroup.in',
-        role: { id: 'GROUP_CSO', title: 'Group CSO', shortName: 'Group CSO', color: '#1E40AF' }
+        role: { id: 'GROUP_CSO', title: 'Group / HQ ESG Reviewer / CSO', shortName: 'Group CSO', color: '#4338CA' }
+      },
+      'ESG_MANAGER': {
+        email: 'esg.manager@meilgroup.in',
+        role: { id: 'ESG_MANAGER', title: 'ESG / Sustainability Manager', shortName: 'ESG Manager', color: '#047857' }
+      },
+      'ESG_ANALYST': {
+        email: 'esg.analyst@meilgroup.in',
+        role: { id: 'ESG_ANALYST', title: 'ESG Analyst', shortName: 'ESG Analyst', color: '#0891B2' }
+      },
+      'BRSR_MANAGER': {
+        email: 'brsr.manager@meilgroup.in',
+        role: { id: 'BRSR_MANAGER', title: 'BRSR Manager', shortName: 'BRSR Manager', color: '#3B82F6' }
+      },
+      'ASSURANCE_AUDITOR': {
+        email: 'auditor@meilgroup.in',
+        role: { id: 'ASSURANCE_AUDITOR', title: 'Auditor / Assurance User', shortName: 'Auditor', color: '#B45309' }
+      },
+      'EXECUTIVE': {
+        email: 'executive@meilgroup.in',
+        role: { id: 'EXECUTIVE', title: 'Management / Executive User', shortName: 'Executive', color: '#1E293B' }
       },
       'SUPER_ADMIN': {
         email: 'admin@meilgroup.in',
-        role: { id: 'SUPER_ADMIN', title: 'Executive ESG Admin', shortName: 'Admin', color: '#2563EB' }
+        role: { id: 'SUPER_ADMIN', title: 'Super Administrator', shortName: 'Admin', color: '#6366F1' }
       }
     };
 
@@ -142,18 +170,8 @@ export function App() {
       setSession(newSession);
       setActiveTab('overview');
     } catch (e) {
-      console.warn('Real login during role switch failed, applying local state transition:', e.message);
-      const fallbackSession = {
-        user: {
-          name: target.role.title,
-          full_name: target.role.title,
-          email: target.email,
-          scopes: []
-        },
-        role: target.role
-      };
-      setSession(fallbackSession);
-      setActiveTab('overview');
+      console.error('Role switch authentication failed:', e.message);
+      alert(`Role switch to ${target.role.title} failed: ${e.message}`);
     }
   };
 

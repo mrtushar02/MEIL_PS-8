@@ -15,17 +15,28 @@ def seed_rbac():
         print("1. Seeding Permissions...")
         permission_defs = [
             ("esg:data_entry", "esg", "data_entry", "Enter project-level ESG activity records"),
+            ("esg:data_read", "esg", "data_read", "Read ESG activity and consolidation records"),
             ("esg:evidence_upload", "esg", "evidence_upload", "Upload supporting evidence documents"),
             ("esg:submit", "esg", "submit", "Submit monthly data package for review"),
             ("esg:bu_review", "esg", "bu_review", "Review and approve/reject BU submissions"),
             ("esg:subsidiary_review", "esg", "subsidiary_review", "Review and approve/reject Subsidiary submissions"),
             ("esg:group_lock", "esg", "group_lock", "Lock reporting period and generate BRSR at Group level"),
             ("esg:audit_read", "audit", "read", "View immutable audit trail and traceability chains"),
+            ("esg:analytics_read", "analytics", "read", "View ESG analytics, decarbonization trajectories, and intensity trends"),
+            ("esg:kpi_manage", "kpi", "manage", "Set and manage sustainability KPIs and targets"),
+            ("brsr:manage", "brsr", "manage", "Manage BRSR Core disclosures, mappings, and regulatory filings"),
+            ("reports:executive_read", "reports", "executive_read", "Access high-level C-Suite and Board ESG executive summaries"),
+            ("assurance:audit_execute", "assurance", "audit_execute", "Perform third-party verification, assurance sign-off, and findings logging"),
             ("hr:manage", "hr", "manage", "Manage workforce, training, and wellbeing records"),
+            ("hr:read", "hr", "read", "View HR and workforce metrics"),
             ("ehs:manage", "ehs", "manage", "Manage safety, zero harm audits, and environmental inspections"),
+            ("ehs:read", "ehs", "read", "View safety and environmental metrics"),
             ("procurement:manage", "procurement", "manage", "Manage suppliers, MSME sourcing, and assessments"),
+            ("procurement:read", "procurement", "read", "View supply chain and scope 3 procurement metrics"),
             ("csr:manage", "csr", "manage", "Manage CSR projects, community initiatives, and beneficiaries"),
+            ("csr:read", "csr", "read", "View CSR community project records"),
             ("governance:manage", "governance", "manage", "Manage corporate governance policies and ethics records"),
+            ("governance:read", "governance", "read", "View corporate governance policies and ethics registers"),
         ]
 
         permissions = {}
@@ -37,40 +48,77 @@ def seed_rbac():
                 db.flush()
             permissions[code] = perm
 
-        print("2. Seeding and updating Roles...")
+        print("2. Seeding and updating Roles (All 15 Canonical Types)...")
         role_configs = [
             ("role-super", "SUPER_ADMIN", "Global System Administrator", list(permissions.values())),
             ("role-cso", "GROUP_CSO", "Group Chief Sustainability Officer", [
                 permissions["esg:group_lock"], permissions["esg:audit_read"],
+                permissions["esg:analytics_read"], permissions["esg:kpi_manage"],
+                permissions["brsr:manage"], permissions["reports:executive_read"],
                 permissions["hr:manage"], permissions["ehs:manage"],
                 permissions["procurement:manage"], permissions["csr:manage"],
-                permissions["governance:manage"]
+                permissions["governance:manage"], permissions["esg:data_read"]
             ]),
             ("role-sub", "SUBSIDIARY_HEAD", "Head of Subsidiary ESG", [
-                permissions["esg:subsidiary_review"], permissions["esg:audit_read"]
+                permissions["esg:subsidiary_review"], permissions["esg:audit_read"],
+                permissions["esg:analytics_read"], permissions["esg:data_read"],
+                permissions["hr:read"], permissions["ehs:read"]
             ]),
             ("role-bu", "BU_COORDINATOR", "Business Unit Sustainability Coordinator", [
-                permissions["esg:bu_review"], permissions["esg:audit_read"]
+                permissions["esg:bu_review"], permissions["esg:audit_read"],
+                permissions["esg:analytics_read"], permissions["esg:data_read"]
             ]),
             ("role-site", "PROJECT_OFFICER", "Site Safety & Energy Officer", [
-                permissions["esg:data_entry"], permissions["esg:evidence_upload"], permissions["esg:submit"]
+                permissions["esg:data_entry"], permissions["esg:evidence_upload"],
+                permissions["esg:submit"], permissions["esg:data_read"]
             ]),
             ("role-hr", "HR_OFFICER", "HR & Workforce Manager", [
-                permissions["hr:manage"], permissions["esg:evidence_upload"]
+                permissions["hr:manage"], permissions["hr:read"],
+                permissions["esg:evidence_upload"]
             ]),
             ("role-ehs", "EHS_OFFICER", "EHS & Safety Specialist", [
-                permissions["ehs:manage"], permissions["esg:evidence_upload"]
+                permissions["ehs:manage"], permissions["ehs:read"],
+                permissions["esg:evidence_upload"]
             ]),
             ("role-procurement", "PROCUREMENT_OFFICER", "Procurement & Scope 3 Officer", [
-                permissions["procurement:manage"], permissions["esg:evidence_upload"]
+                permissions["procurement:manage"], permissions["procurement:read"],
+                permissions["esg:evidence_upload"]
             ]),
             ("role-csr", "CSR_OFFICER", "CSR & Community Lead", [
-                permissions["csr:manage"], permissions["esg:evidence_upload"]
+                permissions["csr:manage"], permissions["csr:read"],
+                permissions["esg:evidence_upload"]
             ]),
             ("role-compliance", "COMPLIANCE_OFFICER", "Governance & Compliance Lead", [
-                permissions["governance:manage"], permissions["esg:audit_read"], permissions["esg:evidence_upload"]
+                permissions["governance:manage"], permissions["governance:read"],
+                permissions["esg:audit_read"], permissions["esg:evidence_upload"],
+                permissions["brsr:manage"]
+            ]),
+            ("role-esg-mgr", "ESG_MANAGER", "Group Sustainability & Decarbonization Manager", [
+                permissions["esg:analytics_read"], permissions["esg:kpi_manage"],
+                permissions["esg:data_read"], permissions["esg:audit_read"],
+                permissions["brsr:manage"], permissions["esg:evidence_upload"],
+                permissions["hr:read"], permissions["ehs:read"],
+                permissions["procurement:read"], permissions["csr:read"],
+                permissions["governance:read"]
+            ]),
+            ("role-esg-analyst", "ESG_ANALYST", "ESG Quantitative Data & Carbon Accounting Analyst", [
+                permissions["esg:analytics_read"], permissions["esg:data_read"],
+                permissions["esg:audit_read"], permissions["hr:read"],
+                permissions["ehs:read"], permissions["procurement:read"]
+            ]),
+            ("role-brsr-mgr", "BRSR_MANAGER", "SEBI BRSR Statutory Reporting & Filing Manager", [
+                permissions["brsr:manage"], permissions["esg:analytics_read"],
+                permissions["esg:data_read"], permissions["esg:audit_read"],
+                permissions["governance:read"], permissions["hr:read"],
+                permissions["ehs:read"], permissions["procurement:read"],
+                permissions["csr:read"]
             ]),
             ("role-auditor", "ASSURANCE_AUDITOR", "Third-Party Assurance Auditor", [
+                permissions["assurance:audit_execute"], permissions["esg:audit_read"],
+                permissions["esg:data_read"], permissions["reports:executive_read"]
+            ]),
+            ("role-executive", "EXECUTIVE", "Board & Executive Leadership Observer", [
+                permissions["reports:executive_read"], permissions["esg:analytics_read"],
                 permissions["esg:audit_read"]
             ])
         ]
@@ -107,7 +155,7 @@ def seed_rbac():
         bu_tunnels = db.query(BusinessUnit).filter(BusinessUnit.id == "bu-tunnels").first()
         bu_tunnels_id = bu_tunnels.id if bu_tunnels else "bu-tunnels"
 
-        print("3. Seeding Operational Users & Scopes...")
+        print("3. Seeding Operational Users & Scopes (15 Canonical Types)...")
         pwd_hash = get_password_hash("password123")
 
         user_definitions = [
@@ -122,8 +170,11 @@ def seed_rbac():
             ("user-procurement", "procurement@meilgroup.in", "Anand Mahindra V. (Procurement Lead)", "PROCUREMENT_OFFICER", False, "GROUP", group_id),
             ("user-csr", "csr.lead@meilgroup.in", "K. Meenakshi (CSR Lead)", "CSR_OFFICER", False, "GROUP", group_id),
             ("user-compliance", "compliance@meilgroup.in", "Adv. S. K. Nair (Compliance Officer)", "COMPLIANCE_OFFICER", False, "GROUP", group_id),
-            ("user-gov-lead", "governance.lead@meilgroup.in", "Rohit Kumar (Governance Lead)", "COMPLIANCE_OFFICER", False, "GROUP", group_id),
+            ("user-esg-mgr", "esg.manager@meilgroup.in", "S. Ananthakrishnan (ESG Manager)", "ESG_MANAGER", False, "GROUP", group_id),
+            ("user-esg-analyst", "esg.analyst@meilgroup.in", "Pooja Varma (ESG Analyst)", "ESG_ANALYST", False, "GROUP", group_id),
+            ("user-brsr-mgr", "brsr.manager@meilgroup.in", "N. Ramachandran (BRSR Manager)", "BRSR_MANAGER", False, "GROUP", group_id),
             ("user-auditor", "auditor@meilgroup.in", "PwC / KPMG Assurance Lead", "ASSURANCE_AUDITOR", False, "GROUP", group_id),
+            ("user-executive", "executive@meilgroup.in", "P. P. Reddy (Executive Chairman)", "EXECUTIVE", False, "GROUP", group_id),
         ]
 
         for uid, email, name, role_name, is_super, scope_type, scope_id in user_definitions:

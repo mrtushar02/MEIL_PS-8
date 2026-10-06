@@ -7,7 +7,8 @@ from app.models.governance import (
     GovernancePolicy, EthicsGrievance, ComplianceObligation,
     InternalControl, GovernanceAssessment, GovernanceAction, CorporateDisclosure
 )
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_permission
+from app.services.audit_service import AuditService
 
 router = APIRouter(prefix="/governance", tags=["Corporate Governance, Ethics & Anti-Corruption"])
 
@@ -51,7 +52,7 @@ def list_policies(
 def create_policy(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("governance:manage"))
 ) -> Dict[str, Any]:
     code = payload.get("policy_code") or payload.get("code") or f"POL-{len(db.query(GovernancePolicy).all())+1:03d}"
     existing = db.query(GovernancePolicy).filter(GovernancePolicy.policy_code == code).first()
@@ -71,6 +72,18 @@ def create_policy(
     db.add(p)
     db.commit()
     db.refresh(p)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "COMPLIANCE_OFFICER",
+        action="CREATE_GOVERNANCE_POLICY",
+        entity_type="GovernancePolicy",
+        entity_id=p.id,
+        details=f"Registered policy {p.policy_code}: {p.title}"
+    )
+
     return {"message": "Policy registered successfully", "id": p.id, "policy_code": p.policy_code}
 
 # 2. Obligations
@@ -105,7 +118,7 @@ def list_obligations(
 def create_obligation(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("governance:manage"))
 ) -> Dict[str, Any]:
     count = db.query(ComplianceObligation).count()
     code = payload.get("id") or payload.get("code") or f"CO-{count+1:03d}"
@@ -127,6 +140,18 @@ def create_obligation(
     db.add(ob)
     db.commit()
     db.refresh(ob)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "COMPLIANCE_OFFICER",
+        action="CREATE_COMPLIANCE_OBLIGATION",
+        entity_type="ComplianceObligation",
+        entity_id=ob.id,
+        details=f"Registered obligation {ob.obligation_code}: {ob.requirement}"
+    )
+
     return {"message": "Compliance obligation added successfully", "id": ob.obligation_code}
 
 # 3. Controls
@@ -159,7 +184,7 @@ def list_controls(
 def create_control(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("governance:manage"))
 ) -> Dict[str, Any]:
     count = db.query(InternalControl).count()
     code = payload.get("id") or payload.get("code") or f"CTR-{count+1:03d}"
@@ -179,6 +204,18 @@ def create_control(
     db.add(c)
     db.commit()
     db.refresh(c)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "COMPLIANCE_OFFICER",
+        action="CREATE_INTERNAL_CONTROL",
+        entity_type="InternalControl",
+        entity_id=c.id,
+        details=f"Configured control {c.control_code}: {c.name}"
+    )
+
     return {"message": "Internal control registered successfully", "id": c.control_code}
 
 # 4. Assessments & Disclosures
@@ -251,7 +288,7 @@ def list_ethics_grievances(
 def create_ethics_grievance(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("governance:manage"))
 ) -> Dict[str, Any]:
     eg = EthicsGrievance(
         reporting_period_id=payload.get("reporting_period_id", "period-2025-09"),
@@ -265,6 +302,18 @@ def create_ethics_grievance(
     db.add(eg)
     db.commit()
     db.refresh(eg)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "COMPLIANCE_OFFICER",
+        action="CREATE_ETHICS_GRIEVANCE",
+        entity_type="EthicsGrievance",
+        entity_id=eg.id,
+        details=f"Filed grievance for {eg.category}"
+    )
+
     return {"message": "Ethics complaint registered successfully", "id": eg.id}
 
 # 6. Actions
@@ -292,7 +341,7 @@ def list_governance_actions(
 def create_governance_action(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("governance:manage"))
 ) -> Dict[str, Any]:
     count = db.query(GovernanceAction).count()
     code = payload.get("id") or f"ACT-{count+1:03d}"
@@ -309,4 +358,16 @@ def create_governance_action(
     db.add(a)
     db.commit()
     db.refresh(a)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "COMPLIANCE_OFFICER",
+        action="CREATE_GOVERNANCE_ACTION",
+        entity_type="GovernanceAction",
+        entity_id=a.id,
+        details=f"Initiated action {a.action_code}: {a.issue}"
+    )
+
     return {"message": "Action created successfully", "id": a.action_code}

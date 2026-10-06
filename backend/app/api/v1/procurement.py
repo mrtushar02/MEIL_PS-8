@@ -7,7 +7,8 @@ from app.models.procurement import (
     Supplier, ProcurementMetric, ProcurementTransaction,
     SupplierAssessment, SupplierRisk, ProcurementAction
 )
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_permission
+from app.services.audit_service import AuditService
 
 router = APIRouter(prefix="/procurement", tags=["Responsible Procurement & Supply Chain"])
 
@@ -64,7 +65,7 @@ def list_suppliers(
 def create_supplier(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("procurement:manage"))
 ) -> Dict[str, Any]:
     vendor_code = payload.get("vendor_code") or payload.get("code") or f"VEND-{len(db.query(Supplier).all())+1:03d}"
     existing = db.query(Supplier).filter(Supplier.vendor_code == vendor_code).first()
@@ -88,6 +89,18 @@ def create_supplier(
     db.add(s)
     db.commit()
     db.refresh(s)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "PROCUREMENT_OFFICER",
+        action="CREATE_SUPPLIER",
+        entity_type="Supplier",
+        entity_id=s.id,
+        details=f"Onboarded supplier {s.vendor_code}: {s.name} (MSME: {s.is_msme})"
+    )
+
     return {"message": "Supplier registered successfully", "id": s.id, "vendor_code": s.vendor_code}
 
 # 2. Metrics
@@ -145,7 +158,7 @@ def list_transactions(
 def create_transaction(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("procurement:manage"))
 ) -> Dict[str, Any]:
     count = db.query(ProcurementTransaction).count()
     tx_code = payload.get("id") or f"PR-2026-{count+1:03d}"
@@ -170,6 +183,18 @@ def create_transaction(
     db.add(tx)
     db.commit()
     db.refresh(tx)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "PROCUREMENT_OFFICER",
+        action="CREATE_PROCUREMENT_TRANSACTION",
+        entity_type="ProcurementTransaction",
+        entity_id=tx.id,
+        details=f"Logged transaction {tx.transaction_code}: {tx.supplier} ₹{tx.amount_cr} Cr"
+    )
+
     return {"message": "Transaction recorded successfully", "id": tx.transaction_code}
 
 # 4. Assessments
@@ -197,7 +222,7 @@ def list_assessments(
 def create_assessment(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("procurement:manage"))
 ) -> Dict[str, Any]:
     count = db.query(SupplierAssessment).count()
     code = payload.get("id") or f"SA-2026-{count+1:03d}"
@@ -214,6 +239,18 @@ def create_assessment(
     db.add(a)
     db.commit()
     db.refresh(a)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "PROCUREMENT_OFFICER",
+        action="CREATE_SUPPLIER_ASSESSMENT",
+        entity_type="SupplierAssessment",
+        entity_id=a.id,
+        details=f"Completed ESG assessment for {a.supplier}: score {a.score} ({a.risk_level} risk)"
+    )
+
     return {"message": "Assessment logged successfully", "id": a.assessment_code}
 
 # 5. Risks & Actions
@@ -260,7 +297,7 @@ def list_actions(
 def create_action(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permission("procurement:manage"))
 ) -> Dict[str, Any]:
     count = db.query(ProcurementAction).count()
     code = payload.get("id") or f"ACT-{count+1:03d}"
@@ -276,4 +313,16 @@ def create_action(
     db.add(act)
     db.commit()
     db.refresh(act)
+
+    AuditService.log_event(
+        db=db,
+        actor_id=current_user.id,
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.name if current_user.role else "PROCUREMENT_OFFICER",
+        action="CREATE_PROCUREMENT_ACTION",
+        entity_type="ProcurementAction",
+        entity_id=act.id,
+        details=f"Created action {act.action_code} for {act.supplier}: {act.issue}"
+    )
+
     return {"message": "Procurement action registered successfully", "id": act.action_code}

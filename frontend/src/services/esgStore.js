@@ -614,31 +614,30 @@ const DEFAULT_SITE_DATA = {
 // Storage helper class with reactive listener support
 class EsgStore {
   constructor() {
-    this.storageKey = 'meil_esg_enterprise_state_v1';
     this.listeners = new Set();
     this.state = this.loadState();
   }
 
   loadState() {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.warn('Failed to load local ESG state, seeding defaults.', e);
-    }
-    return DEFAULT_SITE_DATA;
+    // Authoritative ESG state originates from FastAPI backend, not client localStorage (Item 10 & 11)
+    return {
+      fuelRecords: [],
+      gridRecords: [],
+      waterRecords: [],
+      wasteRecords: [],
+      safetyRecords: [],
+      evidenceDocuments: [],
+      submissionWorkflows: [],
+      auditLogs: []
+    };
   }
 
   saveState() {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.state));
-    } catch (e) {
-      console.error('Failed to save ESG state', e);
-    }
+    // State changes are stored in active runtime session and committed to backend REST APIs.
+    // Inappropriate localStorage persistence of authoritative group ESG state is removed (Item 11).
     this.notify();
   }
+
 
   subscribe(listener) {
     this.listeners.add(listener);
@@ -862,9 +861,10 @@ class EsgStore {
   }
 
   resetToDefault() {
-    this.state = JSON.parse(JSON.stringify(DEFAULT_SITE_DATA));
+    this.state = this.loadState();
     this.saveState();
   }
+
 }
 
 export const esgStore = new EsgStore();

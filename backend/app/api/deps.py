@@ -19,6 +19,14 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
+    from app.services.token_blocklist import is_token_revoked
+    if is_token_revoked(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked upon logout. Please re-authenticate.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials or token expired",
@@ -31,6 +39,7 @@ def get_current_user(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
+
 
     user = db.query(User).options(
         joinedload(User.role).joinedload(Role.permissions),
@@ -175,4 +184,54 @@ def require_group_access(group_id: Optional[str] = None, current_user: User = De
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Access denied: Group-level authorization required"
     )
+
+def get_user_authorized_project_ids(arg1, arg2) -> Optional[List[str]]:
+    """
+    Returns list of project IDs the user has scope to access.
+    Returns None if the user has unrestricted global group access (Item 24 & 30).
+    Supports either (user, db) or (db, user) calling convention.
+    """
+    if isinstance(arg1, User):
+        user, db = arg1, arg2
+    else:
+        db, user = arg1, arg2
+
+    if user.is_superuser:
+        return None
+
+    user_scopes = user.scopes
+    if any(s.scope_type == "GROUP" for s in user_scopes):
+        return None
+
+    allowed_ids = set()
+    for s in user_scopes:
+        if s.scope_type == "PROJECT":
+            allowed_ids.add(s.scope_id)
+        elif s.scope_type == "BUSINESS_UNIT":
+            p_ids = [p[0] for p in db.query(Project.id).filter(Project.business_unit_id == s.scope_id).all()]
+            allowed_ids.update(p_ids)
+        elif s.scope_type == "SUBSIDIARY":
+            p_ids = [p[0] for p in db.query(Project.id).filter(Project.subsidiary_id == s.scope_id).all()]
+            allowed_ids.update(p_ids)
+
+    return list(allowed_ids)
+
+class RequireAnyPermission:
+    def __init__(self, *permission_codes: str):
+        self.permission_codes = permission_codes
+
+    def __call__(self, current_user: User = Depends(get_current_user)) -> User:
+        if current_user.is_superuser:
+            return current_user
+        if current_user.role:
+            user_perms = [p.code for p in current_user.role.permissions]
+            if any(code in user_perms for code in self.permission_codes):
+                return current_user
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Operation not permitted. Required one of: {', '.join(self.permission_codes)}"
+        )
+
+def require_any_permission(*permission_codes: str):
+    return RequireAnyPermission(*permission_codes)
 

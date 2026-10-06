@@ -19,10 +19,16 @@ def seed_workflow_transitions():
             # 3. Subsidiary level: BU Approved to Subsidiary Approved or Correction Required
             ("BU_APPROVED", "SUBSIDIARY_APPROVED", "SUBSIDIARY_HEAD", "esg:subsidiary_review"),
             ("BU_APPROVED", "CORRECTION_REQUIRED", "SUBSIDIARY_HEAD", "esg:subsidiary_review"),
-            # 4. Group HQ level: Subsidiary Approved to Locked or Correction Required
+            # 4. Group HQ level: Subsidiary Approved to Group Approved or Locked or Correction Required
+            ("SUBSIDIARY_APPROVED", "GROUP_APPROVED", "GROUP_CSO", "esg:group_lock"),
             ("SUBSIDIARY_APPROVED", "LOCKED", "GROUP_CSO", "esg:group_lock"),
             ("SUBSIDIARY_APPROVED", "CORRECTION_REQUIRED", "GROUP_CSO", "esg:group_lock"),
-            # 5. Correction Cycle: Resubmission after Controlled Revision
+            # 5. Independent Assurance Stage: Group Approved to Group Audited or Correction
+            ("GROUP_APPROVED", "GROUP_AUDITED", "ASSURANCE_AUDITOR", "assurance:audit_execute"),
+            ("GROUP_APPROVED", "CORRECTION_REQUIRED", "ASSURANCE_AUDITOR", "assurance:audit_execute"),
+            # 6. Final Group Lock after Audit Assurance
+            ("GROUP_AUDITED", "LOCKED", "GROUP_CSO", "esg:group_lock"),
+            # 7. Correction Cycle: Resubmission after Controlled Revision
             ("CORRECTION_REQUIRED", "SUBMITTED", "PROJECT_OFFICER", "esg:submit"),
         ]
 

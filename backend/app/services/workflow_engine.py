@@ -12,7 +12,8 @@ from app.api.deps import check_project_access
 class WorkflowEngine:
     VALID_STATUSES = [
         "DRAFT", "SUBMITTED", "BU_APPROVED",
-        "SUBSIDIARY_APPROVED", "LOCKED", "CORRECTION_REQUIRED"
+        "SUBSIDIARY_APPROVED", "GROUP_APPROVED",
+        "GROUP_AUDITED", "AUDITOR_ASSURED", "LOCKED", "CORRECTION_REQUIRED"
     ]
 
     @staticmethod
@@ -24,6 +25,10 @@ class WorkflowEngine:
     ) -> bool:
         """Verify if transition is authorized in the rule matrix for this user"""
         if user.is_superuser:
+            return True
+
+        # Idempotent check
+        if submission.status == to_status:
             return True
 
         user_role_code = user.role.code if user.role else "USER"
@@ -53,6 +58,10 @@ class WorkflowEngine:
         submission = db.query(Submission).filter(Submission.id == submission_id).first()
         if not submission:
             raise HTTPException(status_code=404, detail="Submission not found")
+
+        # 0. Idempotency protection (Item 53)
+        if submission.status == to_status:
+            return submission
 
         # 1. Enforce reporting period lock
         period = db.query(ReportingPeriod).filter(ReportingPeriod.id == submission.reporting_period_id).first()
@@ -97,24 +106,40 @@ class WorkflowEngine:
                 if user_scopes.get("GROUP") is None:
                     raise HTTPException(status_code=403, detail="User lacks Subsidiary scope authority over this project")
 
-        elif to_status == "LOCKED":
-            if not user.is_superuser and user_scopes.get("GROUP") is None and user_role_code != "GROUP_CSO":
-                raise HTTPException(status_code=403, detail="Only Group CSO or Super Admin may execute Group-level LOCK")
+        elif to_status in ["GROUP_APPROVED", "LOCKED"]:
+            if not user.is_superuser and user_scopes.get("GROUP") is None and user_role_code not in ["GROUP_CSO", "ESG_MANAGER"]:
+                raise HTTPException(status_code=403, detail="Only Group CSO, ESG Manager or Super Admin may execute Group approvals/locks")
 
-        # 4. Handle CORRECTION_REQUIRED (Controlled Revision)
+        elif to_status in ["GROUP_AUDITED", "AUDITOR_ASSURED"]:
+            if not user.is_superuser and user_role_code != "ASSURANCE_AUDITOR":
+                raise HTTPException(status_code=403, detail="Only authorized Assurance Auditors may grant audit assurance sign-off")
+
+        # 4. Handle State Updates & Snapshots
         old_state = submission.status
         actor_name = user.full_name
         actor_role = user.role.name if user.role else "USER"
+        now_ts = datetime.now(timezone.utc)
 
         if to_status == "CORRECTION_REQUIRED":
             if not comment:
                 raise HTTPException(status_code=400, detail="Mandatory change reason/comment required when rejecting for correction")
 
-            # Snapshot historical approved state before allowing revisions
+            # Enhanced Comprehensive Snapshot (Item 51)
             snapshot = {
+                "metadata": {
+                    "submission_id": submission.id,
+                    "version_before_rejection": submission.version,
+                    "previous_status": old_state,
+                    "rejected_by_id": user.id,
+                    "rejected_by_name": actor_name,
+                    "rejected_by_role": actor_role,
+                    "timestamp": now_ts.isoformat(),
+                    "reason": comment
+                },
                 "fuel_records": [{"fuel_type": f.fuel_type, "quantity": f.quantity, "scope1": f.scope1_co2e_tonnes} for f in submission.fuel_records],
                 "energy_records": [{"energy_source": e.energy_source, "quantity_kwh": e.quantity_kwh, "scope2": e.scope2_co2e_tonnes} for e in submission.energy_records],
                 "water_records": [{"withdrawal_kl": w.withdrawal_kl, "recycled_kl": w.recycled_kl} for w in submission.water_records],
+                "waste_records": [{"category": getattr(w, "category", ""), "quantity_mt": getattr(w, "quantity_mt", 0.0)} for w in submission.waste_records],
                 "safety_records": [{"safe_man_hours": s.safe_man_hours, "lost_time_injuries": s.lost_time_injuries, "ltifr": s.ltifr} for s in submission.safety_records]
             }
 
@@ -132,20 +157,31 @@ class WorkflowEngine:
             submission.status = "CORRECTION_REQUIRED"
             submission.rejection_reason = comment
             submission.version += 1 # Controlled increment for next submission cycle
-
             action_type = "REQUEST_CORRECTION"
 
         elif to_status == "BU_APPROVED":
             submission.status = "BU_APPROVED"
             submission.reviewed_by = actor_name
-            submission.reviewed_at = datetime.now(timezone.utc)
+            submission.reviewed_at = now_ts
             action_type = "BU_APPROVE"
 
         elif to_status == "SUBSIDIARY_APPROVED":
             submission.status = "SUBSIDIARY_APPROVED"
             submission.approved_by = actor_name
-            submission.approved_at = datetime.now(timezone.utc)
+            submission.approved_at = now_ts
             action_type = "SUBSIDIARY_APPROVE"
+
+        elif to_status == "GROUP_APPROVED":
+            submission.status = "GROUP_APPROVED"
+            submission.approved_by = actor_name
+            submission.approved_at = now_ts
+            action_type = "GROUP_APPROVE"
+
+        elif to_status in ["GROUP_AUDITED", "AUDITOR_ASSURED"]:
+            submission.status = "GROUP_AUDITED"
+            submission.audited_by = actor_name
+            submission.audited_at = now_ts
+            action_type = "AUDITOR_ASSURE"
 
         elif to_status == "LOCKED":
             submission.status = "LOCKED"
@@ -154,8 +190,11 @@ class WorkflowEngine:
         elif to_status == "SUBMITTED":
             submission.status = "SUBMITTED"
             submission.submitted_by = actor_name
-            submission.submitted_at = datetime.now(timezone.utc)
+            submission.submitted_at = now_ts
             action_type = "SUBMIT"
+        else:
+            submission.status = to_status
+            action_type = f"SET_STATUS_{to_status}"
 
         # Record ApprovalAction
         action_rec = ApprovalAction(
