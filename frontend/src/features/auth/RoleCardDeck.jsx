@@ -6,26 +6,23 @@ import {
   Users,
   ShieldCheck,
   Package,
-  HeartHandshake,
+  Heart,
   ClipboardCheck,
-  Leaf,
+  Layers,
+  Briefcase,
+  ShieldAlert,
+  BarChart3,
+  Activity,
+  FileCheck,
+  Search,
+  Eye,
+  Settings,
   HardHat,
   FileText,
-  Activity,
   Award,
   Target,
   Truck,
-  Heart,
-  Scale,
-  Briefcase,
-  TrendingUp,
-  FileCheck,
-  Search,
-  Settings,
-  Eye,
-  BarChart3,
-  Layers,
-  ShieldAlert
+  Scale
 } from 'lucide-react';
 
 import ProjectIllustration from './illustrations/ProjectIllustration';
@@ -36,17 +33,17 @@ import CSRIllustration from './illustrations/CSRIllustration';
 import ComplianceIllustration from './illustrations/ComplianceIllustration';
 
 export const ROLES_DATA = [
-  // ── PHASE 1: OPERATIONAL DATA ENTRY ROLES ──
+  // ── 6 PRIMARY OPERATIONAL DATA ENTRY ROLES (EXACTLY MATCHING THE REFERENCE IMAGE) ──
   {
     id: 'PROJECT_OFFICER',
     category: 'OPERATIONS',
     phase: 'Phase 1',
     title: 'Project / Site User',
     shortName: 'Project / Site',
-    desc: 'Enter on-site fuel, grid, water, waste & safety incident logs',
+    desc: 'Enter project level ESG data',
     illustration: ProjectIllustration,
     icon: Building2,
-    color: '#0284C7',
+    color: '#2563EB',
     email: 'site.officer@meilgroup.in',
     capabilities: [
       { icon: Building2, label: 'On-site Fuel & Grid Data' },
@@ -61,7 +58,7 @@ export const ROLES_DATA = [
     phase: 'Phase 1',
     title: 'HR User',
     shortName: 'HR',
-    desc: 'Manage workforce demographics, training, POSH & fair wages',
+    desc: 'Manage workforce and people data',
     illustration: HRIllustration,
     icon: Users,
     color: '#2563EB',
@@ -79,13 +76,12 @@ export const ROLES_DATA = [
     phase: 'Phase 1',
     title: 'EHS / Safety User',
     shortName: 'EHS / Safety',
-    desc: 'Environment, Health and Safety zero-harm monitoring',
+    desc: 'Environment, Health and Safety data',
     illustration: EHSIllustration,
     icon: ShieldCheck,
-    color: '#059669',
+    color: '#2563EB',
     email: 'ehs.head@meilgroup.in',
     capabilities: [
-      { icon: Leaf, label: 'Environmental Impact Tracking' },
       { icon: ShieldCheck, label: 'Zero Harm Safety Audits' },
       { icon: HardHat, label: 'Hazardous Waste Management' },
       { icon: FileText, label: 'Emissions Baseline Verification' }
@@ -97,16 +93,15 @@ export const ROLES_DATA = [
     phase: 'Phase 1',
     title: 'Procurement User',
     shortName: 'Procurement',
-    desc: 'Sustainable supply chain, Tier-1 vendor ESG & Scope 3 logistics',
+    desc: 'Supplier and procurement data',
     illustration: ProcurementIllustration,
     icon: Package,
-    color: '#D97706',
+    color: '#2563EB',
     email: 'procurement@meilgroup.in',
     capabilities: [
       { icon: Package, label: 'Sustainable Supply Chain' },
       { icon: Activity, label: 'Tier-1 Vendor ESG Assessment' },
-      { icon: Truck, label: 'Scope 3 Upstream Logistics' },
-      { icon: Target, label: 'Green Sourcing Compliance' }
+      { icon: Truck, label: 'Scope 3 Upstream Logistics' }
     ]
   },
   {
@@ -115,15 +110,14 @@ export const ROLES_DATA = [
     phase: 'Phase 1',
     title: 'CSR / Community User',
     shortName: 'CSR & Community',
-    desc: 'Social impact, community development & Section 135 projects',
+    desc: 'Social impact and CSR data',
     illustration: CSRIllustration,
-    icon: HeartHandshake,
-    color: '#DB2777',
+    icon: Heart,
+    color: '#2563EB',
     email: 'csr.lead@meilgroup.in',
     capabilities: [
-      { icon: HeartHandshake, label: 'CSR Projects Management' },
+      { icon: Heart, label: 'CSR Projects Management' },
       { icon: Users, label: 'Community Engagement' },
-      { icon: Heart, label: 'Social Impact Tracking' },
       { icon: Award, label: 'Beneficiary Data Auditing' }
     ]
   },
@@ -131,17 +125,16 @@ export const ROLES_DATA = [
     id: 'COMPLIANCE_OFFICER',
     category: 'OPERATIONS',
     phase: 'Phase 1',
-    title: 'Governance & Compliance Lead',
-    shortName: 'Governance',
-    desc: 'Governance, ethics, board charters & regulatory compliance',
+    title: 'Compliance User',
+    shortName: 'Compliance',
+    desc: 'Governance and compliance data',
     illustration: ComplianceIllustration,
     icon: ClipboardCheck,
-    color: '#1E40AF',
+    color: '#2563EB',
     email: 'compliance@meilgroup.in',
     capabilities: [
       { icon: ClipboardCheck, label: 'SEBI BRSR Core Principles' },
       { icon: ShieldCheck, label: 'Vigil Mechanism & Ethics' },
-      { icon: FileText, label: 'Statutory Assurance Tracking' },
       { icon: Scale, label: 'Governance Board Disclosures' }
     ]
   },
@@ -151,51 +144,45 @@ export const ROLES_DATA = [
     id: 'BU_COORDINATOR',
     category: 'REVIEWERS',
     phase: 'Phase 2',
-    title: 'Business Unit Reviewer / Coordinator',
+    title: 'BU Reviewer / Coordinator',
     shortName: 'BU Coordinator',
-    desc: 'Review and approve site submissions across Business Unit projects',
+    desc: 'Review project submissions across BU',
     icon: Layers,
-    color: '#0D9488',
+    color: '#2563EB',
     email: 'bu.coordinator@meilgroup.in',
     capabilities: [
       { icon: Layers, label: 'Multi-Project Review & Batching' },
-      { icon: FileCheck, label: 'Level-1 Approval & Rework Request' },
-      { icon: Activity, label: 'BU Consolidation Tracking' },
-      { icon: ShieldCheck, label: 'Pre-Assurance Quality Gates' }
+      { icon: FileCheck, label: 'Level-1 Approval & Rework Request' }
     ]
   },
   {
     id: 'SUBSIDIARY_HEAD',
     category: 'REVIEWERS',
     phase: 'Phase 2',
-    title: 'Subsidiary ESG Reviewer / Head',
+    title: 'Subsidiary ESG Head',
     shortName: 'Subsidiary Head',
-    desc: 'Approve BU submissions and oversee subsidiary-level ESG integrity',
+    desc: 'Oversee subsidiary ESG integrity & review',
     icon: Briefcase,
-    color: '#7C3AED',
+    color: '#2563EB',
     email: 'sub.head@meilgroup.in',
     capabilities: [
       { icon: Briefcase, label: 'Subsidiary Scope Governance' },
-      { icon: FileCheck, label: 'Level-2 Statutory Sign-Off' },
-      { icon: TrendingUp, label: 'Division Decarbonization Roadmap' },
-      { icon: Scale, label: 'Subsidiary BRSR Compliance' }
+      { icon: FileCheck, label: 'Level-2 Statutory Sign-Off' }
     ]
   },
   {
     id: 'GROUP_CSO',
     category: 'REVIEWERS',
     phase: 'Phase 2',
-    title: 'Group / HQ ESG Reviewer / CSO',
+    title: 'Group / HQ CSO',
     shortName: 'Group CSO',
-    desc: 'Group Chief Sustainability Officer enterprise review & locking',
-    icon: ShieldCheck,
-    color: '#4338CA',
+    desc: 'Group ESG strategy & final consolidation',
+    icon: ShieldAlert,
+    color: '#2563EB',
     email: 'cso@meilgroup.in',
     capabilities: [
-      { icon: ShieldCheck, label: 'Group-Wide Final Locking' },
-      { icon: BarChart3, label: 'Consolidated Enterprise Carbon' },
-      { icon: Award, label: 'Statutory BRSR Attestation' },
-      { icon: FileText, label: 'Auditor Engagement Sign-Off' }
+      { icon: ShieldAlert, label: 'Group Multi-Entity Sign-Off' },
+      { icon: FileCheck, label: 'WORM Immutable Audit Finalization' }
     ]
   },
 
@@ -204,145 +191,127 @@ export const ROLES_DATA = [
     id: 'ESG_MANAGER',
     category: 'STRATEGY',
     phase: 'Phase 3',
-    title: 'ESG / Sustainability Manager',
+    title: 'ESG Strategy Manager',
     shortName: 'ESG Manager',
-    desc: 'Lead enterprise sustainability initiatives, Net Zero targets & KPIs',
-    icon: Target,
-    color: '#047857',
+    desc: 'BRSR KPI targets & peer benchmarking',
+    icon: BarChart3,
+    color: '#2563EB',
     email: 'esg.manager@meilgroup.in',
     capabilities: [
-      { icon: Target, label: 'Net Zero & Science-Based Targets' },
-      { icon: Activity, label: 'Cross-Functional ESG Orchestration' },
-      { icon: Leaf, label: 'Renewable Transition Strategy' },
-      { icon: FileText, label: 'ESG Committee Reporting' }
+      { icon: BarChart3, label: 'Strategic ESG Target Tracking' },
+      { icon: Target, label: 'Peer Benchmarking & Sector Analysis' }
     ]
   },
   {
     id: 'ESG_ANALYST',
     category: 'STRATEGY',
     phase: 'Phase 3',
-    title: 'ESG Analyst',
+    title: 'ESG Carbon Analyst',
     shortName: 'ESG Analyst',
-    desc: 'Quantitative modeling, CEA baseline auditing & emission analytics',
-    icon: BarChart3,
-    color: '#0891B2',
+    desc: 'GHG Scope 1, 2, 3 calculations & audit',
+    icon: Activity,
+    color: '#2563EB',
     email: 'esg.analyst@meilgroup.in',
     capabilities: [
-      { icon: BarChart3, label: 'Scope 1, 2, 3 Intensity Models' },
-      { icon: Activity, label: 'Grid Baseline v19 Variance' },
-      { icon: TrendingUp, label: 'Year-on-Year Trend Forecasts' },
-      { icon: Search, label: 'Deep Data Diagnostics' }
+      { icon: Activity, label: 'GHG Scope 1, 2, 3 Inventory' },
+      { icon: Scale, label: 'India Grid CEA Emission Factors' }
     ]
   },
   {
     id: 'BRSR_MANAGER',
     category: 'STRATEGY',
     phase: 'Phase 3',
-    title: 'BRSR Manager',
-    shortName: 'BRSR Manager',
-    desc: 'SEBI BRSR Statutory filings, circulars & Core 9 indicator assurance',
+    title: 'BRSR Disclosure Lead',
+    shortName: 'BRSR Lead',
+    desc: 'SEBI statutory reporting across principles',
     icon: FileCheck,
-    color: '#3B82F6',
+    color: '#2563EB',
     email: 'brsr.manager@meilgroup.in',
     capabilities: [
-      { icon: FileCheck, label: 'SEBI Circular 2021/2023/2025' },
-      { icon: Scale, label: 'NGRBC 9 Principles Inventory' },
-      { icon: Award, label: 'BRSR Core Assurance Packaging' },
-      { icon: FileText, label: 'Statutory XBRL / PDF Exports' }
+      { icon: FileCheck, label: 'SEBI BRSR Statutory Filing' },
+      { icon: ClipboardCheck, label: '9 NGRBC Core Principles' }
     ]
   },
   {
     id: 'ASSURANCE_AUDITOR',
     category: 'STRATEGY',
     phase: 'Phase 3',
-    title: 'Auditor / Assurance User',
+    title: 'Assurance Auditor',
     shortName: 'Auditor',
-    desc: 'Independent third-party verification, sample auditing & evidence seals',
+    desc: 'Independent assurance verification & trails',
     icon: Search,
-    color: '#B45309',
-    email: 'auditor@meilgroup.in',
+    color: '#2563EB',
+    email: 'auditor@kpmg-assurance.com',
     capabilities: [
-      { icon: Search, label: 'Independent Reasonable Assurance' },
-      { icon: ShieldCheck, label: 'Cryptographic Byte Hash Audit' },
-      { icon: FileText, label: 'Sample Evidence Scrutiny' },
-      { icon: Award, label: 'Assurance Opinion Issuance' }
+      { icon: Search, label: 'ISAE 3000 / SSAE 3410 Verification' },
+      { icon: ShieldCheck, label: 'Digital Evidence Chain of Custody' }
     ]
   },
   {
     id: 'EXECUTIVE',
     category: 'STRATEGY',
     phase: 'Phase 3',
-    title: 'Management / Executive User',
+    title: 'Management / Executive',
     shortName: 'Executive',
-    desc: 'Board & C-Suite executive briefing, ESG rating & capital allocation',
+    desc: 'Board & C-Suite executive briefing & ratings',
     icon: Eye,
-    color: '#1E293B',
+    color: '#2563EB',
     email: 'executive@meilgroup.in',
     capabilities: [
       { icon: Eye, label: 'Executive Board Overview' },
-      { icon: Award, label: 'Global ESG Rating Scores' },
-      { icon: TrendingUp, label: 'Green Finance & CapEx Tracking' },
-      { icon: Scale, label: 'Group Reputational Governance' }
+      { icon: Award, label: 'Global ESG Rating Scores' }
     ]
   },
-
-  // ── SYSTEM ADMINISTRATION ──
   {
     id: 'SUPER_ADMIN',
     category: 'ADMIN',
     phase: 'System',
     title: 'Super Administrator',
     shortName: 'Super Admin',
-    desc: 'Full enterprise control, RBAC scopes, factor governance & WORM audit',
+    desc: 'Full enterprise control, RBAC & WORM audit',
     icon: Settings,
-    color: '#6366F1',
+    color: '#2563EB',
     email: 'admin@meilgroup.in',
     capabilities: [
       { icon: Settings, label: 'RBAC Master Management' },
-      { icon: ShieldAlert, label: 'WORM Immutable Audit Archive' },
-      { icon: Layers, label: 'Organization Tree Administration' },
-      { icon: Scale, label: 'Governed Emission Factor Master' }
+      { icon: ShieldAlert, label: 'WORM Immutable Audit Archive' }
     ]
   }
 ];
-
 
 export function RoleCardDeck({
   onSelectRole,
   selectedOrg,
   isDissolving = false,
   selectedRoleId = null,
-  animationState = 'HORIZONTAL_BROWSE', // 'IDLE_STACK' | 'BROWSE_EXPANDING' | 'HORIZONTAL_BROWSE'
 }) {
-  const [deckState, setDeckState] = useState(animationState);
-  const [activeCategory, setActiveCategory] = useState('ALL');
-  const [hoveredIdx, setHoveredIdx] = useState(0);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const deckRef = useRef(null);
-  const [containerWidth, setContainerWidth] = useState(1100);
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const lastWheelTime = useRef(0);
-  const touchStartX = useRef(0);
+  const CARD_WIDTH = 172;
+  const GAP = 16;
+  const CARD_STEP = CARD_WIDTH + GAP; // 188px
 
-  // Filter roles based on selected category tab
-  const filteredRoles = ROLES_DATA.filter((role) => {
-    if (activeCategory === 'ALL') return true;
-    return role.category === activeCategory;
-  });
+  // Default active role index is 4 (CSR / Community User), matching the reference design image!
+  const [activeIdx, setActiveIdx] = useState(4);
+  const [hoveredIdx, setHoveredIdx] = useState(null);
 
-  // Keep activeIdx within range when category changes
-  useEffect(() => {
-    if (activeIdx >= filteredRoles.length) {
-      setActiveIdx(0);
-      setHoveredIdx(0);
-    }
-  }, [activeCategory, filteredRoles.length, activeIdx]);
+  const containerRef = useRef(null);
+  const trackRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(1150);
 
-  // Measure container width for exact carousel centering
+  const currentScrollX = useRef(0);
+  const targetScrollX = useRef(0);
+  const rafId = useRef(null);
+  const snapTimer = useRef(null);
+
+  // Drag interaction refs
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartScroll = useRef(0);
+
+  // Measure container dimensions
   useEffect(() => {
     const updateWidth = () => {
-      if (deckRef.current) {
-        setContainerWidth(deckRef.current.clientWidth || 1100);
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth || 1150);
       }
     };
     updateWidth();
@@ -350,345 +319,275 @@ export function RoleCardDeck({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  // ── Entrance & Expand Transition ──
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (deckState === 'IDLE_STACK' && !hasInteracted) {
-        setDeckState('HORIZONTAL_BROWSE');
+  // Compute maximum scrollable range
+  const getMaxScroll = useCallback(() => {
+    const totalTrackWidth = ROLES_DATA.length * CARD_STEP - GAP;
+    return Math.max(0, totalTrackWidth - containerWidth + 48);
+  }, [containerWidth, CARD_STEP, GAP]);
+
+  // Liquid-smooth requestAnimationFrame momentum lerp
+  const startAnimation = useCallback(() => {
+    if (rafId.current) return;
+
+    const animate = () => {
+      const diff = targetScrollX.current - currentScrollX.current;
+      if (Math.abs(diff) > 0.3) {
+        // 0.12 damping factor: creates silky, physical liquid-glass inertia
+        currentScrollX.current += diff * 0.12;
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translate3d(${-currentScrollX.current}px, 0, 0)`;
+        }
+
+        // Dynamically update active index during scroll if not hovered
+        const nearest = Math.round(currentScrollX.current / CARD_STEP);
+        const clamped = Math.max(0, Math.min(ROLES_DATA.length - 1, nearest));
+        setActiveIdx((prev) => (hoveredIdx === null ? clamped : prev));
+
+        rafId.current = requestAnimationFrame(animate);
+      } else {
+        currentScrollX.current = targetScrollX.current;
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translate3d(${-currentScrollX.current}px, 0, 0)`;
+        }
+        rafId.current = null;
       }
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, [deckState, hasInteracted]);
+    };
 
-  // ── Throttled Mouse Movement Handler ──
-  const handleMouseMove = useCallback((e) => {
-    if (!deckRef.current || isDissolving) return;
-    if (!hasInteracted) {
-      setHasInteracted(true);
-      setDeckState('HORIZONTAL_BROWSE');
-    }
-  }, [isDissolving, hasInteracted]);
+    rafId.current = requestAnimationFrame(animate);
+  }, [CARD_STEP, hoveredIdx]);
 
-  const handleMouseLeave = useCallback(() => {
-    setHoveredIdx(null);
-  }, []);
+  // Middle mouse wheel scroll listener with gentle damping and natural snap
+  useEffect(() => {
+    const containerEl = containerRef.current;
+    if (!containerEl) return;
 
-  // ── Keyboard Navigation ──
+    const handleWheel = (e) => {
+      // Prevent browser vertical scrolling to preserve smooth horizontal glide
+      e.preventDefault();
+
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      // Damped delta (0.65x) so mouse wheel never moves too fast
+      const dampedDelta = delta * 0.65;
+      const maxScroll = getMaxScroll();
+
+      targetScrollX.current = Math.max(0, Math.min(maxScroll, targetScrollX.current + dampedDelta));
+      startAnimation();
+
+      // Debounced gentle snap to the closest card once user stops scrolling
+      if (snapTimer.current) clearTimeout(snapTimer.current);
+      snapTimer.current = setTimeout(() => {
+        const nearest = Math.round(targetScrollX.current / CARD_STEP);
+        const clamped = Math.max(0, Math.min(ROLES_DATA.length - 1, nearest));
+        targetScrollX.current = Math.max(0, Math.min(maxScroll, clamped * CARD_STEP));
+        setActiveIdx(clamped);
+        startAnimation();
+      }, 160);
+    };
+
+    containerEl.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      containerEl.removeEventListener('wheel', handleWheel);
+      if (snapTimer.current) clearTimeout(snapTimer.current);
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+    };
+  }, [getMaxScroll, startAnimation, CARD_STEP]);
+
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isDissolving) return;
+      const maxScroll = getMaxScroll();
+
       if (e.key === 'ArrowLeft') {
-        setActiveIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
-        setHoveredIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
-        setDeckState('HORIZONTAL_BROWSE');
+        const next = Math.max(0, activeIdx - 1);
+        setActiveIdx(next);
+        targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
+        startAnimation();
       } else if (e.key === 'ArrowRight') {
-        setActiveIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
-        setHoveredIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
-        setDeckState('HORIZONTAL_BROWSE');
+        const next = Math.min(ROLES_DATA.length - 1, activeIdx + 1);
+        setActiveIdx(next);
+        targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
+        startAnimation();
       } else if (e.key === 'Enter') {
-        const role = filteredRoles[activeIdx];
+        const role = ROLES_DATA[activeIdx];
         if (role) onSelectRole(role);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDissolving, activeIdx, filteredRoles, onSelectRole]);
+  }, [isDissolving, activeIdx, onSelectRole, getMaxScroll, startAnimation, CARD_STEP]);
 
-  // ── Mouse Wheel Scroll Handler ──
-  const handleWheel = (e) => {
-    if (deckState === 'IDLE_STACK' || isDissolving) return;
-    const now = Date.now();
-    if (now - lastWheelTime.current < 160) return;
-
-    if (e.deltaY > 0 || e.deltaX > 0) {
-      handleNext();
-      lastWheelTime.current = now;
-    } else if (e.deltaY < 0 || e.deltaX < 0) {
-      handlePrev();
-      lastWheelTime.current = now;
-    }
+  // Pointer drag interactions
+  const handlePointerDown = (e) => {
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartScroll.current = targetScrollX.current;
   };
 
-  // ── Touch Swipe Handlers ──
-  const handleTouchStart = (e) => {
-    if (e.touches && e.touches[0]) {
-      touchStartX.current = e.touches[0].clientX;
-    }
+  const handlePointerMove = (e) => {
+    if (!isDragging.current) return;
+    const diff = dragStartX.current - e.clientX;
+    const maxScroll = getMaxScroll();
+    targetScrollX.current = Math.max(0, Math.min(maxScroll, dragStartScroll.current + diff));
+    startAnimation();
   };
 
-  const handleTouchEnd = (e) => {
-    if (e.changedTouches && e.changedTouches[0]) {
-      const diffX = touchStartX.current - e.changedTouches[0].clientX;
-      if (Math.abs(diffX) > 40) {
-        if (diffX > 0) handleNext();
-        else handlePrev();
-      }
-    }
+  const handlePointerUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const maxScroll = getMaxScroll();
+    const nearest = Math.round(targetScrollX.current / CARD_STEP);
+    const clamped = Math.max(0, Math.min(ROLES_DATA.length - 1, nearest));
+    targetScrollX.current = Math.max(0, Math.min(maxScroll, clamped * CARD_STEP));
+    setActiveIdx(clamped);
+    startAnimation();
   };
 
-  // ── Navigation Arrows ──
+  // Chevron navigation buttons
   const handlePrev = () => {
-    setDeckState('HORIZONTAL_BROWSE');
-    setActiveIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
-    setHoveredIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
+    const maxScroll = getMaxScroll();
+    const next = Math.max(0, activeIdx - 1);
+    setActiveIdx(next);
+    targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
+    startAnimation();
   };
 
   const handleNext = () => {
-    setDeckState('HORIZONTAL_BROWSE');
-    setActiveIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
-    setHoveredIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
+    const maxScroll = getMaxScroll();
+    const next = Math.min(ROLES_DATA.length - 1, activeIdx + 1);
+    setActiveIdx(next);
+    targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
+    startAnimation();
   };
 
-  const isStacked = deckState === 'IDLE_STACK';
+  // Pagination dot click
+  const handleDotClick = (idx) => {
+    const maxScroll = getMaxScroll();
+    setActiveIdx(idx);
+    targetScrollX.current = Math.max(0, Math.min(maxScroll, idx * CARD_STEP));
+    startAnimation();
+  };
 
-  // Compute exact horizontal offset to keep active card centered in the view area
-  // Card width (172px) + Gap (16px) = 188px
-  const itemStep = 188;
-  const activeCardCenter = activeIdx * itemStep + 86;
-  const trackOffsetX = (containerWidth / 2) - activeCardCenter;
+  // Active dot index mapped to 6 primary dots shown in reference image
+  const activeDotIdx = Math.min(5, activeIdx);
 
   return (
-    <div className="role-deck-wrapper" onMouseMove={handleMouseMove}>
-      {/* ── Stepper Header ── */}
+    <div className="role-deck-wrapper">
+      {/* ── Stepper Header: Exactly matching reference design ── */}
       <div className="auth-stepper-wrap">
         <span className="auth-stepper-label">STEP 1 OF 2</span>
-        <div className="auth-stepper-bar" />
         <h1 className="auth-main-title">
-          CHOOSE YOUR <span className="highlight-blue">ROLE</span>
+          Choose Your <span className="highlight-blue">Role</span>
         </h1>
         <p className="auth-subtitle">
-          Select your role to continue to the MEIL ESG platform ({filteredRoles.length} Roles Available)
+          Select your role to continue to the MEIL ESG platform
         </p>
-
-        {/* ── Category Filter Tabs ── */}
-        <div className="role-category-tabs">
-          {[
-            { id: 'ALL', label: 'All Roles', count: 15 },
-            { id: 'OPERATIONS', label: 'Data Entry', count: 6 },
-            { id: 'REVIEWERS', label: 'Approvers', count: 3 },
-            { id: 'STRATEGY', label: 'Strategy & Audit', count: 5 },
-            { id: 'ADMIN', label: 'System Admin', count: 1 },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`role-category-pill ${activeCategory === tab.id ? 'active' : ''}`}
-              onClick={() => {
-                setActiveCategory(tab.id);
-                setActiveIdx(0);
-                setHoveredIdx(0);
-                if (isStacked) setDeckState('HORIZONTAL_BROWSE');
-              }}
-            >
-              {tab.label} <span className="pill-count">({tab.count})</span>
-            </button>
-          ))}
-        </div>
-
-        {/* State Indicator / View Mode Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setDeckState(isStacked ? 'HORIZONTAL_BROWSE' : 'IDLE_STACK')}
-            className="stack-toggle-pill"
-          >
-            {isStacked ? '← Expand to Horizontal Deck' : '◫ View Stacked Mode'}
-          </button>
-        </div>
       </div>
 
-      {/* ── Main Deck Carousel Row ── */}
-      <div
-        className="deck-carousel-row"
-        ref={deckRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      {/* ── Main Deck Carousel with Side Chevron Arrows ── */}
+      <div className="deck-carousel-container">
         {/* Left Arrow Button */}
-        {!isStacked && (
-          <button
-            className="deck-nav-arrow left"
-            onClick={handlePrev}
-            aria-label="Previous role"
-            type="button"
-          >
-            <ChevronLeft size={22} />
-          </button>
-        )}
-
-        {/* The Role Cards Track */}
-        <div
-          className={`deck-cards-track ${isStacked ? 'is-stacked-mode' : 'is-horizontal-mode'} ${
-            isDissolving ? 'cards-dissolving-away' : ''
-          }`}
-          style={{
-            transform: isStacked
-              ? 'none'
-              : `translate3d(${trackOffsetX}px, 0, 0)`,
-          }}
+        <button
+          className="deck-nav-arrow left"
+          onClick={handlePrev}
+          aria-label="Previous role"
+          type="button"
         >
-          {filteredRoles.map((role, idx) => {
-            const IllustrationComp = role.illustration;
-            const isHovered = hoveredIdx === idx && !isStacked;
-            const isActive = activeIdx === idx;
-            const isSelected = selectedRoleId === role.id;
+          <ChevronLeft size={22} strokeWidth={2.2} />
+        </button>
 
-            // Stack physics when in IDLE_STACK:
-            let cardTransform = '';
-            let cardZIndex = filteredRoles.length - idx;
-            let cardOpacity = 1;
+        {/* The Scroll Viewport */}
+        <div
+          className="deck-carousel-row"
+          ref={containerRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          {/* Track of Cards */}
+          <div
+            className={`deck-cards-track ${isDissolving ? 'cards-dissolving-away' : ''}`}
+            ref={trackRef}
+          >
+            {ROLES_DATA.map((role, idx) => {
+              const IconComp = role.icon || Building2;
+              // Straight vertical popup: elevated if hovered, or if active and no card is hovered
+              const isElevated = hoveredIdx !== null ? hoveredIdx === idx : activeIdx === idx;
+              const isSelected = selectedRoleId === role.id;
 
-            if (isStacked) {
-              const depthIdx = idx;
-              const xOffset = depthIdx * -28;
-              const yOffset = depthIdx * -6;
-              const scale = 1 - depthIdx * 0.04;
-              cardOpacity = Math.max(0.6, 1 - depthIdx * 0.08);
-              cardZIndex = 50 - depthIdx;
-              cardTransform = `translate3d(${xOffset}px, ${yOffset}px, 0) scale(${scale})`;
-            } else {
-              // Horizontal Layout with Smooth Hover Rebound & Elevation
-              let neighborShift = 0;
-              if (hoveredIdx !== null && hoveredIdx !== idx) {
-                neighborShift = idx < hoveredIdx ? -6 : 6;
-              }
-
-              const lift = isHovered ? -16 : (isActive ? -6 : 0);
-              const scale = isHovered ? 1.06 : (isActive ? 1.02 : 1);
-              const subtleRotate = (idx - 2.5) * 0.5;
-
-              cardTransform = `translate3d(${neighborShift}px, ${lift}px, 0) scale(${scale}) rotate(${subtleRotate}deg)`;
-              cardZIndex = isHovered ? 60 : (isActive ? 40 : 10);
-            }
-
-            return (
-              <div
-                key={role.id}
-                className={`role-glass-card ${isHovered || isActive ? 'is-active' : ''} ${
-                  isSelected ? 'morph-selected-card' : ''
-                } ${isDissolving && !isSelected ? 'dissolving-card' : ''}`}
-                style={{
-                  transform: cardTransform,
-                  zIndex: cardZIndex,
-                  opacity: cardOpacity,
-                }}
-                onMouseEnter={() => {
-                  if (!isStacked) {
-                    setHoveredIdx(idx);
-                    setActiveIdx(idx);
-                  }
-                }}
-                onClick={() => {
-                  if (isStacked) {
-                    setDeckState('HORIZONTAL_BROWSE');
-                    setActiveIdx(idx);
-                    setHoveredIdx(idx);
-                  } else {
-                    onSelectRole(role);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Select role: ${role.title}`}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    if (isStacked) setDeckState('HORIZONTAL_BROWSE');
-                    else onSelectRole(role);
-                  }
-                }}
-              >
-                {/* Specular Diagonal Reflection Sweep */}
-                <div className="card-glass-specular-sweep" />
-
-                {/* ── Category Badge ── */}
-                <div className="role-card-badge" style={{ color: role.color }}>
-                  {role.phase || role.category}
-                </div>
-
-                {/* ── Profile Illustration (Dominant Card Element, No Background Box) ── */}
-                <div className="role-illustration-container">
-                  {IllustrationComp ? (
-                    <IllustrationComp
-                      isHovered={isHovered}
-                      isSelected={isSelected}
-                    />
-                  ) : (
-                    <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '22px',
-                      background: `radial-gradient(circle at 30% 30%, ${role.color}20, ${role.color}06)`,
-                      border: `1.5px solid ${role.color}35`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: `0 8px 24px -6px ${role.color}30`
-                    }}>
-                      {role.icon ? React.createElement(role.icon, { size: 40, color: role.color }) : <Building2 size={40} color={role.color} />}
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Role Title & Description ── */}
-                <div className="role-text-meta">
-                  <h3 className="role-card-title">{role.title}</h3>
-                  <p className="role-card-desc">{role.desc}</p>
-                </div>
-
-                {/* ── Soft Blue Atmospheric Underglow ── */}
+              return (
                 <div
-                  className="role-card-underglow"
-                  style={{
-                    background: `radial-gradient(ellipse at 50% 100%, ${role.color}33 0%, transparent 70%)`
+                  key={role.id}
+                  className={`role-glass-card ${isElevated ? 'is-elevated' : ''} ${
+                    isSelected ? 'morph-selected-card' : ''
+                  } ${isDissolving && !isSelected ? 'dissolving-card' : ''}`}
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                  onClick={() => {
+                    setActiveIdx(idx);
+                    onSelectRole(role);
                   }}
-                />
-              </div>
-            );
-          })}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select role: ${role.title}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setActiveIdx(idx);
+                      onSelectRole(role);
+                    }
+                  }}
+                >
+                  {/* Rounded Square Light-Blue Icon Container */}
+                  <div className="role-card-icon-box">
+                    <IconComp size={28} strokeWidth={2} color="#2563EB" />
+                  </div>
+
+                  {/* Role Title & Subtitle */}
+                  <div className="role-text-meta">
+                    <h3 className="role-card-title">{role.title}</h3>
+                    <p className="role-card-desc">{role.desc}</p>
+                  </div>
+
+                  {/* Soft Atmospheric Blue Underglow Beneath Card */}
+                  <div className="role-card-underglow" />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Right Arrow Button */}
-        {!isStacked && (
-          <button
-            className="deck-nav-arrow right"
-            onClick={handleNext}
-            aria-label="Next role"
-            type="button"
-          >
-            <ChevronRight size={22} />
-          </button>
-        )}
+        <button
+          className="deck-nav-arrow right"
+          onClick={handleNext}
+          aria-label="Next role"
+          type="button"
+        >
+          <ChevronRight size={22} strokeWidth={2.2} />
+        </button>
       </div>
 
-      {/* ── Pagination Dots ── */}
+      {/* ── Pagination Dots (6 Clean Dots matching reference design) ── */}
       <div className="deck-pagination-dots">
-        {filteredRoles.map((_, idx) => (
+        {[0, 1, 2, 3, 4, 5].map((dotIdx) => (
           <button
-            key={idx}
+            key={dotIdx}
             type="button"
-            aria-label={`Jump to role ${idx + 1}`}
-            className={`deck-dot ${activeIdx === idx ? 'active' : ''}`}
-            onClick={() => {
-              setDeckState('HORIZONTAL_BROWSE');
-              setActiveIdx(idx);
-              setHoveredIdx(idx);
-            }}
+            aria-label={`Jump to role ${dotIdx + 1}`}
+            className={`deck-dot ${activeDotIdx === dotIdx ? 'active' : ''}`}
+            onClick={() => handleDotClick(dotIdx)}
           />
         ))}
       </div>
 
-      {/* ── Footer Sustainability Line ── */}
+      {/* ── Footer Sustainability Tagline ── */}
       <div className="deck-footer-tagline">
-        <div className="deck-footer-line" />
         <span className="deck-footer-text">
           Together for a Cleaner, Safer and More Responsible Tomorrow
         </span>
-        <div className="deck-footer-line" />
       </div>
     </div>
   );
