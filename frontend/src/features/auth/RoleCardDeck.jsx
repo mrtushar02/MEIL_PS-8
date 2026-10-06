@@ -293,25 +293,21 @@ export function RoleCardDeck({
   const [activeIdx, setActiveIdx] = useState(4);
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
-  const containerRef = useRef(null);
-  const trackRef = useRef(null);
-  const [containerWidth, setContainerWidth] = useState(1150);
+  const carouselRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1150
+  );
 
-  const currentScrollX = useRef(0);
-  const targetScrollX = useRef(0);
-  const rafId = useRef(null);
-  const snapTimer = useRef(null);
+  // Drag interaction state
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const [dragDelta, setDragDelta] = useState(0);
 
-  // Drag interaction refs
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartScroll = useRef(0);
-
-  // Measure container dimensions
+  // Measure carousel container width for exact middle centering
   useEffect(() => {
     const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.clientWidth || 1150);
+      if (carouselRef.current) {
+        setContainerWidth(carouselRef.current.clientWidth || window.innerWidth);
       }
     };
     updateWidth();
@@ -319,95 +315,61 @@ export function RoleCardDeck({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  // Compute maximum scrollable range
-  const getMaxScroll = useCallback(() => {
-    const totalTrackWidth = ROLES_DATA.length * CARD_STEP - GAP;
-    return Math.max(0, totalTrackWidth - containerWidth + 48);
-  }, [containerWidth, CARD_STEP, GAP]);
+  // Step to previous role
+  const handlePrev = useCallback(() => {
+    setActiveIdx((prev) => Math.max(0, prev - 1));
+  }, []);
 
-  // Liquid-smooth requestAnimationFrame momentum lerp
-  const startAnimation = useCallback(() => {
-    if (rafId.current) return;
+  // Step to next role
+  const handleNext = useCallback(() => {
+    setActiveIdx((prev) => Math.min(ROLES_DATA.length - 1, prev + 1));
+  }, []);
 
-    const animate = () => {
-      const diff = targetScrollX.current - currentScrollX.current;
-      if (Math.abs(diff) > 0.3) {
-        // 0.12 damping factor: creates silky, physical liquid-glass inertia
-        currentScrollX.current += diff * 0.12;
-        if (trackRef.current) {
-          trackRef.current.style.transform = `translate3d(${-currentScrollX.current}px, 0, 0)`;
-        }
-
-        // Dynamically update active index during scroll if not hovered
-        const nearest = Math.round(currentScrollX.current / CARD_STEP);
-        const clamped = Math.max(0, Math.min(ROLES_DATA.length - 1, nearest));
-        setActiveIdx((prev) => (hoveredIdx === null ? clamped : prev));
-
-        rafId.current = requestAnimationFrame(animate);
-      } else {
-        currentScrollX.current = targetScrollX.current;
-        if (trackRef.current) {
-          trackRef.current.style.transform = `translate3d(${-currentScrollX.current}px, 0, 0)`;
-        }
-        rafId.current = null;
-      }
-    };
-
-    rafId.current = requestAnimationFrame(animate);
-  }, [CARD_STEP, hoveredIdx]);
-
-  // Middle mouse wheel scroll listener with gentle damping and natural snap
+  // Smooth middle mouse wheel listener with debounce
   useEffect(() => {
-    const containerEl = containerRef.current;
+    const containerEl = carouselRef.current;
     if (!containerEl) return;
 
+    let wheelTimeout = null;
+    let accumulatedDelta = 0;
+
     const handleWheel = (e) => {
-      // Prevent browser vertical scrolling to preserve smooth horizontal glide
       e.preventDefault();
-
       const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      // Damped delta (0.65x) so mouse wheel never moves too fast
-      const dampedDelta = delta * 0.65;
-      const maxScroll = getMaxScroll();
+      accumulatedDelta += delta;
 
-      targetScrollX.current = Math.max(0, Math.min(maxScroll, targetScrollX.current + dampedDelta));
-      startAnimation();
+      if (wheelTimeout) clearTimeout(wheelTimeout);
 
-      // Debounced gentle snap to the closest card once user stops scrolling
-      if (snapTimer.current) clearTimeout(snapTimer.current);
-      snapTimer.current = setTimeout(() => {
-        const nearest = Math.round(targetScrollX.current / CARD_STEP);
-        const clamped = Math.max(0, Math.min(ROLES_DATA.length - 1, nearest));
-        targetScrollX.current = Math.max(0, Math.min(maxScroll, clamped * CARD_STEP));
-        setActiveIdx(clamped);
-        startAnimation();
-      }, 160);
+      if (Math.abs(accumulatedDelta) >= 30) {
+        if (accumulatedDelta > 0) {
+          handleNext();
+        } else {
+          handlePrev();
+        }
+        accumulatedDelta = 0;
+      }
+
+      wheelTimeout = setTimeout(() => {
+        accumulatedDelta = 0;
+      }, 140);
     };
 
     containerEl.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       containerEl.removeEventListener('wheel', handleWheel);
-      if (snapTimer.current) clearTimeout(snapTimer.current);
-      if (rafId.current) cancelAnimationFrame(rafId.current);
+      if (wheelTimeout) clearTimeout(wheelTimeout);
     };
-  }, [getMaxScroll, startAnimation, CARD_STEP]);
+  }, [handlePrev, handleNext]);
 
-  // Keyboard navigation
+  // Keyboard navigation: Left/Right arrow keys & Enter
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isDissolving) return;
-      const maxScroll = getMaxScroll();
 
       if (e.key === 'ArrowLeft') {
-        const next = Math.max(0, activeIdx - 1);
-        setActiveIdx(next);
-        targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
-        startAnimation();
+        handlePrev();
       } else if (e.key === 'ArrowRight') {
-        const next = Math.min(ROLES_DATA.length - 1, activeIdx + 1);
-        setActiveIdx(next);
-        targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
-        startAnimation();
+        handleNext();
       } else if (e.key === 'Enter') {
         const role = ROLES_DATA[activeIdx];
         if (role) onSelectRole(role);
@@ -416,61 +378,52 @@ export function RoleCardDeck({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDissolving, activeIdx, onSelectRole, getMaxScroll, startAnimation, CARD_STEP]);
+  }, [isDissolving, activeIdx, onSelectRole, handlePrev, handleNext]);
 
-  // Pointer drag interactions
+  // Pointer drag interactions (swipe left/right)
   const handlePointerDown = (e) => {
-    isDragging.current = true;
-    dragStartX.current = e.clientX;
-    dragStartScroll.current = targetScrollX.current;
+    isDraggingRef.current = true;
+    dragStartXRef.current = e.clientX;
+    setDragDelta(0);
   };
 
   const handlePointerMove = (e) => {
-    if (!isDragging.current) return;
-    const diff = dragStartX.current - e.clientX;
-    const maxScroll = getMaxScroll();
-    targetScrollX.current = Math.max(0, Math.min(maxScroll, dragStartScroll.current + diff));
-    startAnimation();
+    if (!isDraggingRef.current) return;
+    const diff = e.clientX - dragStartXRef.current;
+    setDragDelta(diff * 0.7);
   };
 
-  const handlePointerUp = () => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    const maxScroll = getMaxScroll();
-    const nearest = Math.round(targetScrollX.current / CARD_STEP);
-    const clamped = Math.max(0, Math.min(ROLES_DATA.length - 1, nearest));
-    targetScrollX.current = Math.max(0, Math.min(maxScroll, clamped * CARD_STEP));
-    setActiveIdx(clamped);
-    startAnimation();
+  const handlePointerUp = (e) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    const diff = e.clientX - dragStartXRef.current;
+    setDragDelta(0);
+
+    if (diff < -35) {
+      handleNext();
+    } else if (diff > 35) {
+      handlePrev();
+    }
   };
 
-  // Chevron navigation buttons
-  const handlePrev = () => {
-    const maxScroll = getMaxScroll();
-    const next = Math.max(0, activeIdx - 1);
-    setActiveIdx(next);
-    targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
-    startAnimation();
+  // Card click: If not centered, center it in the middle. If already centered, proceed!
+  const handleCardClick = (idx, role) => {
+    if (activeIdx !== idx) {
+      setActiveIdx(idx);
+    } else {
+      onSelectRole(role);
+    }
   };
 
-  const handleNext = () => {
-    const maxScroll = getMaxScroll();
-    const next = Math.min(ROLES_DATA.length - 1, activeIdx + 1);
-    setActiveIdx(next);
-    targetScrollX.current = Math.max(0, Math.min(maxScroll, next * CARD_STEP));
-    startAnimation();
-  };
-
-  // Pagination dot click
+  // Pagination dot click: Jump directly to role and center in the middle
   const handleDotClick = (idx) => {
-    const maxScroll = getMaxScroll();
     setActiveIdx(idx);
-    targetScrollX.current = Math.max(0, Math.min(maxScroll, idx * CARD_STEP));
-    startAnimation();
   };
 
-  // Active dot index mapped to 6 primary dots shown in reference image
-  const activeDotIdx = Math.min(5, activeIdx);
+  // ── EXACT MIDDLE CENTERING FORMULA ──
+  // Shifts the track so that card `activeIdx` is aligned directly at (containerWidth / 2)
+  const activeCardCenter = activeIdx * CARD_STEP + (CARD_WIDTH / 2);
+  const trackOffsetX = (containerWidth / 2) - activeCardCenter;
 
   return (
     <div className="role-deck-wrapper">
@@ -486,34 +439,40 @@ export function RoleCardDeck({
       </div>
 
       {/* ── Main Deck Carousel with Side Chevron Arrows ── */}
-      <div className="deck-carousel-container">
+      <div className="deck-carousel-container" ref={carouselRef}>
         {/* Left Arrow Button */}
         <button
           className="deck-nav-arrow left"
           onClick={handlePrev}
           aria-label="Previous role"
           type="button"
+          disabled={activeIdx === 0}
+          style={{ opacity: activeIdx === 0 ? 0.4 : 1, cursor: activeIdx === 0 ? 'default' : 'pointer' }}
         >
-          <ChevronLeft size={22} strokeWidth={2.2} />
+          <ChevronLeft size={24} strokeWidth={2.4} />
         </button>
 
         {/* The Scroll Viewport */}
         <div
           className="deck-carousel-row"
-          ref={containerRef}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          {/* Track of Cards */}
+          {/* Track of Cards: Smoothly translates so activeIdx is always centered in the middle */}
           <div
             className={`deck-cards-track ${isDissolving ? 'cards-dissolving-away' : ''}`}
-            ref={trackRef}
+            style={{
+              transform: `translate3d(${trackOffsetX + dragDelta}px, 0, 0)`,
+              transition: isDraggingRef.current
+                ? 'none'
+                : 'transform 450ms cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
           >
             {ROLES_DATA.map((role, idx) => {
               const IconComp = role.icon || Building2;
-              // Straight vertical popup: elevated if hovered, or if active and no card is hovered
+              // Elevated straight up if hovered, or if active and no card is hovered
               const isElevated = hoveredIdx !== null ? hoveredIdx === idx : activeIdx === idx;
               const isSelected = selectedRoleId === role.id;
 
@@ -525,18 +484,14 @@ export function RoleCardDeck({
                   } ${isDissolving && !isSelected ? 'dissolving-card' : ''}`}
                   onMouseEnter={() => setHoveredIdx(idx)}
                   onMouseLeave={() => setHoveredIdx(null)}
-                  onClick={() => {
-                    setActiveIdx(idx);
-                    onSelectRole(role);
-                  }}
+                  onClick={() => handleCardClick(idx, role)}
                   role="button"
                   tabIndex={0}
                   aria-label={`Select role: ${role.title}`}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      setActiveIdx(idx);
-                      onSelectRole(role);
+                      handleCardClick(idx, role);
                     }
                   }}
                 >
@@ -565,19 +520,24 @@ export function RoleCardDeck({
           onClick={handleNext}
           aria-label="Next role"
           type="button"
+          disabled={activeIdx === ROLES_DATA.length - 1}
+          style={{
+            opacity: activeIdx === ROLES_DATA.length - 1 ? 0.4 : 1,
+            cursor: activeIdx === ROLES_DATA.length - 1 ? 'default' : 'pointer',
+          }}
         >
-          <ChevronRight size={22} strokeWidth={2.2} />
+          <ChevronRight size={24} strokeWidth={2.4} />
         </button>
       </div>
 
-      {/* ── Pagination Dots (6 Clean Dots matching reference design) ── */}
+      {/* ── Pagination Dots (Clickable, perfectly synced with active role in the middle) ── */}
       <div className="deck-pagination-dots">
-        {[0, 1, 2, 3, 4, 5].map((dotIdx) => (
+        {ROLES_DATA.map((role, dotIdx) => (
           <button
-            key={dotIdx}
+            key={role.id}
             type="button"
-            aria-label={`Jump to role ${dotIdx + 1}`}
-            className={`deck-dot ${activeDotIdx === dotIdx ? 'active' : ''}`}
+            aria-label={`Jump to role ${dotIdx + 1}: ${role.title}`}
+            className={`deck-dot ${activeIdx === dotIdx ? 'active' : ''}`}
             onClick={() => handleDotClick(dotIdx)}
           />
         ))}

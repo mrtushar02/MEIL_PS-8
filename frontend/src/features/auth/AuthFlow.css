@@ -245,37 +245,43 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border: 1.5px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #2563EB;
   cursor: pointer;
-  z-index: 30;
+  z-index: 100;
+  pointer-events: auto;
   transition: all 220ms ease;
   outline: none;
 }
 
-.deck-nav-arrow:hover {
+.deck-nav-arrow:hover:not(:disabled) {
   background: #FFFFFF;
   border-color: #2563EB;
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.25);
+  color: #1D4ED8;
+}
+
+.deck-nav-arrow:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.96);
 }
 
 .deck-nav-arrow.left {
-  left: -20px;
+  left: 20px;
 }
 
 .deck-nav-arrow.right {
-  right: -20px;
+  right: 20px;
 }
 
 /* Horizontal Track */
