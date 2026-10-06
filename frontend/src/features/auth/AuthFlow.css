@@ -239,35 +239,96 @@
   z-index: 10;
 }
 
-.deck-carousel-row {
-  position: relative;
-  width: 100%;
+.role-category-tabs {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.role-category-pill {
+  border: 1px solid rgba(191, 219, 254, 0.7);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.05);
+}
+
+.role-category-pill:hover {
+  background: #FFFFFF;
+  color: #2563EB;
+  border-color: #2563EB;
+  transform: translateY(-1px);
+}
+
+.role-category-pill.active {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-color: #2563EB;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.role-category-pill .pill-count {
+  font-size: 10.5px;
+  opacity: 0.85;
+}
+
+.role-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(215, 235, 250, 0.8);
+  pointer-events: none;
+}
+
+.deck-carousel-row {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   perspective: 1200px;
-  padding: 20px 0 40px;
+  padding: 24px 0 40px;
+  cursor: grab;
+  touch-action: pan-x;
 }
 
 /* Side navigation arrows */
 .deck-nav-arrow {
   position: absolute;
-  top: 45%;
+  top: 50%;
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(215, 235, 250, 0.9);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(215, 235, 250, 0.95);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #2563EB;
   cursor: pointer;
-  z-index: 25;
+  z-index: 70;
   transition: all 200ms ease;
   outline: none;
 }
@@ -275,21 +336,22 @@
 .deck-nav-arrow:hover {
   background: #FFFFFF;
   border-color: #2563EB;
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.16);
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
 }
 
-.deck-nav-arrow.left { left: 8px; }
-.deck-nav-arrow.right { right: 8px; }
+.deck-nav-arrow.left { left: 16px; }
+.deck-nav-arrow.right { right: 16px; }
 
 /* Horizontal Track */
 .deck-cards-track {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 16px;
   flex-wrap: nowrap;
-  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  width: max-content;
+  flex-shrink: 0;
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1);
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -299,9 +361,11 @@
   position: relative;
   width: 320px;
   height: 290px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: none !important;
 }
 
 .deck-cards-track.is-stacked-mode .role-glass-card {
@@ -309,6 +373,7 @@
   top: 0;
   left: 40px;
 }
+
 
 /* ─────────────────────────────────────────────────────────────
    3. LIQUID GLASS ROLE CARD SPECIFICATION

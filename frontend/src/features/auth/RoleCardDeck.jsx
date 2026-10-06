@@ -315,14 +315,43 @@ export function RoleCardDeck({
   animationState = 'HORIZONTAL_BROWSE', // 'IDLE_STACK' | 'BROWSE_EXPANDING' | 'HORIZONTAL_BROWSE'
 }) {
   const [deckState, setDeckState] = useState(animationState);
-  const [hoveredIdx, setHoveredIdx] = useState(2); // Default focus on EHS like frame 3
-  const [activeIdx, setActiveIdx] = useState(2);
+  const [activeCategory, setActiveCategory] = useState('ALL');
+  const [hoveredIdx, setHoveredIdx] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(0);
   const deckRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(1100);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const lastWheelTime = useRef(0);
+  const touchStartX = useRef(0);
+
+  // Filter roles based on selected category tab
+  const filteredRoles = ROLES_DATA.filter((role) => {
+    if (activeCategory === 'ALL') return true;
+    return role.category === activeCategory;
+  });
+
+  // Keep activeIdx within range when category changes
+  useEffect(() => {
+    if (activeIdx >= filteredRoles.length) {
+      setActiveIdx(0);
+      setHoveredIdx(0);
+    }
+  }, [activeCategory, filteredRoles.length, activeIdx]);
+
+  // Measure container width for exact carousel centering
+  useEffect(() => {
+    const updateWidth = () => {
+      if (deckRef.current) {
+        setContainerWidth(deckRef.current.clientWidth || 1100);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   // ── Entrance & Expand Transition ──
   useEffect(() => {
-    // If starting in IDLE_STACK, automatically expand on mount
     const timer = setTimeout(() => {
       if (deckState === 'IDLE_STACK' && !hasInteracted) {
         setDeckState('HORIZONTAL_BROWSE');
@@ -349,37 +378,75 @@ export function RoleCardDeck({
     const handleKeyDown = (e) => {
       if (isDissolving) return;
       if (e.key === 'ArrowLeft') {
-        setActiveIdx((prev) => (prev > 0 ? prev - 1 : ROLES_DATA.length - 1));
-        setHoveredIdx((prev) => (prev > 0 ? prev - 1 : ROLES_DATA.length - 1));
+        setActiveIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
+        setHoveredIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
         setDeckState('HORIZONTAL_BROWSE');
       } else if (e.key === 'ArrowRight') {
-        setActiveIdx((prev) => (prev < ROLES_DATA.length - 1 ? prev + 1 : 0));
-        setHoveredIdx((prev) => (prev < ROLES_DATA.length - 1 ? prev + 1 : 0));
+        setActiveIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
+        setHoveredIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
         setDeckState('HORIZONTAL_BROWSE');
       } else if (e.key === 'Enter') {
-        const role = ROLES_DATA[activeIdx];
+        const role = filteredRoles[activeIdx];
         if (role) onSelectRole(role);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDissolving, activeIdx, onSelectRole]);
+  }, [isDissolving, activeIdx, filteredRoles, onSelectRole]);
+
+  // ── Mouse Wheel Scroll Handler ──
+  const handleWheel = (e) => {
+    if (deckState === 'IDLE_STACK' || isDissolving) return;
+    const now = Date.now();
+    if (now - lastWheelTime.current < 160) return;
+
+    if (e.deltaY > 0 || e.deltaX > 0) {
+      handleNext();
+      lastWheelTime.current = now;
+    } else if (e.deltaY < 0 || e.deltaX < 0) {
+      handlePrev();
+      lastWheelTime.current = now;
+    }
+  };
+
+  // ── Touch Swipe Handlers ──
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches[0]) {
+      touchStartX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.changedTouches && e.changedTouches[0]) {
+      const diffX = touchStartX.current - e.changedTouches[0].clientX;
+      if (Math.abs(diffX) > 40) {
+        if (diffX > 0) handleNext();
+        else handlePrev();
+      }
+    }
+  };
 
   // ── Navigation Arrows ──
   const handlePrev = () => {
     setDeckState('HORIZONTAL_BROWSE');
-    setActiveIdx((prev) => (prev > 0 ? prev - 1 : ROLES_DATA.length - 1));
-    setHoveredIdx((prev) => (prev > 0 ? prev - 1 : ROLES_DATA.length - 1));
+    setActiveIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
+    setHoveredIdx((prev) => (prev > 0 ? prev - 1 : filteredRoles.length - 1));
   };
 
   const handleNext = () => {
     setDeckState('HORIZONTAL_BROWSE');
-    setActiveIdx((prev) => (prev < ROLES_DATA.length - 1 ? prev + 1 : 0));
-    setHoveredIdx((prev) => (prev < ROLES_DATA.length - 1 ? prev + 1 : 0));
+    setActiveIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
+    setHoveredIdx((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : 0));
   };
 
   const isStacked = deckState === 'IDLE_STACK';
+
+  // Compute exact horizontal offset to keep active card centered in the view area
+  // Card width (172px) + Gap (16px) = 188px
+  const itemStep = 188;
+  const activeCardCenter = activeIdx * itemStep + 86;
+  const trackOffsetX = (containerWidth / 2) - activeCardCenter;
 
   return (
     <div className="role-deck-wrapper" onMouseMove={handleMouseMove}>
@@ -391,11 +458,36 @@ export function RoleCardDeck({
           CHOOSE YOUR <span className="highlight-blue">ROLE</span>
         </h1>
         <p className="auth-subtitle">
-          Select your role to continue to the MEIL ESG platform
+          Select your role to continue to the MEIL ESG platform ({filteredRoles.length} Roles Available)
         </p>
 
+        {/* ── Category Filter Tabs ── */}
+        <div className="role-category-tabs">
+          {[
+            { id: 'ALL', label: 'All Roles', count: 15 },
+            { id: 'OPERATIONS', label: 'Data Entry', count: 6 },
+            { id: 'REVIEWERS', label: 'Approvers', count: 3 },
+            { id: 'STRATEGY', label: 'Strategy & Audit', count: 5 },
+            { id: 'ADMIN', label: 'System Admin', count: 1 },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`role-category-pill ${activeCategory === tab.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveCategory(tab.id);
+                setActiveIdx(0);
+                setHoveredIdx(0);
+                if (isStacked) setDeckState('HORIZONTAL_BROWSE');
+              }}
+            >
+              {tab.label} <span className="pill-count">({tab.count})</span>
+            </button>
+          ))}
+        </div>
+
         {/* State Indicator / View Mode Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
           <button
             type="button"
             onClick={() => setDeckState(isStacked ? 'HORIZONTAL_BROWSE' : 'IDLE_STACK')}
@@ -412,6 +504,9 @@ export function RoleCardDeck({
         ref={deckRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onWheel={handleWheel}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Left Arrow Button */}
         {!isStacked && (
@@ -421,30 +516,34 @@ export function RoleCardDeck({
             aria-label="Previous role"
             type="button"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={22} />
           </button>
         )}
 
-        {/* The 6 Role Cards Track */}
+        {/* The Role Cards Track */}
         <div
           className={`deck-cards-track ${isStacked ? 'is-stacked-mode' : 'is-horizontal-mode'} ${
             isDissolving ? 'cards-dissolving-away' : ''
           }`}
+          style={{
+            transform: isStacked
+              ? 'none'
+              : `translate3d(${trackOffsetX}px, 0, 0)`,
+          }}
         >
-          {ROLES_DATA.map((role, idx) => {
+          {filteredRoles.map((role, idx) => {
             const IllustrationComp = role.illustration;
             const isHovered = hoveredIdx === idx && !isStacked;
             const isActive = activeIdx === idx;
             const isSelected = selectedRoleId === role.id;
 
             // Stack physics when in IDLE_STACK:
-            // Front card is index 0 (Project / Site User), others behind with offset and scale
             let cardTransform = '';
-            let cardZIndex = ROLES_DATA.length - idx;
+            let cardZIndex = filteredRoles.length - idx;
             let cardOpacity = 1;
 
             if (isStacked) {
-              const depthIdx = idx; // 0 is front
+              const depthIdx = idx;
               const xOffset = depthIdx * -28;
               const yOffset = depthIdx * -6;
               const scale = 1 - depthIdx * 0.04;
@@ -452,15 +551,15 @@ export function RoleCardDeck({
               cardZIndex = 50 - depthIdx;
               cardTransform = `translate3d(${xOffset}px, ${yOffset}px, 0) scale(${scale})`;
             } else {
-              // Horizontal Layout with Smooth Hover Rebound
+              // Horizontal Layout with Smooth Hover Rebound & Elevation
               let neighborShift = 0;
               if (hoveredIdx !== null && hoveredIdx !== idx) {
-                neighborShift = idx < hoveredIdx ? -8 : 8;
+                neighborShift = idx < hoveredIdx ? -6 : 6;
               }
 
-              const lift = isHovered ? -14 : (isActive ? -4 : 0);
-              const scale = isHovered ? 1.05 : (isActive ? 1.02 : 1);
-              const subtleRotate = (idx - 2.5) * 0.7;
+              const lift = isHovered ? -16 : (isActive ? -6 : 0);
+              const scale = isHovered ? 1.06 : (isActive ? 1.02 : 1);
+              const subtleRotate = (idx - 2.5) * 0.5;
 
               cardTransform = `translate3d(${neighborShift}px, ${lift}px, 0) scale(${scale}) rotate(${subtleRotate}deg)`;
               cardZIndex = isHovered ? 60 : (isActive ? 40 : 10);
@@ -506,6 +605,11 @@ export function RoleCardDeck({
                 {/* Specular Diagonal Reflection Sweep */}
                 <div className="card-glass-specular-sweep" />
 
+                {/* ── Category Badge ── */}
+                <div className="role-card-badge" style={{ color: role.color }}>
+                  {role.phase || role.category}
+                </div>
+
                 {/* ── Profile Illustration (Dominant Card Element, No Background Box) ── */}
                 <div className="role-illustration-container">
                   {IllustrationComp ? (
@@ -532,7 +636,6 @@ export function RoleCardDeck({
 
                 {/* ── Role Title & Description ── */}
                 <div className="role-text-meta">
-
                   <h3 className="role-card-title">{role.title}</h3>
                   <p className="role-card-desc">{role.desc}</p>
                 </div>
@@ -557,14 +660,14 @@ export function RoleCardDeck({
             aria-label="Next role"
             type="button"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={22} />
           </button>
         )}
       </div>
 
       {/* ── Pagination Dots ── */}
       <div className="deck-pagination-dots">
-        {ROLES_DATA.map((_, idx) => (
+        {filteredRoles.map((_, idx) => (
           <button
             key={idx}
             type="button"
