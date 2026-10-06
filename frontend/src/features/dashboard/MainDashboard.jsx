@@ -17,6 +17,8 @@ import ReportsModule from '../reports/ReportsModule';
 import AnalyticsModule from '../analytics/AnalyticsModule';
 import AuditTraceabilityModule from '../audit/AuditTraceabilityModule';
 import BUCoordinatorModule from '../reviewers/bu/BUCoordinatorModule';
+import SubsidiaryHeadModule from '../reviewers/subsidiary/SubsidiaryHeadModule';
+import GroupCSOModule from '../reviewers/group/GroupCSOModule';
 
 export default function MainDashboard({
   user = { name: 'Rohit Kumar', email: 'rohit.kumar@meil.in' },
@@ -56,6 +58,22 @@ export default function MainDashboard({
       {role?.id === 'BU_COORDINATOR' ? (
         <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
           <BUCoordinatorModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'SUBSIDIARY_HEAD' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <SubsidiaryHeadModule 
+            user={user} 
+            activeTab={activeTab} 
+            onTabChange={onTabChange} 
+          />
+        </div>
+      ) : role?.id === 'GROUP_CSO' ? (
+        <div style={{ maxWidth: '1720px', width: '98%', margin: '14px auto 0', padding: '0 8px', position: 'relative', zIndex: 10 }}>
+          <GroupCSOModule 
             user={user} 
             activeTab={activeTab} 
             onTabChange={onTabChange} 

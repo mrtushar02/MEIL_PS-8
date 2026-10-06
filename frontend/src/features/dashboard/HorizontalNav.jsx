@@ -25,7 +25,10 @@ import {
   Target,
   Users2,
   AlertCircle,
-  Inbox
+  Inbox,
+  Shield,
+  Lock,
+  Award
 } from 'lucide-react';
 
 export default function HorizontalNav({
@@ -125,6 +128,34 @@ export default function HorizontalNav({
           { id: 'audit', label: 'Audit & Traceability', icon: Clock },
           { id: 'more', label: 'More', icon: MoreHorizontal }
         ];
+      case 'SUBSIDIARY_HEAD':
+        return [
+          { id: 'overview', label: 'Overview', icon: Home },
+          { id: 'bu-review', label: 'BU Review Center', icon: Inbox },
+          { id: 'package-detail', label: 'Package Cockpit', icon: Layers },
+          { id: 'esg-performance', label: 'Consolidated ESG', icon: BarChart3 },
+          { id: 'brsr-impact', label: 'BRSR Impact', icon: Target },
+          { id: 'approvals', label: 'Approval Center', icon: CheckSquare },
+          { id: 'evidence', label: 'Evidence Vault', icon: Paperclip },
+          { id: 'exceptions', label: 'Exceptions & Risks', icon: AlertCircle },
+          { id: 'reports', label: 'Reports & Audit', icon: FileText },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
+      case 'GROUP_CSO':
+        return [
+          { id: 'overview', label: 'Command Center', icon: Shield },
+          { id: 'hierarchy', label: '4-Tier Hierarchy', icon: Layers },
+          { id: 'enterprise-esg', label: 'Enterprise ESG', icon: BarChart3 },
+          { id: 'brsr-command', label: 'BRSR Command', icon: Award },
+          { id: 'assurance', label: 'Assurance Center', icon: CheckSquare },
+          { id: 'final-lock', label: 'Statutory Lock', icon: Lock },
+          { id: 'risk', label: 'Risk Register', icon: ShieldAlert },
+          { id: 'statutory-reports', label: 'Statutory Reports', icon: FileText },
+          { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+          { id: 'audit', label: 'Audit Trail', icon: Clock },
+          { id: 'panoramic', label: 'Executive Panoramic', icon: Home },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
+        ];
       case 'PROJECT_OFFICER':
       default:
         return [
@@ -197,6 +228,19 @@ export default function HorizontalNav({
           { id: 'evidence', label: 'HR Evidence Vault', icon: Paperclip, tag: 'EPF/ESI' },
           { id: 'submissions', label: 'Statutory Filings', icon: Send, tag: 'Form IV' },
           { id: 'reports', label: 'BRSR Principle 3 Report', icon: BarChart3, tag: 'Annexure' },
+        ];
+      case 'SUBSIDIARY_HEAD':
+        return [
+          { id: 'package-detail', label: 'BU Package Cockpit', icon: Layers, tag: 'DETAIL' },
+          { id: 'approvals', label: 'Approval Sign-off Center', icon: CheckSquare, tag: 'SIGN' },
+          { id: 'exceptions', label: 'Risk Mitigation Desk', icon: AlertCircle, tag: 'RISK' }
+        ];
+      case 'GROUP_CSO':
+        return [
+          { id: 'hierarchy', label: 'Group 4-Tier Tree', icon: Layers, tag: 'ORG' },
+          { id: 'assurance', label: 'PwC Assurance Workstreams', icon: CheckSquare, tag: 'AUDIT' },
+          { id: 'final-lock', label: 'Period Lock Ceremony', icon: Lock, tag: 'SEAL' },
+          { id: 'panoramic', label: 'Executive Panoramic View', icon: Home, tag: 'BOARD' }
         ];
       case 'PROJECT_OFFICER':
       default:
