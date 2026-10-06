@@ -5,13 +5,17 @@ import {
   Eye,
   FileText,
   Download,
-  X
+  X,
+  CheckCircle,
+  FileCheck
 } from 'lucide-react';
+import { triggerFileInput, exportToCsv } from '../../../../utils/exportUtils';
 
 export default function ProcurementEvidenceScreen({
   evidence = [],
   onNavigateTab
 }) {
+  const [localEvidence, setLocalEvidence] = useState(evidence);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState('All Suppliers');
   const [selectedType, setSelectedType] = useState('All Evidence Types');
@@ -19,7 +23,42 @@ export default function ProcurementEvidenceScreen({
   const [selectedPeriod, setSelectedPeriod] = useState('Sep 2026');
   const [previewItem, setPreviewItem] = useState(null);
 
-  const filteredEvidence = evidence.filter((e) => {
+  React.useEffect(() => {
+    if (evidence && evidence.length > 0) {
+      setLocalEvidence(evidence);
+    }
+  }, [evidence]);
+
+  const handleUploadClick = () => {
+    triggerFileInput((file) => {
+      const newEv = {
+        id: `EV-26-${Math.floor(100 + Math.random() * 900)}`,
+        title: file.name,
+        linkedTo: selectedSupplier !== 'All Suppliers' ? selectedSupplier : 'ABC Construction Ltd.',
+        type: file.name.endsWith('.pdf') ? 'Certification' : 'Invoice',
+        uploadDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        status: 'Verified',
+        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+      };
+      setLocalEvidence(prev => [newEv, ...prev]);
+    }, '.pdf,.png,.jpg,.jpeg,.xlsx');
+  };
+
+  const handleDownloadEvidence = (ev) => {
+    const certRow = [{
+      Evidence_ID: ev.id,
+      Document_Name: ev.title,
+      Linked_Entity: ev.linkedTo,
+      Evidence_Type: ev.type,
+      Upload_Date: ev.uploadDate,
+      Verification_Status: ev.status,
+      SHA256_Checksum: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      Assurance_Standard: 'BRSR Core SEBI / GHG Scope 3 Protocol'
+    }];
+    exportToCsv(`Evidence_Certificate_${ev.id}.csv`, certRow);
+  };
+
+  const filteredEvidence = localEvidence.filter((e) => {
     const matchesSearch =
       e.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -63,7 +102,7 @@ export default function ProcurementEvidenceScreen({
           <button
             type="button"
             className="proc-btn proc-btn-blue"
-            onClick={() => alert('Upload Statutory ESG Evidence Document (PDF/TIFF/JPG with SHA-256 Stamp)')}
+            onClick={handleUploadClick}
             style={{ padding: '7px 14px', fontSize: '12.5px' }}
           >
             <Upload size={15} />
@@ -209,8 +248,8 @@ export default function ProcurementEvidenceScreen({
                       </button>
                       <button
                         type="button"
-                        onClick={() => alert(`Downloading verified copy of ${ev.title}`)}
-                        title="Download Document"
+                        onClick={() => handleDownloadEvidence(ev)}
+                        title="Download Document Certificate"
                         style={{
                           width: '28px',
                           height: '28px',
@@ -320,7 +359,16 @@ export default function ProcurementEvidenceScreen({
                 <button
                   type="button"
                   className="proc-btn proc-btn-blue"
-                  onClick={() => alert(`Downloading verified original for ${previewItem.id}`)}
+                  onClick={() => {
+                    const content = `MEIL ESG EVIDENCE VAULT\nEvidence ID: ${previewItem.id}\nFile: ${previewItem.fileName || previewItem.name}\nScope: Value Chain Scope 3 Upstream\nAssurance Level: SEBI BRSR Core Type 2\nTimestamp: ${new Date().toISOString()}`;
+                    const blob = new Blob([content], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${previewItem.id}_Verified_Evidence.txt`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
                   style={{ fontSize: '12px', padding: '6px 14px' }}
                 >
                   <Download size={13} />

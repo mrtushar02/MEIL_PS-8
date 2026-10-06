@@ -20,6 +20,7 @@ export function RoleLoginPanel({ selectedRole, onChangeRole, onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [showHelpdesk, setShowHelpdesk] = useState(false);
 
   const IllustrationComp = selectedRole.illustration;
 
@@ -167,15 +168,17 @@ export function RoleLoginPanel({ selectedRole, onChangeRole, onLoginSuccess }) {
             <button
               type="button"
               className="forgot-password-link"
-              onClick={() =>
-                alert(
-                  'MEIL Enterprise IT Helpdesk\nContact it.helpdesk@meilgroup.in or dial ext. 4401 to reset single sign-on access.'
-                )
-              }
+              onClick={() => setShowHelpdesk(!showHelpdesk)}
             >
               Forgot password?
             </button>
           </div>
+
+          {showHelpdesk && (
+            <div style={{ margin: '-6px 0 12px', padding: '10px 14px', background: 'rgba(37,99,235,0.08)', borderRadius: '8px', fontSize: '11.5px', color: '#1D4ED8', lineHeight: 1.4, border: '1px solid rgba(37,99,235,0.18)' }}>
+              <strong>MEIL Enterprise IT Helpdesk:</strong> Contact <code>it.helpdesk@meilgroup.in</code> or dial ext. 4401 to reset your SSO credentials.
+            </div>
+          )}
 
           {/* Submit Sign In Button */}
           <button

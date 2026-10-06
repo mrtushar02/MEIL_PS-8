@@ -22,10 +22,7 @@ export default function CreateCSRProjectModal({ isOpen, onClose, onAddProject })
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name) {
-      alert('Please enter a project name.');
-      return;
-    }
+    if (!formData.name) return;
     const newProject = {
       ...formData,
       budget_cr: parseFloat(formData.budget_cr) || 1.0,

@@ -42,12 +42,27 @@ export default function CSRModule({
   const [selectedProject, setSelectedProject] = useState(INITIAL_CSR_PROJECTS[0]);
 
   useEffect(() => {
+    // 1. Fetch CSR Projects
     api.getCSRProjects().then(data => {
       if (Array.isArray(data) && data.length > 0) {
         setProjects(data);
         setSelectedProject(data[0]);
       }
-    }).catch(err => console.warn('Backend CSR projects fetch failed:', err));
+    }).catch(err => console.warn('Backend CSR projects fetch fallback:', err));
+
+    // 2. Fetch CSR Communities
+    api.getCSRCommunities().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setCommunities(data);
+      }
+    }).catch(err => console.warn('Backend CSR communities fetch fallback:', err));
+
+    // 3. Fetch CSR Grievances
+    api.getCSRGrievances().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setGrievances(data);
+      }
+    }).catch(err => console.warn('Backend CSR grievances fetch fallback:', err));
   }, []);
 
   // Modal open states

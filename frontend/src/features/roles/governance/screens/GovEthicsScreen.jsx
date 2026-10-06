@@ -7,8 +7,11 @@ import {
   Hourglass,
   Eye,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Download,
+  ShieldAlert
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovEthicsScreen({
   cases = [],
@@ -18,8 +21,61 @@ export default function GovEthicsScreen({
   const [catFilter, setCatFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sevFilter, setSevFilter] = useState('all');
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [localCases, setLocalCases] = useState(cases);
+  const [newCase, setNewCase] = useState({
+    category: 'Whistleblower',
+    severity: 'High',
+    scope: 'Supply Chain Operations',
+    description: 'Anonymous report regarding procurement bid evaluation protocol'
+  });
 
-  const filtered = cases.filter(c => {
+  React.useEffect(() => {
+    if (cases && cases.length > 0) {
+      setLocalCases(cases);
+    }
+  }, [cases]);
+
+  const handleExport = () => {
+    const rows = localCases.map(c => ({
+      ID: c.id,
+      Category: c.category,
+      Severity: c.severity,
+      Scope: c.scope,
+      Status: c.status,
+      Owner: c.owner,
+      DueDate: c.dueDate,
+      Resolution: c.resolution
+    }));
+    exportToCsv('MEIL_Ethics_and_Conduct_Registry', rows);
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `ETH-${Date.now().toString().slice(-4)}`,
+      category: newCase.category,
+      severity: newCase.severity,
+      scope: newCase.scope,
+      description: newCase.description,
+      owner: 'Ethics Officer',
+      dueDate: '15 Nov 2026',
+      status: 'Investigation',
+      resolution: 'Ombudsman investigation initiated under Whistleblower Charter'
+    };
+    setLocalCases([created, ...localCases]);
+    setIsRegisterOpen(false);
+  };
+
+  const handleResolveCase = (id) => {
+    setLocalCases(prev => prev.map(c => c.id === id ? { ...c, status: 'Resolved', resolution: 'Investigation concluded with corrective action.' } : c));
+    if (selectedCase && selectedCase.id === id) {
+      setSelectedCase({ ...selectedCase, status: 'Resolved', resolution: 'Investigation concluded with corrective action.' });
+    }
+  };
+
+  const filtered = localCases.filter(c => {
     const matchesCat = catFilter === 'all' || c.category.toLowerCase().includes(catFilter.toLowerCase());
     const matchesStatus = statusFilter === 'all' || c.status.toLowerCase().replace(/\s+/g, '-') === statusFilter;
     const matchesSev = sevFilter === 'all' || c.severity.toLowerCase() === sevFilter.toLowerCase();
@@ -72,10 +128,18 @@ export default function GovEthicsScreen({
             </select>
             <button 
               className="gov-btn gov-btn-primary"
-              onClick={onOpenRegisterCase}
+              onClick={onOpenRegisterCase || (() => setIsRegisterOpen(true))}
             >
               <Plus size={15} />
               Register Case
+            </button>
+            <button 
+              className="gov-btn gov-btn-outline"
+              onClick={handleExport}
+              title="Export Ethics Cases to CSV"
+            >
+              <Download size={14} />
+              Export
             </button>
           </div>
         </div>
@@ -184,7 +248,7 @@ export default function GovEthicsScreen({
                     <button 
                       className="gov-page-btn"
                       title="View Confidential Case Details"
-                      onClick={() => alert(`Confidential Case ${item.id}:\n${item.description}\nScope: ${item.scope}\nStatus: ${item.status}\nResolution: ${item.resolution}`)}
+                      onClick={() => setSelectedCase(item)}
                     >
                       <Eye size={13} />
                     </button>
@@ -197,7 +261,7 @@ export default function GovEthicsScreen({
 
         {/* ──── PAGINATION ROW ──── */}
         <div className="gov-pagination-row">
-          <span>Showing 1 to {filtered.length} of {cases.length} cases</span>
+          <span>Showing 1 to {filtered.length} of {localCases.length} cases</span>
           <div className="gov-pagination-buttons">
             <button className="gov-page-btn" disabled><ChevronLeft size={14} /></button>
             <button className="gov-page-btn active">1</button>
@@ -205,6 +269,123 @@ export default function GovEthicsScreen({
           </div>
         </div>
       </div>
+
+      {/* CONFIDENTIAL CASE MODAL */}
+      {selectedCase && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 520, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className={`gov-status-chip gov-status-${selectedCase.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {selectedCase.status}
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedCase.id} - {selectedCase.category}</h3>
+              </div>
+              <button onClick={() => setSelectedCase(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Category:</strong> {selectedCase.category}</div>
+              <div><strong>Severity:</strong> <span style={{ color: selectedCase.severity === 'Critical' ? '#DC2626' : '#D97706', fontWeight: 700 }}>{selectedCase.severity}</span></div>
+              <div><strong>Investigator:</strong> {selectedCase.owner}</div>
+              <div><strong>Due Date:</strong> {selectedCase.dueDate}</div>
+              <div><strong>Scope:</strong> {selectedCase.scope}</div>
+              <div><strong>Status:</strong> {selectedCase.status}</div>
+            </div>
+            <div style={{ marginTop: 14, fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+              <strong>Description:</strong> {selectedCase.description}
+            </div>
+            {selectedCase.resolution && (
+              <div style={{ marginTop: 10, fontSize: '13px', color: '#166534', background: '#F0FDF4', padding: 10, borderRadius: 8 }}>
+                <strong>Resolution Protocol:</strong> {selectedCase.resolution}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="gov-btn gov-btn-outline"
+                onClick={() => setSelectedCase(null)}
+              >
+                Close
+              </button>
+              {selectedCase.status !== 'Resolved' && (
+                <button
+                  type="button"
+                  className="gov-btn gov-btn-primary"
+                  onClick={() => handleResolveCase(selectedCase.id)}
+                >
+                  <CheckCircle2 size={14} style={{ marginRight: 4 }} />
+                  Resolve Case
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REGISTER ETHICS CASE MODAL */}
+      {isRegisterOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Register Ethics / Whistleblower Case</h3>
+            <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Category</label>
+                <select
+                  value={newCase.category}
+                  onChange={e => setNewCase({ ...newCase, category: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                >
+                  <option value="Whistleblower">Whistleblower</option>
+                  <option value="Conflict of Interest">Conflict of Interest</option>
+                  <option value="Fraud">Fraud</option>
+                  <option value="Misconduct">Misconduct</option>
+                  <option value="Policy Violation">Policy Violation</option>
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Severity</label>
+                  <select
+                    value={newCase.severity}
+                    onChange={e => setNewCase({ ...newCase, severity: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                  >
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Scope / Division</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCase.scope}
+                    onChange={e => setNewCase({ ...newCase, scope: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Confidential Allegation / Details</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={newCase.description}
+                  onChange={e => setNewCase({ ...newCase, description: e.target.value })}
+                  placeholder="Detail the report while preserving ombudsman confidentiality..."
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 12 }}>
+                <button type="button" className="gov-btn gov-btn-outline" onClick={() => setIsRegisterOpen(false)}>Cancel</button>
+                <button type="submit" className="gov-btn gov-btn-primary">File Confidential Report</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,18 +7,54 @@ import {
   Users,
   CheckCircle2,
   Eye,
-  Edit2
+  Edit2,
+  X
 } from 'lucide-react';
 import { INITIAL_COMMUNITIES } from '../csrData';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRCommunityScreen({
   communities = INITIAL_COMMUNITIES,
   onNavigateTab
 }) {
+  const [localCommunities, setLocalCommunities] = useState(communities);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPin, setSelectedPin] = useState('Odisha');
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [viewCommunity, setViewCommunity] = useState(null);
+  const [editCommunity, setEditCommunity] = useState(null);
+  const [newCommForm, setNewCommForm] = useState({
+    name: '',
+    district: '',
+    state: 'Odisha',
+    population: 2500,
+    projects_count: 1
+  });
 
-  const filteredCommunities = communities.filter((c) =>
+  React.useEffect(() => {
+    if (communities && communities.length > 0) {
+      setLocalCommunities(communities);
+    }
+  }, [communities]);
+
+  const handleAddSubmit = (e) => {
+    e.preventDefault();
+    if (!newCommForm.name) return;
+    const created = {
+      id: `COMM-${Date.now().toString().slice(-4)}`,
+      name: newCommForm.name,
+      district: newCommForm.district || 'Khordha',
+      state: newCommForm.state,
+      population: parseInt(newCommForm.population) || 2500,
+      projects_count: parseInt(newCommForm.projects_count) || 1,
+      status: 'Active'
+    };
+    setLocalCommunities([created, ...localCommunities]);
+    setIsAddOpen(false);
+    setNewCommForm({ name: '', district: '', state: 'Odisha', population: 2500, projects_count: 1 });
+  };
+
+  const filteredCommunities = localCommunities.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.district.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.state.toLowerCase().includes(searchQuery.toLowerCase())
@@ -43,7 +79,7 @@ export default function CSRCommunityScreen({
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-primary" onClick={() => alert('Opening Add Community Dialog...')}>
+            <button className="csr-btn-primary" onClick={() => setIsAddOpen(true)}>
               <Plus size={16} />
               + Add Community
             </button>
@@ -142,7 +178,7 @@ export default function CSRCommunityScreen({
                           className="csr-btn-outline"
                           style={{ padding: '4px 8px' }}
                           title="View Profile"
-                          onClick={() => alert(`Viewing Community Profile: ${c.name}, ${c.district}`)}
+                          onClick={() => setViewCommunity(c)}
                         >
                           <Eye size={13} />
                         </button>
@@ -150,7 +186,7 @@ export default function CSRCommunityScreen({
                           className="csr-btn-outline"
                           style={{ padding: '4px 8px' }}
                           title="Edit"
-                          onClick={() => alert(`Edit ${c.name}`)}
+                          onClick={() => setEditCommunity(c)}
                         >
                           <Edit2 size={13} />
                         </button>
@@ -296,6 +332,273 @@ export default function CSRCommunityScreen({
           </div>
         </div>
       </div>
+
+      {/* Add Community Modal */}
+      {isAddOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setIsAddOpen(false)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                Add New Community Location
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Community / Village Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rampur Village"
+                  value={newCommForm.name}
+                  onChange={(e) => setNewCommForm({ ...newCommForm, name: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>District</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Khordha"
+                    value={newCommForm.district}
+                    onChange={(e) => setNewCommForm({ ...newCommForm, district: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>State</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Odisha"
+                    value={newCommForm.state}
+                    onChange={(e) => setNewCommForm({ ...newCommForm, state: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Estimated Population Reach</label>
+                <input
+                  type="number"
+                  value={newCommForm.population}
+                  onChange={(e) => setNewCommForm({ ...newCommForm, population: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="csr-btn-outline"
+                  onClick={() => setIsAddOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="csr-btn-primary"
+                >
+                  Save Community
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Community Modal */}
+      {viewCommunity && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setViewCommunity(null)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                  {viewCommunity.name} ({viewCommunity.id})
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  {viewCommunity.district}, {viewCommunity.state}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewCommunity(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '14px 0' }}>
+              <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Population</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>{viewCommunity.population?.toLocaleString()}</div>
+              </div>
+              <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Active CSR Projects</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#2563EB' }}>{viewCommunity.projects_count} Programs</div>
+              </div>
+            </div>
+
+            <div style={{ padding: '12px', background: '#EFF6FF', borderRadius: '10px', fontSize: '12.5px', color: '#1E293B', lineHeight: 1.5 }}>
+              MEIL Impact: Safe drinking water RO plants and solar microgrids operational since 2024. Monitored under BRSR Principle 8.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+              <button
+                type="button"
+                className="csr-btn-outline"
+                onClick={() => setViewCommunity(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Community Modal */}
+      {editCommunity && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setEditCommunity(null)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                Edit Community: {editCommunity.name}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditCommunity(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Community Name</label>
+                <input
+                  type="text"
+                  value={editCommunity.name}
+                  onChange={(e) => setEditCommunity({ ...editCommunity, name: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>District</label>
+                <input
+                  type="text"
+                  value={editCommunity.district}
+                  onChange={(e) => setEditCommunity({ ...editCommunity, district: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="csr-btn-outline"
+                  onClick={() => setEditCommunity(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="csr-btn-primary"
+                  onClick={() => {
+                    setLocalCommunities(prev => prev.map(c => c.id === editCommunity.id ? editCommunity : c));
+                    setEditCommunity(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

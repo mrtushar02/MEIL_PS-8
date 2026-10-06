@@ -212,7 +212,6 @@ export default function GovernanceModule({
         return (
           <GovControlsScreen
             controls={controls}
-            onOpenAddControl={() => alert('Opening Add Control configuration...')}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -221,7 +220,6 @@ export default function GovernanceModule({
         return (
           <GovAssessmentsScreen
             assessments={assessments}
-            onOpenStartAssessment={() => alert('Starting new periodic compliance assessment...')}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -256,7 +254,6 @@ export default function GovernanceModule({
         return (
           <GovActionsScreen
             actions={actions}
-            onOpenCreateAction={() => alert('Creating CAPA / Compliance Action...')}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -265,7 +262,6 @@ export default function GovernanceModule({
         return (
           <GovDisclosuresScreen
             disclosures={disclosures}
-            onOpenCreateRecord={() => alert('Creating Governance Disclosure record...')}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -274,7 +270,6 @@ export default function GovernanceModule({
         return (
           <GovEvidenceScreen
             evidenceItems={evidenceItems}
-            onOpenUploadEvidence={() => alert('Opening Evidence Upload Dialog...')}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -283,7 +278,6 @@ export default function GovernanceModule({
         return (
           <GovSubmissionsScreen
             submissions={submissions}
-            onOpenCreateSubmission={() => alert('Initiating new governance submission workflow...')}
             onNavigateTab={onNavigateTab}
           />
         );

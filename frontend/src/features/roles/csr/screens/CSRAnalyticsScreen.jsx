@@ -10,6 +10,7 @@ import {
   Plus
 } from 'lucide-react';
 import { SPEND_TREND_DATA, BENEFICIARIES_TREND_DATA } from '../csrData';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRAnalyticsScreen({
   onNavigateTab,
@@ -23,6 +24,17 @@ export default function CSRAnalyticsScreen({
     { name: 'Environment', value: 12, count: 3, color: '#8B5CF6' },
     { name: 'Others', value: 6, count: 1, color: '#64748B' }
   ];
+
+  const handleExport = () => {
+    const exportRows = projectCategoryData.map(cat => ({
+      Category: cat.name,
+      Allocation_Percent: `${cat.value}%`,
+      Active_Projects: cat.count,
+      Reporting_Entity: 'MEIL Group CSR Foundation',
+      Statutory_Mandate: 'Companies Act 2013 Sec 135 (2% Net Profit)'
+    }));
+    exportToCsv('MEIL_CSR_Portfolio_Analytics', exportRows);
+  };
 
   const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
 
@@ -45,11 +57,11 @@ export default function CSRAnalyticsScreen({
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-secondary" onClick={onOpenRegisterGrievance || (() => alert('Opening Grievance Register...'))}>
+            <button className="csr-btn-secondary" onClick={onOpenRegisterGrievance || (() => onNavigateTab?.('grievances'))}>
               <Plus size={16} />
               + Register Grievance
             </button>
-            <button className="csr-btn-outline" onClick={() => alert('Exporting CSR ESG Analytics Pack (PDF/Excel)...')}>
+            <button className="csr-btn-outline" onClick={handleExport}>
               <Download size={15} />
               Export Analytics
             </button>

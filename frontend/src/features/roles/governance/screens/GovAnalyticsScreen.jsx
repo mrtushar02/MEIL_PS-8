@@ -6,10 +6,23 @@ import {
   CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovAnalyticsScreen({
   onNavigateTab
 }) {
+  const handleExport = () => {
+    const rows = [
+      { Metric: 'Overall Compliance Index', Value: '94.2%', Benchmark: '90.0%', Status: 'Optimal' },
+      { Metric: 'Statutory Policies In Force', Value: '10 / 10 Active', Benchmark: '100%', Status: 'Compliant' },
+      { Metric: 'Internal Control Effectiveness', Value: '91.8%', Benchmark: '85.0%', Status: 'Effective' },
+      { Metric: 'Audit Non-Conformances', Value: '0 Critical / 3 Minor', Benchmark: '0 Critical', Status: 'Under Remediation' },
+      { Metric: 'Whistleblower Resolution Rate', Value: '92.5%', Benchmark: '90.0%', Status: 'Timely' },
+      { Metric: 'SEBI BRSR Principle 1 Alignment', Value: '100%', Benchmark: '100%', Status: 'Fully Aligned' }
+    ];
+    exportToCsv('MEIL_Governance_Compliance_Analytics', rows);
+  };
+
   return (
     <div className="gov-module-root">
       {/* ──── HEADER BAR ──── */}
@@ -31,7 +44,7 @@ export default function GovAnalyticsScreen({
             </select>
             <button 
               className="gov-btn gov-btn-outline"
-              onClick={() => alert('Exporting full Governance & Compliance analytics report...')}
+              onClick={handleExport}
             >
               <Download size={14} />
               Export

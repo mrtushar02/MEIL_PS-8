@@ -5,8 +5,10 @@ import {
   CheckCircle2,
   Download,
   FileSignature,
-  ExternalLink
+  ExternalLink,
+  ShieldCheck
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovPolicyDetailScreen({
   policy = {
@@ -31,6 +33,43 @@ export default function GovPolicyDetailScreen({
   onNavigateTab
 }) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewStatus, setReviewStatus] = useState(policy.status || 'Active');
+
+  const handleExportPdf = () => {
+    const rows = [{
+      Policy_ID: policy.id,
+      Policy_Title: policy.name,
+      Category: policy.category,
+      Department: policy.department,
+      Owner: policy.ownerName || policy.owner,
+      Effective_Date: policy.effectiveDate,
+      Review_Date: policy.reviewDate,
+      Version: policy.version,
+      Status: reviewStatus,
+      Scope: policy.scope,
+      Applicability: policy.applicability,
+      Statutory_Charter: policy.description
+    }];
+    exportToCsv(`MEIL_Policy_Dossier_${policy.id}`, rows);
+  };
+
+  const handleDownloadStamped = () => {
+    const rows = [{
+      Document_Code: `${policy.id}-OFFICIAL-STAMPED`,
+      Policy_Name: policy.name,
+      Version: policy.version,
+      Board_Approval_Status: 'Approved & Signed',
+      Cryptographic_Seal: 'sha256_b48f93a10738e4cd09312fe',
+      Secretariat_Signoff: 'General Counsel & Compliance Officer'
+    }];
+    exportToCsv(`MEIL_Stamped_Policy_${policy.id}`, rows);
+  };
+
+  const handleStartReview = () => {
+    setReviewStatus('Under Review');
+    setIsReviewModalOpen(false);
+  };
 
   return (
     <div className="gov-module-root">
@@ -72,14 +111,14 @@ export default function GovPolicyDetailScreen({
           <div className="gov-header-controls">
             <button 
               className="gov-btn gov-btn-outline"
-              onClick={() => alert(`Exporting official PDF for ${policy.id}`)}
+              onClick={handleExportPdf}
             >
               <Download size={14} />
-              Export PDF
+              Export Dossier
             </button>
             <button 
               className="gov-btn gov-btn-primary"
-              onClick={() => alert(`Starting review workflow for ${policy.id}`)}
+              onClick={() => setIsReviewModalOpen(true)}
             >
               <FileSignature size={14} />
               Start Review
@@ -160,10 +199,10 @@ export default function GovPolicyDetailScreen({
                   <button 
                     className="gov-btn gov-btn-secondary" 
                     style={{ height: '30px', padding: '0 12px', fontSize: '12px' }}
-                    onClick={() => alert('Downloading official stamped policy document...')}
+                    onClick={handleDownloadStamped}
                   >
                     <Download size={13} />
-                    Download
+                    Download Stamped PDF
                   </button>
                 </div>
               </div>
@@ -270,6 +309,46 @@ export default function GovPolicyDetailScreen({
           </div>
         )}
       </div>
+
+      {/* START REVIEW MODAL */}
+      {isReviewModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileSignature size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>Initiate Policy Review</h3>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>{policy.id} • {policy.name}</span>
+                </div>
+              </div>
+              <button onClick={() => setIsReviewModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, marginBottom: 16 }}>
+              This will route the policy charter to the Legal & Ethics Review Board for scheduled revision and stakeholder impact assessment.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button
+                type="button"
+                className="gov-btn gov-btn-outline"
+                onClick={() => setIsReviewModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="gov-btn gov-btn-primary"
+                onClick={handleStartReview}
+              >
+                <FileSignature size={14} style={{ marginRight: 4 }} />
+                Initiate Review Workflow
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

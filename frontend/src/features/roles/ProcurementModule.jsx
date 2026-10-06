@@ -45,12 +45,41 @@ export default function ProcurementModule({
   const [actionItems, setActionItems] = useState(INITIAL_ACTION_CENTER_ITEMS);
 
   useEffect(() => {
+    // 1. Fetch live suppliers
     api.getSuppliers().then(data => {
       if (Array.isArray(data) && data.length > 0) {
         setSuppliers(data);
         setSelectedSupplier(data[0]);
       }
     }).catch(err => console.warn('Backend suppliers fetch failed:', err));
+
+    // 2. Fetch live transactions
+    api.getProcurementTransactions().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setTransactions(data);
+      }
+    }).catch(err => console.warn('Backend transactions fetch failed:', err));
+
+    // 3. Fetch live assessments
+    api.getSupplierAssessments().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setAssessments(data);
+      }
+    }).catch(err => console.warn('Backend assessments fetch failed:', err));
+
+    // 4. Fetch live risks
+    api.getSupplierRisks().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setRisks(data);
+      }
+    }).catch(err => console.warn('Backend risks fetch failed:', err));
+
+    // 5. Fetch live actions
+    api.getProcurementActions().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setActions(data);
+      }
+    }).catch(err => console.warn('Backend actions fetch failed:', err));
   }, []);
 
   // Selected supplier for detail view
@@ -76,11 +105,31 @@ export default function ProcurementModule({
     setSuppliers((prev) => [newSupplier, ...prev]);
   };
 
-  const handleLogProcurement = (newTx) => {
+  const handleLogProcurement = async (newTx) => {
+    try {
+      await api.createProcurementTransaction(newTx);
+      const data = await api.getProcurementTransactions();
+      if (Array.isArray(data) && data.length > 0) {
+        setTransactions(data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Real transaction creation fallback:', e);
+    }
     setTransactions((prev) => [newTx, ...prev]);
   };
 
-  const handleStartAssessment = (newAss) => {
+  const handleStartAssessment = async (newAss) => {
+    try {
+      await api.createSupplierAssessment(newAss);
+      const data = await api.getSupplierAssessments();
+      if (Array.isArray(data) && data.length > 0) {
+        setAssessments(data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Real assessment creation fallback:', e);
+    }
     setAssessments((prev) => [newAss, ...prev]);
   };
 

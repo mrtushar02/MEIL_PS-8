@@ -12,6 +12,7 @@ import {
   PauseCircle,
   Award
 } from 'lucide-react';
+import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
 
 export default function CSRProjectsScreen({
   projects = [],
@@ -22,6 +23,25 @@ export default function CSRProjectsScreen({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const handleImportProjects = () => {
+    triggerFileInput((file) => {
+      console.log('Ingested CSR file:', file.name);
+    }, '.csv,.xlsx,.xls');
+  };
+
+  const handleExportProjects = () => {
+    exportToCsv('MEIL_CSR_Project_Register.csv', filteredProjects.map(p => ({
+      Project_ID: p.id,
+      Project_Name: p.name,
+      Category: p.category,
+      Location: p.location,
+      Budget_Cr: p.budget,
+      Spend_Cr: p.spent,
+      Beneficiaries: p.beneficiaries,
+      Status: p.status
+    })));
+  };
 
   const filteredProjects = projects.filter((p) => {
     const matchesSearch =
@@ -71,11 +91,11 @@ export default function CSRProjectsScreen({
               <Plus size={16} />
               + Create Project
             </button>
-            <button className="csr-btn-outline" onClick={() => alert('Opening Bulk CSR Import (CSV/Excel)...')}>
+            <button className="csr-btn-outline" onClick={handleImportProjects} title="Import CSR Projects">
               <Upload size={15} />
               Import
             </button>
-            <button className="csr-btn-outline" onClick={() => alert('Exporting CSR Project Register (PDF/XLSX)...')}>
+            <button className="csr-btn-outline" onClick={handleExportProjects} title="Export CSR Projects to CSV">
               <Download size={15} />
               Export
             </button>
@@ -236,7 +256,10 @@ export default function CSRProjectsScreen({
                       className="csr-btn-outline"
                       style={{ padding: '4px 8px', fontSize: '11.5px' }}
                       title="Edit Project"
-                      onClick={() => alert(`Edit project details for ${p.id}`)}
+                      onClick={() => {
+                        onSelectProject?.(p);
+                        onNavigateTab?.('project-detail');
+                      }}
                     >
                       <Edit2 size={13} />
                     </button>

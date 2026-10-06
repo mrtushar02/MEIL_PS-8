@@ -6,8 +6,12 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  X,
+  FileCheck2,
+  ShieldCheck
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function SupplierAssessmentsScreen({
   assessments = [],
@@ -19,6 +23,20 @@ export default function SupplierAssessmentsScreen({
   const [selectedType, setSelectedType] = useState('All Assessment Types');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [selectedRisk, setSelectedRisk] = useState('All Risk Levels');
+  const [selectedDetailAssessment, setSelectedDetailAssessment] = useState(null);
+
+  const handleDownloadTemplate = () => {
+    const templateData = [
+      { Question_ID: 'Q-E01', Pillar: 'Environmental', Question: 'Does the supplier report Scope 1 and Scope 2 GHG emissions as per GHG Protocol?', Mandatory_BRSR_Core: 'Yes', Weightage: '15%' },
+      { Question_ID: 'Q-E02', Pillar: 'Environmental', Question: 'Does the supplier hold valid ISO 14001 or equivalent environmental management system certification?', Mandatory_BRSR_Core: 'Yes', Weightage: '10%' },
+      { Question_ID: 'Q-E03', Pillar: 'Environmental', Question: 'Specific water consumption per unit of turnover tracked with zero liquid discharge (ZLD)?', Mandatory_BRSR_Core: 'Yes', Weightage: '10%' },
+      { Question_ID: 'Q-S01', Pillar: 'Social', Question: 'Are all permanent and contract workers covered by statutory PF, ESIC, and minimum wages under Indian Code on Wages?', Mandatory_BRSR_Core: 'Yes', Weightage: '20%' },
+      { Question_ID: 'Q-S02', Pillar: 'Social', Question: 'Zero tolerance policy and active POSH Committee established for prevention of sexual harassment?', Mandatory_BRSR_Core: 'Yes', Weightage: '15%' },
+      { Question_ID: 'Q-S03', Pillar: 'Social', Question: 'Lost Time Injury Frequency Rate (LTIFR) audited and reported with zero fatal accidents?', Mandatory_BRSR_Core: 'Yes', Weightage: '15%' },
+      { Question_ID: 'Q-G01', Pillar: 'Governance', Question: 'Code of Conduct, Anti-Bribery & Anti-Corruption policy endorsed and signed by Board/Directors?', Mandatory_BRSR_Core: 'Yes', Weightage: '15%' }
+    ];
+    exportToCsv('MEIL_BRSR_Core_Supplier_ESG_Assessment_Template.csv', templateData);
+  };
 
   const filteredAssessments = assessments.filter((a) => {
     const matchesSearch =
@@ -92,7 +110,8 @@ export default function SupplierAssessmentsScreen({
               type="button"
               className="proc-btn proc-btn-outline"
               style={{ padding: '7px 12px', fontSize: '12.5px' }}
-              onClick={() => alert('View BRSR Core ESG Assessment Questionnaire Templates')}
+              onClick={handleDownloadTemplate}
+              title="Download BRSR Core Questionnaire Template"
             >
               <BookOpen size={14} />
               <span>Templates</span>
@@ -221,7 +240,7 @@ export default function SupplierAssessmentsScreen({
                   <td style={{ textAlign: 'center' }}>
                     <button
                       type="button"
-                      onClick={() => alert(`View assessment ${a.id} for ${a.supplier}`)}
+                      onClick={() => setSelectedDetailAssessment(a)}
                       title="View Assessment"
                       style={{
                         width: '28px',
@@ -244,6 +263,109 @@ export default function SupplierAssessmentsScreen({
             </tbody>
           </table>
         </div>
+
+        {/* Modal for Assessment Details */}
+        {selectedDetailAssessment && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.4)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+            onClick={() => setSelectedDetailAssessment(null)}
+          >
+            <div
+              className="proc-glass-card"
+              style={{
+                width: '100%',
+                maxWidth: '600px',
+                padding: '24px',
+                borderRadius: '20px',
+                background: '#FFFFFF',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <ShieldCheck size={24} color="#2563EB" />
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                      Assessment Details: {selectedDetailAssessment.id}
+                    </h3>
+                    <div style={{ fontSize: '12px', color: '#64748B' }}>
+                      {selectedDetailAssessment.supplier} • {selectedDetailAssessment.type}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDetailAssessment(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', margin: '16px 0' }}>
+                <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>ESG Score</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#2563EB' }}>
+                    {selectedDetailAssessment.score ? `${selectedDetailAssessment.score} / 100` : 'Pending Score'}
+                  </div>
+                </div>
+                <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Risk Level</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#DC2626' }}>
+                    {selectedDetailAssessment.risk}
+                  </div>
+                </div>
+                <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Status</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
+                    {selectedDetailAssessment.status}
+                  </div>
+                </div>
+                <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Next Review</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
+                    {selectedDetailAssessment.nextReview}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ fontSize: '12.5px', color: '#475569', lineHeight: 1.5, background: '#EFF6FF', padding: '12px', borderRadius: '10px' }}>
+                <strong>Verification Note:</strong> This assessment satisfies BRSR Core Principle 2 (Value Chain Sustainability) and was verified by MEIL Group ESG Compliance Officers.
+              </div>
+
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  className="proc-btn proc-btn-outline"
+                  onClick={() => setSelectedDetailAssessment(null)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="proc-btn proc-btn-blue"
+                  onClick={() => {
+                    exportToCsv(`Assessment_${selectedDetailAssessment.id}.csv`, [selectedDetailAssessment]);
+                    setSelectedDetailAssessment(null);
+                  }}
+                >
+                  Export Record
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Pagination Bar */}
         <div style={{ padding: '12px 20px', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>

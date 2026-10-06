@@ -7,8 +7,10 @@ import {
   AlertTriangle,
   Eye,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Download
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovSubmissionsScreen({
   submissions = [],
@@ -17,8 +19,60 @@ export default function GovSubmissionsScreen({
 }) {
   const [moduleFilter, setModuleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [localSubmissions, setLocalSubmissions] = useState(submissions);
+  const [newSub, setNewSub] = useState({
+    module: 'Policies',
+    scope: 'Group Level',
+    period: 'FY 2026-27 Q2',
+    remarks: 'Statutory board approved dossier'
+  });
 
-  const filtered = submissions.filter(s => {
+  React.useEffect(() => {
+    if (submissions && submissions.length > 0) {
+      setLocalSubmissions(submissions);
+    }
+  }, [submissions]);
+
+  const handleExport = () => {
+    const rows = localSubmissions.map(s => ({
+      ID: s.id,
+      Module: s.module,
+      Scope: s.scope,
+      Period: s.period,
+      Status: s.status,
+      SubmittedBy: s.submittedBy,
+      Reviewer: s.reviewer,
+      LastUpdated: s.lastUpdated
+    }));
+    exportToCsv('MEIL_Governance_Submissions', rows);
+  };
+
+  const handleCreateSubmit = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `SUB-GOV-${Date.now().toString().slice(-4)}`,
+      module: newSub.module,
+      scope: newSub.scope,
+      period: newSub.period,
+      status: 'Submitted',
+      submittedBy: 'Adv. S. K. Nair',
+      reviewer: 'Head of Legal & Compliance',
+      lastUpdated: 'Just now'
+    };
+    setLocalSubmissions([created, ...localSubmissions]);
+    setIsCreateOpen(false);
+  };
+
+  const handleStatusChange = (id, newStatus) => {
+    setLocalSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
+    if (selectedSub && selectedSub.id === id) {
+      setSelectedSub({ ...selectedSub, status: newStatus });
+    }
+  };
+
+  const filtered = localSubmissions.filter(s => {
     const matchesMod = moduleFilter === 'all' || s.module.toLowerCase() === moduleFilter.toLowerCase();
     const matchesStatus = statusFilter === 'all' || s.status.toLowerCase().replace(/\s+/g, '-') === statusFilter;
     return matchesMod && matchesStatus;
@@ -62,10 +116,18 @@ export default function GovSubmissionsScreen({
             </select>
             <button 
               className="gov-btn gov-btn-primary"
-              onClick={onOpenCreateSubmission}
+              onClick={onOpenCreateSubmission || (() => setIsCreateOpen(true))}
             >
               <Plus size={15} />
               Create Submission
+            </button>
+            <button 
+              className="gov-btn gov-btn-outline"
+              onClick={handleExport}
+              title="Export Submissions to CSV"
+            >
+              <Download size={14} />
+              Export
             </button>
           </div>
         </div>
@@ -158,7 +220,7 @@ export default function GovSubmissionsScreen({
                     <button 
                       className="gov-page-btn"
                       title="View Submission"
-                      onClick={() => alert(`Submission ${item.id}:\nModule: ${item.module}\nStatus: ${item.status}\nSubmitted By: ${item.submittedBy}\nReviewer: ${item.reviewer}`)}
+                      onClick={() => setSelectedSub(item)}
                     >
                       <Eye size={13} />
                     </button>
@@ -171,7 +233,7 @@ export default function GovSubmissionsScreen({
 
         {/* ──── PAGINATION ROW ──── */}
         <div className="gov-pagination-row">
-          <span>Showing 1 to {filtered.length} of {submissions.length} submissions</span>
+          <span>Showing 1 to {filtered.length} of {localSubmissions.length} submissions</span>
           <div className="gov-pagination-buttons">
             <button className="gov-page-btn" disabled><ChevronLeft size={14} /></button>
             <button className="gov-page-btn active">1</button>
@@ -179,6 +241,98 @@ export default function GovSubmissionsScreen({
           </div>
         </div>
       </div>
+
+      {/* VIEW SUBMISSION MODAL */}
+      {selectedSub && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 500, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className={`gov-status-chip gov-status-${selectedSub.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {selectedSub.status}
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedSub.id}</h3>
+              </div>
+              <button onClick={() => setSelectedSub(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Module:</strong> {selectedSub.module}</div>
+              <div><strong>Scope:</strong> {selectedSub.scope}</div>
+              <div><strong>Period:</strong> {selectedSub.period}</div>
+              <div><strong>Last Updated:</strong> {selectedSub.lastUpdated}</div>
+              <div><strong>Submitted By:</strong> {selectedSub.submittedBy}</div>
+              <div><strong>Reviewer:</strong> {selectedSub.reviewer}</div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="gov-btn gov-btn-outline"
+                style={{ color: '#EA580C', borderColor: '#FED7AA' }}
+                onClick={() => handleStatusChange(selectedSub.id, 'Correction Required')}
+              >
+                Request Correction
+              </button>
+              <button
+                type="button"
+                className="gov-btn gov-btn-primary"
+                style={{ background: '#16A34A', borderColor: '#16A34A' }}
+                onClick={() => handleStatusChange(selectedSub.id, 'Approved')}
+              >
+                Approve Submission
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE SUBMISSION MODAL */}
+      {isCreateOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Create Governance Submission</h3>
+            <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Module Scope</label>
+                <select
+                  value={newSub.module}
+                  onChange={e => setNewSub({ ...newSub, module: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                >
+                  <option value="Policies">Policies</option>
+                  <option value="Compliance Obligations">Compliance Obligations</option>
+                  <option value="Internal Controls">Internal Controls</option>
+                  <option value="Ethics & Vigil Mechanism">Ethics & Vigil Mechanism</option>
+                  <option value="Statutory Disclosures">Statutory Disclosures</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Scope Target</label>
+                <input
+                  type="text"
+                  required
+                  value={newSub.scope}
+                  onChange={e => setNewSub({ ...newSub, scope: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Reporting Period</label>
+                <input
+                  type="text"
+                  required
+                  value={newSub.period}
+                  onChange={e => setNewSub({ ...newSub, period: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 12 }}>
+                <button type="button" className="gov-btn gov-btn-outline" onClick={() => setIsCreateOpen(false)}>Cancel</button>
+                <button type="submit" className="gov-btn gov-btn-primary">Submit Governance Pack</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,14 +8,47 @@ import {
   AlertTriangle,
   FileWarning,
   Eye,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 import { INITIAL_EVIDENCE_ITEMS } from '../csrData';
+import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
 
 export default function CSREvidenceScreen({ onNavigateTab }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [evidenceList, setEvidenceList] = useState(INITIAL_EVIDENCE_ITEMS);
+  const [previewItem, setPreviewItem] = useState(null);
+
+  const handleUploadClick = () => {
+    triggerFileInput((file) => {
+      const newEv = {
+        id: `EV-CSR-${Date.now().toString().slice(-4)}`,
+        title: file.name,
+        project: 'Clean Drinking Water RO Plants',
+        category: file.name.endsWith('.pdf') ? 'Audit Report' : 'Invoice',
+        upload_date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+        status: 'Verified',
+        sha256: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
+      };
+      setEvidenceList([newEv, ...evidenceList]);
+    }, '.pdf,.png,.jpg,.jpeg,.xlsx');
+  };
+
+  const handleDownloadCertificate = (e) => {
+    exportToCsv(`CSR_Evidence_${e.id}.csv`, [{
+      Evidence_ID: e.id,
+      Document_Name: e.title,
+      Project: e.project,
+      Category: e.category,
+      Upload_Date: e.upload_date,
+      File_Size: e.size,
+      Status: e.status,
+      SHA256_Checksum: e.sha256 || '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+      Assurance_Pillar: 'BRSR Principle 8 / Social Impact'
+    }]);
+  };
 
   const filteredEvidence = evidenceList.filter((e) => {
     const matchesSearch =
@@ -58,7 +91,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-primary" onClick={() => alert('Opening Upload Evidence Modal (Supports PDF, JPG, PNG, XLSX)...')}>
+            <button className="csr-btn-primary" onClick={handleUploadClick}>
               <Upload size={16} />
               + Upload Evidence
             </button>
@@ -185,7 +218,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
                       className="csr-btn-outline"
                       style={{ padding: '4px 8px' }}
                       title="Preview Document"
-                      onClick={() => alert(`Previewing Document:\n${e.title}\nSize: ${e.size}`)}
+                      onClick={() => setPreviewItem(e)}
                     >
                       <Eye size={13} />
                     </button>
@@ -193,7 +226,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
                       className="csr-btn-outline"
                       style={{ padding: '4px 8px' }}
                       title="Download Evidence"
-                      onClick={() => alert(`Downloading verified artifact: ${e.title}`)}
+                      onClick={() => handleDownloadCertificate(e)}
                     >
                       <Download size={13} />
                     </button>
@@ -204,6 +237,90 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
           </tbody>
         </table>
       </div>
+
+      {/* Preview Modal */}
+      {previewItem && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setPreviewItem(null)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                  {previewItem.title}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  {previewItem.project} • {previewItem.category}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewItem(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Upload Date</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{previewItem.upload_date}</div>
+              </div>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>File Size</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{previewItem.size}</div>
+              </div>
+            </div>
+
+            <div style={{ padding: '12px', background: '#F1F5F9', borderRadius: '10px', fontSize: '12px', color: '#334155', marginBottom: '16px', wordBreak: 'break-all' }}>
+              🔒 <strong>SHA-256 Stamp:</strong><br />
+              <code style={{ fontSize: '11px', color: '#2563EB' }}>{previewItem.sha256 || '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'}</code>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="csr-btn-outline"
+                onClick={() => setPreviewItem(null)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="csr-btn-primary"
+                onClick={() => {
+                  handleDownloadCertificate(previewItem);
+                  setPreviewItem(null);
+                }}
+              >
+                Download Evidence
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

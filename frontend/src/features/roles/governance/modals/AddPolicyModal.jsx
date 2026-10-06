@@ -28,10 +28,7 @@ export default function AddPolicyModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
-      alert('Please enter a Policy Name');
-      return;
-    }
+    if (!formData.name.trim()) return;
     onAddPolicy?.({
       ...formData,
       approvalStatus: 'Approved',

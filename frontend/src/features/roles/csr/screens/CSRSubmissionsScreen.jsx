@@ -14,6 +14,54 @@ import { INITIAL_SUBMISSIONS } from '../csrData';
 export default function CSRSubmissionsScreen({ onNavigateTab }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [submissions, setSubmissions] = useState(INITIAL_SUBMISSIONS);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [correctionTarget, setCorrectionTarget] = useState(null);
+  const [correctionNotes, setCorrectionNotes] = useState('');
+  const [newSub, setNewSub] = useState({
+    module: 'CSR Projects',
+    scope: 'Hyderabad Rural Water Supply Phase 2',
+    period: 'FY 2024-25 Q3',
+    submitted_by: 'CSR Field Lead',
+    remarks: 'Field telemetry and beneficiary records audited'
+  });
+
+  const handleCreateSubmission = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `SUB-CSR-2025-${String(submissions.length + 1).padStart(3, '0')}`,
+      module: newSub.module,
+      scope: newSub.scope,
+      period: newSub.period,
+      submitted_by: newSub.submitted_by,
+      date: new Date().toISOString().split('T')[0],
+      status: 'Submitted',
+      reviewer: 'Regional CSR Lead',
+      approver: 'Head of CSR (HQ)',
+      remarks: newSub.remarks || 'Standard quarterly CSR impact dossier'
+    };
+    setSubmissions([created, ...submissions]);
+    setIsCreateOpen(false);
+  };
+
+  const handleStatusUpdate = (subId, newStatus) => {
+    setSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: newStatus } : s));
+    if (selectedSubmission && selectedSubmission.id === subId) {
+      setSelectedSubmission({ ...selectedSubmission, status: newStatus });
+    }
+  };
+
+  const handleFixResubmit = (e) => {
+    e.preventDefault();
+    if (!correctionTarget) return;
+    setSubmissions(prev => prev.map(s => s.id === correctionTarget.id ? {
+      ...s,
+      status: 'Submitted',
+      remarks: `[Corrected]: ${correctionNotes || 'Data discrepancies reconciled'}`
+    } : s));
+    setCorrectionTarget(null);
+    setCorrectionNotes('');
+  };
 
   const filteredSubmissions = submissions.filter((s) =>
     s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -56,7 +104,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-primary" onClick={() => alert('Opening Create Submission Dialog (CSR Projects, Beneficiaries, Social Impact)...')}>
+            <button className="csr-btn-primary" onClick={() => setIsCreateOpen(true)}>
               <Plus size={16} />
               + Create Submission
             </button>
@@ -166,7 +214,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
                       className="csr-btn-outline"
                       style={{ padding: '4px 8px' }}
                       title="View Details"
-                      onClick={() => alert(`Submission ${s.id}:\nModule: ${s.module}\nReviewer: ${s.reviewer}\nApprover: ${s.approver}${s.remarks ? `\nRemarks: ${s.remarks}` : ''}`)}
+                      onClick={() => setSelectedSubmission(s)}
                     >
                       <Eye size={13} />
                     </button>
@@ -175,7 +223,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
                         className="csr-btn-primary"
                         style={{ padding: '4px 8px', fontSize: '11px' }}
                         title="Fix & Resubmit"
-                        onClick={() => alert(`Opening correction workbench for ${s.id}`)}
+                        onClick={() => setCorrectionTarget(s)}
                       >
                         Fix
                       </button>
@@ -187,6 +235,142 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
           </tbody>
         </table>
       </div>
+
+      {/* CREATE SUBMISSION MODAL */}
+      {isCreateOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '16px' }}>Create CSR Submission</h3>
+            <form onSubmit={handleCreateSubmission} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Module Scope</label>
+                <select
+                  value={newSub.module}
+                  onChange={e => setNewSub({ ...newSub, module: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                >
+                  <option value="CSR Projects">CSR Projects</option>
+                  <option value="Beneficiary Demographics">Beneficiary Demographics</option>
+                  <option value="Social Impact Assessment">Social Impact Assessment</option>
+                  <option value="Stakeholder Engagement">Stakeholder Engagement</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Project / Scope Target</label>
+                <input
+                  type="text"
+                  value={newSub.scope}
+                  onChange={e => setNewSub({ ...newSub, scope: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Reporting Period</label>
+                <input
+                  type="text"
+                  value={newSub.period}
+                  onChange={e => setNewSub({ ...newSub, period: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Audit & Verification Remarks</label>
+                <textarea
+                  rows={3}
+                  value={newSub.remarks}
+                  onChange={e => setNewSub({ ...newSub, remarks: e.target.value })}
+                  placeholder="Summarize evidence links, telemetry status..."
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                <button type="button" className="csr-btn-secondary" onClick={() => setIsCreateOpen(false)}>Cancel</button>
+                <button type="submit" className="csr-btn-primary">Submit Dossier</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW SUBMISSION MODAL */}
+      {selectedSubmission && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 520, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className={getStatusChip(selectedSubmission.status)}>{selectedSubmission.status}</span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedSubmission.id}</h3>
+              </div>
+              <button onClick={() => setSelectedSubmission(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Module:</strong> {selectedSubmission.module}</div>
+              <div><strong>Period:</strong> {selectedSubmission.period}</div>
+              <div><strong>Submitted By:</strong> {selectedSubmission.submitted_by}</div>
+              <div><strong>Date:</strong> {selectedSubmission.date}</div>
+              <div><strong>Reviewer:</strong> {selectedSubmission.reviewer}</div>
+              <div><strong>Approver:</strong> {selectedSubmission.approver}</div>
+            </div>
+            <div style={{ marginTop: 14, fontSize: '13px', color: '#475569' }}>
+              <strong>Scope Target:</strong> {selectedSubmission.scope}
+            </div>
+            {selectedSubmission.remarks && (
+              <div style={{ marginTop: 8, fontSize: '13px', color: '#475569' }}>
+                <strong>Remarks:</strong> {selectedSubmission.remarks}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="csr-btn-secondary"
+                style={{ color: '#EA580C', borderColor: '#FED7AA' }}
+                onClick={() => handleStatusUpdate(selectedSubmission.id, 'Correction Required')}
+              >
+                Request Correction
+              </button>
+              <button
+                type="button"
+                className="csr-btn-primary"
+                style={{ background: '#16A34A', borderColor: '#16A34A' }}
+                onClick={() => handleStatusUpdate(selectedSubmission.id, 'Approved')}
+              >
+                Approve Submission
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CORRECTION WORKBENCH MODAL */}
+      {correctionTarget && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: 8 }}>Correction Workbench</h3>
+            <p style={{ fontSize: '12.5px', color: '#64748B', marginBottom: 16 }}>
+              Resolving audit findings for <strong>{correctionTarget.id}</strong> ({correctionTarget.scope})
+            </p>
+            <form onSubmit={handleFixResubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Resolution & Reconciliation Notes</label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Detail the corrections made to beneficiary headcounts or social audit numbers..."
+                  value={correctionNotes}
+                  onChange={e => setCorrectionNotes(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 12 }}>
+                <button type="button" className="csr-btn-secondary" onClick={() => setCorrectionTarget(null)}>Cancel</button>
+                <button type="submit" className="csr-btn-primary">Resubmit for Approval</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

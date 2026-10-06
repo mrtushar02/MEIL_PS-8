@@ -389,7 +389,15 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
               <label className="de-btn-action-primary">
                 <UploadCloud size={13} />
                 <span>Bulk Upload</span>
-                <input type="file" accept=".csv,.xlsx" style={{ display: 'none' }} onChange={() => alert('Bulk template validated: 1 record loaded.')} />
+                <input 
+                  type="file" 
+                  accept=".csv,.xlsx" 
+                  style={{ display: 'none' }} 
+                  onChange={() => {
+                    setSaveStatus('Bulk template validated: 1 record loaded.');
+                    setTimeout(() => setSaveStatus(null), 3500);
+                  }} 
+                />
               </label>
             </div>
           </div>
@@ -740,7 +748,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
                       title="Options"
                       onClick={(e) => {
                         e.stopPropagation();
-                        alert(`Action menu for ${item.name}`);
+                        setSelectedEvidence(item);
                       }}
                     >
                       <MoreHorizontal size={13} />
@@ -952,7 +960,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
               setSaveStatus('Saving...');
               setTimeout(() => {
                 setSaveStatus('Draft Saved');
-                alert('Draft saved securely to Supabase PostgreSQL database.');
+                setTimeout(() => setSaveStatus(null), 3000);
               }, 400);
             }}
           >

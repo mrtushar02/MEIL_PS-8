@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, Check } from 'lucide-react';
 
-export default function LogCommunityActivityModal({ isOpen, onClose, projects = [] }) {
+export default function LogCommunityActivityModal({ isOpen, onClose, projects = [], onLogActivity }) {
   const [formData, setFormData] = useState({
     project: projects[0]?.id || 'CSR-001',
     community: 'Raghunathpur, Odisha',
@@ -16,7 +16,7 @@ export default function LogCommunityActivityModal({ isOpen, onClose, projects = 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Community Activity logged successfully for ${formData.project} at ${formData.community}!`);
+    onLogActivity?.(formData);
     onClose();
   };
 

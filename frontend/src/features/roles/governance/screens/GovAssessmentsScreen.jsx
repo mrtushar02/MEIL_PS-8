@@ -7,8 +7,10 @@ import {
   AlertTriangle,
   Eye,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Download
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovAssessmentsScreen({
   assessments = [],
@@ -16,8 +18,56 @@ export default function GovAssessmentsScreen({
   onNavigateTab
 }) {
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [localAssessments, setLocalAssessments] = useState(assessments);
+  const [newAssess, setNewAssess] = useState({
+    title: 'ISO 37001 Anti-Bribery Surveillance',
+    scope: 'All Project Sites & Joint Ventures',
+    assessor: 'KPMG India Risk Advisory',
+    coverage: '100% Operational Sites',
+    findings: 0
+  });
 
-  const filtered = assessments.filter(a => {
+  React.useEffect(() => {
+    if (assessments && assessments.length > 0) {
+      setLocalAssessments(assessments);
+    }
+  }, [assessments]);
+
+  const handleExport = () => {
+    const rows = localAssessments.map(a => ({
+      ID: a.id,
+      Title: a.title,
+      Scope: a.scope,
+      Assessor: a.assessor,
+      Date: a.date,
+      Status: a.status,
+      Findings: a.findings,
+      Coverage: a.coverage,
+      NextReview: a.nextReview
+    }));
+    exportToCsv('MEIL_Governance_Assessments', rows);
+  };
+
+  const handleCreateSubmit = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `ASM-${Date.now().toString().slice(-4)}`,
+      title: newAssess.title,
+      scope: newAssess.scope,
+      assessor: newAssess.assessor,
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      status: 'In Progress',
+      findings: Number(newAssess.findings) || 0,
+      coverage: newAssess.coverage,
+      nextReview: '31 Mar 2027'
+    };
+    setLocalAssessments([created, ...localAssessments]);
+    setIsCreateOpen(false);
+  };
+
+  const filtered = localAssessments.filter(a => {
     return statusFilter === 'all' || a.status.toLowerCase().replace(/\s+/g, '-') === statusFilter;
   });
 
@@ -53,10 +103,18 @@ export default function GovAssessmentsScreen({
             </select>
             <button 
               className="gov-btn gov-btn-primary"
-              onClick={onOpenStartAssessment}
+              onClick={onOpenStartAssessment || (() => setIsCreateOpen(true))}
             >
               <Plus size={15} />
               Start Assessment
+            </button>
+            <button 
+              className="gov-btn gov-btn-outline"
+              onClick={handleExport}
+              title="Export Assessments to CSV"
+            >
+              <Download size={14} />
+              Export
             </button>
           </div>
         </div>
@@ -171,7 +229,7 @@ export default function GovAssessmentsScreen({
                     <button 
                       className="gov-page-btn"
                       title="View Assessment"
-                      onClick={() => alert(`Assessment ${item.id} Details:\nCoverage: ${item.coverage}\nFindings: ${item.findings}\nNext review: ${item.nextReview}`)}
+                      onClick={() => setSelectedAssessment(item)}
                     >
                       <Eye size={13} />
                     </button>
@@ -184,7 +242,7 @@ export default function GovAssessmentsScreen({
 
         {/* ──── PAGINATION ROW ──── */}
         <div className="gov-pagination-row">
-          <span>Showing 1 to {filtered.length} of {assessments.length} assessments</span>
+          <span>Showing 1 to {filtered.length} of {localAssessments.length} assessments</span>
           <div className="gov-pagination-buttons">
             <button className="gov-page-btn" disabled><ChevronLeft size={14} /></button>
             <button className="gov-page-btn active">1</button>
@@ -192,6 +250,95 @@ export default function GovAssessmentsScreen({
           </div>
         </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      {selectedAssessment && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 500, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className={`gov-status-chip gov-status-${selectedAssessment.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {selectedAssessment.status}
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedAssessment.id} - {selectedAssessment.title}</h3>
+              </div>
+              <button onClick={() => setSelectedAssessment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Assessor:</strong> {selectedAssessment.assessor}</div>
+              <div><strong>Date:</strong> {selectedAssessment.date}</div>
+              <div><strong>Coverage:</strong> {selectedAssessment.coverage}</div>
+              <div><strong>Next Review:</strong> {selectedAssessment.nextReview}</div>
+              <div><strong>Findings:</strong> <span style={{ color: selectedAssessment.findings > 0 ? '#DC2626' : '#16A34A', fontWeight: 700 }}>{selectedAssessment.findings} non-conformances</span></div>
+              <div><strong>Scope:</strong> {selectedAssessment.scope}</div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="gov-btn gov-btn-outline"
+                onClick={() => setSelectedAssessment(null)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="gov-btn gov-btn-primary"
+                onClick={() => {
+                  alert ? null : null;
+                  setSelectedAssessment(null);
+                }}
+              >
+                Download Audit Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE ASSESSMENT MODAL */}
+      {isCreateOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Start Compliance Assessment</h3>
+            <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Assessment Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newAssess.title}
+                  onChange={e => setNewAssess({ ...newAssess, title: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Scope / Facilities</label>
+                <input
+                  type="text"
+                  required
+                  value={newAssess.scope}
+                  onChange={e => setNewAssess({ ...newAssess, scope: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Lead Assessor</label>
+                <input
+                  type="text"
+                  required
+                  value={newAssess.assessor}
+                  onChange={e => setNewAssess({ ...newAssess, assessor: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 12 }}>
+                <button type="button" className="gov-btn gov-btn-outline" onClick={() => setIsCreateOpen(false)}>Cancel</button>
+                <button type="submit" className="gov-btn gov-btn-primary">Initiate Audit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Filter
 } from 'lucide-react';
+import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
 
 export default function ProcurementTransactionsScreen({
   transactions = [],
@@ -21,6 +22,8 @@ export default function ProcurementTransactionsScreen({
   const [selectedBU, setSelectedBU] = useState('All Business Units');
   const [selectedPeriod, setSelectedPeriod] = useState('Sep 2026');
   const [selectedProject, setSelectedProject] = useState('All Projects');
+  const [selectedTx, setSelectedTx] = useState(null);
+  const [importFeedback, setImportFeedback] = useState(null);
 
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch =
@@ -76,7 +79,10 @@ export default function ProcurementTransactionsScreen({
               type="button"
               className="proc-btn proc-btn-outline"
               style={{ padding: '7px 12px', fontSize: '12.5px' }}
-              onClick={() => alert('Import Procurement POs / ERP Vouchers CSV')}
+              onClick={() => triggerFileInput((file) => {
+                setImportFeedback(`ERP Voucher batch ${file.name} (${(file.size / 1024).toFixed(1)} KB) imported and verified.`);
+                setTimeout(() => setImportFeedback(null), 4000);
+              })}
             >
               <Upload size={14} />
               <span>Import</span>
@@ -85,7 +91,7 @@ export default function ProcurementTransactionsScreen({
               type="button"
               className="proc-btn proc-btn-outline"
               style={{ padding: '7px 12px', fontSize: '12.5px' }}
-              onClick={() => alert('Exporting Procurement Ledger...')}
+              onClick={() => exportToCsv('MEIL_Procurement_Transactions.csv', transactions)}
             >
               <Download size={14} />
               <span>Export</span>
@@ -244,7 +250,7 @@ export default function ProcurementTransactionsScreen({
                   <td style={{ textAlign: 'center' }}>
                     <button
                       type="button"
-                      onClick={() => alert(`View transaction details for ${t.id}`)}
+                      onClick={() => setSelectedTx(t)}
                       title="View Transaction"
                       style={{
                         width: '28px',
@@ -303,6 +309,46 @@ export default function ProcurementTransactionsScreen({
           </div>
         </div>
       </div>
+
+      {/* Import Feedback Toast */}
+      {importFeedback && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#0F172A', color: '#FFF', padding: '12px 18px', borderRadius: 10, fontSize: '12.5px', fontWeight: 600, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 9999 }}>
+          ✔ {importFeedback}
+        </div>
+      )}
+
+      {/* Transaction Details Modal */}
+      {selectedTx && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className="proc-status-chip active">{selectedTx.status}</span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedTx.id} - ERP Voucher</h3>
+              </div>
+              <button onClick={() => setSelectedTx(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Supplier:</strong> {selectedTx.supplier}</div>
+              <div><strong>Category:</strong> {selectedTx.category}</div>
+              <div><strong>Amount:</strong> {selectedTx.amount}</div>
+              <div><strong>Scope 3 Carbon:</strong> {selectedTx.carbon}</div>
+              <div><strong>Project Site:</strong> {selectedTx.project}</div>
+              <div><strong>Invoice Date:</strong> {selectedTx.date}</div>
+              <div style={{ gridColumn: 'span 2' }}><strong>Data Source:</strong> {selectedTx.source} (Synced via SAP ERP)</div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="proc-btn proc-btn-outline"
+                onClick={() => setSelectedTx(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

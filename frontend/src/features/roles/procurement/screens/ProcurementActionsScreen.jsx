@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import {
   Plus,
-  Search
+  Search,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  FileCheck
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function ProcurementActionsScreen({
   actions = [],
@@ -13,16 +18,66 @@ export default function ProcurementActionsScreen({
   const [selectedSource, setSelectedSource] = useState('All Sources');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [selectedOwner, setSelectedOwner] = useState('All Owners');
+  
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [activeAction, setActiveAction] = useState(null);
+  const [newActionForm, setNewActionForm] = useState({
+    supplier: 'ABC Construction Ltd.',
+    source: 'Assessment',
+    issue: '',
+    priority: 'High',
+    owner: 'Anand Mahindra V.',
+    dueDate: '2026-10-31'
+  });
+
+  const [localActions, setLocalActions] = useState(actions);
+
+  // Sync if prop updates
+  React.useEffect(() => {
+    if (actions && actions.length > 0) {
+      setLocalActions(actions);
+    }
+  }, [actions]);
+
+  const handleCreateActionSubmit = (e) => {
+    e.preventDefault();
+    if (!newActionForm.issue.trim()) return;
+    const created = {
+      id: `ACT-${Date.now().toString().slice(-4)}`,
+      supplier: newActionForm.supplier,
+      source: newActionForm.source,
+      issue: newActionForm.issue,
+      priority: newActionForm.priority,
+      owner: newActionForm.owner,
+      dueDate: newActionForm.dueDate,
+      status: 'Open'
+    };
+    setLocalActions([created, ...localActions]);
+    setIsCreateOpen(false);
+    setNewActionForm({
+      supplier: 'ABC Construction Ltd.',
+      source: 'Assessment',
+      issue: '',
+      priority: 'High',
+      owner: 'Anand Mahindra V.',
+      dueDate: '2026-10-31'
+    });
+  };
+
+  const handleMarkResolved = (actionId) => {
+    setLocalActions(prev => prev.map(a => a.id === actionId ? { ...a, status: 'Closed' } : a));
+    setActiveAction(null);
+  };
 
   const counters = [
-    { label: 'Open', count: 24, color: '#DC2626', bg: 'rgba(239, 68, 68, 0.12)' },
-    { label: 'In Progress', count: 16, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)' },
+    { label: 'Open', count: localActions.filter(a => a.status === 'Open').length || 24, color: '#DC2626', bg: 'rgba(239, 68, 68, 0.12)' },
+    { label: 'In Progress', count: localActions.filter(a => a.status === 'In Progress').length || 16, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)' },
     { label: 'Pending Verification', count: 8, color: '#059669', bg: 'rgba(5, 150, 105, 0.12)' },
-    { label: 'Overdue', count: 7, color: '#991B1B', bg: 'rgba(153, 27, 27, 0.12)' },
-    { label: 'Closed', count: 42, color: '#475569', bg: 'rgba(71, 85, 105, 0.12)' }
+    { label: 'Overdue', count: localActions.filter(a => a.status === 'Overdue').length || 7, color: '#991B1B', bg: 'rgba(153, 27, 27, 0.12)' },
+    { label: 'Closed', count: localActions.filter(a => a.status === 'Closed').length || 42, color: '#475569', bg: 'rgba(71, 85, 105, 0.12)' }
   ];
 
-  const filteredActions = actions.filter((a) => {
+  const filteredActions = localActions.filter((a) => {
     const matchesSearch =
       a.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,7 +136,7 @@ export default function ProcurementActionsScreen({
           <button
             type="button"
             className="proc-btn proc-btn-blue"
-            onClick={() => alert('Create New Supplier CAPA Action Item')}
+            onClick={() => setIsCreateOpen(true)}
             style={{ padding: '7px 14px', fontSize: '12.5px' }}
           >
             <Plus size={15} />
@@ -234,7 +289,7 @@ export default function ProcurementActionsScreen({
                   <td style={{ textAlign: 'center' }}>
                     <button
                       type="button"
-                      onClick={() => alert(`Review action ${a.id}`)}
+                      onClick={() => setActiveAction(a)}
                       style={{
                         padding: '4px 10px',
                         borderRadius: '6px',
@@ -255,6 +310,205 @@ export default function ProcurementActionsScreen({
           </table>
         </div>
       </div>
+
+      {/* Modal: Create CAPA Action Item */}
+      {isCreateOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setIsCreateOpen(false)}
+        >
+          <div
+            className="proc-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                Create Corrective Action (CAPA)
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateActionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Supplier</label>
+                <input
+                  type="text"
+                  required
+                  value={newActionForm.supplier}
+                  onChange={(e) => setNewActionForm({ ...newActionForm, supplier: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Issue Description</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={newActionForm.issue}
+                  onChange={(e) => setNewActionForm({ ...newActionForm, issue: e.target.value })}
+                  placeholder="e.g. Scope 1 diesel monitoring calibration overdue at site batching plant"
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', resize: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Priority</label>
+                  <select
+                    value={newActionForm.priority}
+                    onChange={(e) => setNewActionForm({ ...newActionForm, priority: e.target.value })}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Due Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={newActionForm.dueDate}
+                    onChange={(e) => setNewActionForm({ ...newActionForm, dueDate: e.target.value })}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="proc-btn proc-btn-outline"
+                  onClick={() => setIsCreateOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="proc-btn proc-btn-blue"
+                >
+                  Save Action
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Review & Manage Action */}
+      {activeAction && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setActiveAction(null)}
+        >
+          <div
+            className="proc-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '540px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                  Action Item: {activeAction.id}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  {activeAction.supplier} • {activeAction.source}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveAction(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px', marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>Issue / Non-Conformance</div>
+              <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#1E293B', marginTop: '4px' }}>{activeAction.issue}</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Priority</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{activeAction.priority}</div>
+              </div>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Owner</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{activeAction.owner}</div>
+              </div>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Due Date</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{activeAction.dueDate}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="proc-btn proc-btn-outline"
+                onClick={() => {
+                  exportToCsv(`Action_${activeAction.id}.csv`, [activeAction]);
+                }}
+              >
+                Export CSV
+              </button>
+              {activeAction.status !== 'Closed' && (
+                <button
+                  type="button"
+                  className="proc-btn proc-btn-blue"
+                  onClick={() => handleMarkResolved(activeAction.id)}
+                >
+                  Mark as Resolved
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

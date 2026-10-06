@@ -8,6 +8,7 @@ import {
   Download,
   Eye
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovPoliciesScreen({
   policies = [],
@@ -18,6 +19,38 @@ export default function GovPoliciesScreen({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  const handleExportAll = () => {
+    const rows = policies.map(p => ({
+      ID: p.id,
+      Name: p.name,
+      Category: p.category,
+      Department: p.department,
+      EffectiveDate: p.effectiveDate,
+      ReviewDate: p.reviewDate,
+      Version: p.version,
+      Status: p.status,
+      ApprovalStatus: p.approvalStatus
+    }));
+    exportToCsv('MEIL_Corporate_Policies', rows);
+  };
+
+  const handleDownloadSingle = (item) => {
+    const rows = [{
+      Policy_ID: item.id,
+      Policy_Name: item.name,
+      Category: item.category,
+      Department: item.department,
+      Effective_Date: item.effectiveDate,
+      Review_Date: item.reviewDate,
+      Version: item.version,
+      Operational_Status: item.status,
+      Approval_Status: item.approvalStatus,
+      Scope: item.scope || 'Group & Subsidiaries',
+      Statutory_Reference: 'Companies Act 2013 & SEBI LODR 2015'
+    }];
+    exportToCsv(`MEIL_Policy_Dossier_${item.id}`, rows);
+  };
 
   const filtered = policies.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -88,6 +121,14 @@ export default function GovPoliciesScreen({
             >
               <Plus size={15} />
               Add Policy
+            </button>
+            <button 
+              className="gov-btn gov-btn-outline"
+              onClick={handleExportAll}
+              title="Export Policies to CSV"
+            >
+              <Download size={14} />
+              Export
             </button>
           </div>
         </div>
@@ -172,7 +213,7 @@ export default function GovPoliciesScreen({
                       <button 
                         className="gov-page-btn" 
                         title="Download Document"
-                        onClick={() => alert(`Downloading policy document for ${item.name} (${item.id})`)}
+                        onClick={() => handleDownloadSingle(item)}
                       >
                         <Download size={13} />
                       </button>

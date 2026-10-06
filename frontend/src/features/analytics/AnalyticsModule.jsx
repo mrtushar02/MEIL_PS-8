@@ -23,6 +23,7 @@ export default function AnalyticsModule({ onNavigate }) {
   // Chart hover state for interactive glass tooltip
   const [hoveredMonth, setHoveredMonth] = useState(null);
   const [hoveredEnergyMonth, setHoveredEnergyMonth] = useState(null);
+  const [detailsModal, setDetailsModal] = useState(null);
 
   // Reset filters
   const handleReset = () => {
@@ -356,7 +357,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               </div>
               <button 
                 className="an-chart-action-btn"
-                onClick={() => alert('Emissions calculated adhering to CEA India Grid Baseline Database v19 (0.716 kg CO2e/kWh).')}
+                onClick={() => setDetailsModal('emissions')}
               >
                 View Details
               </button>
@@ -520,7 +521,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>Monthly ▾</span>
               <button 
                 className="an-chart-action-btn"
-                onClick={() => alert('Grid electricity tracked via 33kV dedicated feeders synced with state DISCOM meters.')}
+                onClick={() => setDetailsModal('energy')}
               >
                 View Details
               </button>
@@ -779,6 +780,54 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
           </div>
         </div>
       </div>
+
+      {/* Technical Details & Methodology Modal */}
+      {detailsModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 520, maxWidth: '92%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(2, 132, 199, 0.1)', color: '#0284C7' }}>
+                  {detailsModal === 'emissions' ? 'GHG Protocol Accounting' : 'Energy Transmission Telemetry'}
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>
+                  {detailsModal === 'emissions' ? 'CEA India Grid Baseline Methodology' : '33kV Dedicated Feeders Architecture'}
+                </h3>
+              </div>
+              <button onClick={() => setDetailsModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 10, fontSize: '12.5px', color: '#334155', lineHeight: 1.5, marginBottom: 16 }}>
+              {detailsModal === 'emissions' ? (
+                <>
+                  <p><strong>Baseline Standard:</strong> Central Electricity Authority (CEA) CO2 Baseline Database for the Indian Power Sector, Version 19.0.</p>
+                  <p style={{ marginTop: 6 }}><strong>Scope 2 Grid Emission Factor:</strong> <span style={{ color: '#2563EB', fontWeight: 700 }}>0.716 kg CO2e / kWh</span> (weighted average combined margin).</p>
+                  <p style={{ marginTop: 6 }}><strong>Scope 1 Fuel Calculations:</strong> High-Speed Diesel (HSD) calibrated at 2.68 kg CO2e / Liter; Heavy Furnace Oil at 3.12 kg CO2e / Liter.</p>
+                  <p style={{ marginTop: 6 }}><strong>Verification Status:</strong> Third-party assured under SEBI BRSR Core Circulars (2023 & 2025).</p>
+                </>
+              ) : (
+                <>
+                  <p><strong>Grid Interconnection:</strong> Dedicated 33kV & 11kV substation feeder lines with bidirectional ABT-compliant electronic meters.</p>
+                  <p style={{ marginTop: 6 }}><strong>Telemetry Sync:</strong> Automated optical port data extraction linked directly with State DISCOM Billing engines.</p>
+                  <p style={{ marginTop: 6 }}><strong>Backup Diesel Gensets:</strong> PLC-monitored fuel flow meters with automated operational hour recording.</p>
+                  <p style={{ marginTop: 6 }}><strong>Data Integrity:</strong> 15-minute time-stamped interval log immutable audit trail.</p>
+                </>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                type="button"
+                className="an-chart-action-btn"
+                style={{ padding: '6px 16px', fontSize: '12px' }}
+                onClick={() => setDetailsModal(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

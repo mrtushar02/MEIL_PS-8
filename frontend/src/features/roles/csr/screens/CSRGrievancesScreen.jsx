@@ -6,9 +6,11 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
-  Eye
+  Eye,
+  X
 } from 'lucide-react';
 import { INITIAL_GRIEVANCES } from '../csrData';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRGrievancesScreen({
   onNavigateTab,
@@ -16,6 +18,7 @@ export default function CSRGrievancesScreen({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [grievances, setGrievances] = useState(INITIAL_GRIEVANCES);
+  const [viewGrievance, setViewGrievance] = useState(null);
 
   const filteredGrievances = grievances.filter((g) =>
     g.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,7 +76,7 @@ export default function CSRGrievancesScreen({
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-primary" onClick={onOpenRegisterGrievance || (() => alert('Opening Register Grievance Modal...'))}>
+            <button className="csr-btn-primary" onClick={onOpenRegisterGrievance}>
               <Plus size={16} />
               + Register Grievance
             </button>
@@ -188,7 +191,7 @@ export default function CSRGrievancesScreen({
                     className="csr-btn-outline"
                     style={{ padding: '4px 8px' }}
                     title="View Grievance Dossier"
-                    onClick={() => alert(`Grievance ${g.id}:\n${g.description}\nAssigned to: ${g.owner}\nStatus: ${g.status}`)}
+                    onClick={() => setViewGrievance(g)}
                   >
                     <Eye size={13} />
                   </button>
@@ -198,6 +201,101 @@ export default function CSRGrievancesScreen({
           </tbody>
         </table>
       </div>
+
+      {/* View Grievance Dossier Modal */}
+      {viewGrievance && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setViewGrievance(null)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '540px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                  Grievance Dossier: {viewGrievance.id}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  {viewGrievance.project} • {viewGrievance.community}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewGrievance(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>Description</div>
+              <div style={{ fontSize: '13px', color: '#1E293B', marginTop: '4px' }}>{viewGrievance.description}</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Severity</div>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#DC2626' }}>{viewGrievance.severity}</div>
+              </div>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Assigned Owner</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{viewGrievance.owner}</div>
+              </div>
+              <div style={{ padding: '10px', background: '#F8FAFC', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Due Date</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{viewGrievance.due_date}</div>
+              </div>
+            </div>
+
+            <div style={{ padding: '12px', background: '#EFF6FF', borderRadius: '10px', marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', color: '#2563EB', fontWeight: 700 }}>Resolution Status</div>
+              <div style={{ fontSize: '13px', color: '#1E40AF', marginTop: '4px' }}>
+                {viewGrievance.resolution || 'Investigation underway by MEIL Site Community Liaison.'}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="csr-btn-outline"
+                onClick={() => setViewGrievance(null)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="csr-btn-primary"
+                onClick={() => {
+                  exportToCsv(`Grievance_${viewGrievance.id}.csv`, [viewGrievance]);
+                  setViewGrievance(null);
+                }}
+              >
+                Export Dossier CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

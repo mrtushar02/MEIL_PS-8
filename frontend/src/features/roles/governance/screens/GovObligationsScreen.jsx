@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import {
   Plus,
   Upload,
+  Download,
   ChevronRight,
   ChevronLeft,
-  Eye
+  Eye,
+  CheckCircle2
 } from 'lucide-react';
+import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
 
 export default function GovObligationsScreen({
   obligations = [],
@@ -15,8 +18,65 @@ export default function GovObligationsScreen({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedObligation, setSelectedObligation] = useState(null);
+  const [localObligations, setLocalObligations] = useState(obligations);
 
-  const filtered = obligations.filter(item => {
+  React.useEffect(() => {
+    if (obligations && obligations.length > 0) {
+      setLocalObligations(obligations);
+    }
+  }, [obligations]);
+
+  const handleImport = () => {
+    triggerFileInput((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const lines = text.split('\n').filter(l => l.trim().length > 0);
+        if (lines.length > 1) {
+          const newItems = lines.slice(1).map((line, idx) => {
+            const parts = line.split(',');
+            return {
+              id: `CO-IMP-${Date.now()}-${idx}`,
+              requirement: parts[0]?.trim() || 'Imported Compliance Obligation',
+              source: parts[1]?.trim() || 'Statutory Authority',
+              owner: parts[2]?.trim() || 'Compliance Dept',
+              ownerName: parts[2]?.trim() || 'Compliance Lead',
+              dueDate: parts[3]?.trim() || '31 Dec 2026',
+              status: 'In Progress',
+              evidence: 'In Review',
+              category: 'Legal'
+            };
+          });
+          setLocalObligations(prev => [...newItems, ...prev]);
+        }
+      };
+      reader.readAsText(file);
+    });
+  };
+
+  const handleExport = () => {
+    const rows = localObligations.map(o => ({
+      ID: o.id,
+      Requirement: o.requirement,
+      Source: o.source,
+      Owner: o.ownerName || o.owner,
+      DueDate: o.dueDate,
+      Status: o.status,
+      Evidence: o.evidence,
+      Category: o.category
+    }));
+    exportToCsv('MEIL_Compliance_Obligations', rows);
+  };
+
+  const handleMarkCompliant = (id) => {
+    setLocalObligations(prev => prev.map(o => o.id === id ? { ...o, status: 'Compliant', evidence: 'Verified' } : o));
+    if (selectedObligation && selectedObligation.id === id) {
+      setSelectedObligation({ ...selectedObligation, status: 'Compliant', evidence: 'Verified' });
+    }
+  };
+
+  const filtered = localObligations.filter(item => {
     const matchesSearch = item.requirement.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           item.source.toLowerCase().includes(searchTerm.toLowerCase());
@@ -75,10 +135,19 @@ export default function GovObligationsScreen({
             </button>
             <button 
               className="gov-btn gov-btn-outline"
-              onClick={() => alert('Import CSV/Excel obligations template...')}
+              onClick={handleImport}
+              title="Import Obligations from CSV"
             >
               <Upload size={14} />
               Import
+            </button>
+            <button 
+              className="gov-btn gov-btn-outline"
+              onClick={handleExport}
+              title="Export Obligations to CSV"
+            >
+              <Download size={14} />
+              Export
             </button>
           </div>
         </div>
@@ -140,7 +209,7 @@ export default function GovObligationsScreen({
                     <button 
                       className="gov-page-btn"
                       title="View Details"
-                      onClick={() => alert(`Obligation ${item.id}: ${item.requirement}\nSource: ${item.source}\nOwner: ${item.ownerName || item.owner}\nDue: ${item.dueDate}`)}
+                      onClick={() => setSelectedObligation(item)}
                     >
                       <Eye size={13} />
                     </button>
@@ -153,7 +222,7 @@ export default function GovObligationsScreen({
 
         {/* ──── PAGINATION ROW ──── */}
         <div className="gov-pagination-row">
-          <span>Showing 1 to {filtered.length} of {obligations.length} obligations</span>
+          <span>Showing 1 to {filtered.length} of {localObligations.length} obligations</span>
           <div className="gov-pagination-buttons">
             <button className="gov-page-btn" disabled><ChevronLeft size={14} /></button>
             <button className="gov-page-btn active">1</button>
@@ -161,6 +230,55 @@ export default function GovObligationsScreen({
           </div>
         </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      {selectedObligation && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 500, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className={`gov-status-chip gov-status-${selectedObligation.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {selectedObligation.status}
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedObligation.id}</h3>
+              </div>
+              <button onClick={() => setSelectedObligation(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Requirement:</strong> {selectedObligation.requirement}</div>
+              <div><strong>Source:</strong> {selectedObligation.source}</div>
+              <div><strong>Owner:</strong> {selectedObligation.ownerName || selectedObligation.owner}</div>
+              <div><strong>Due Date:</strong> {selectedObligation.dueDate}</div>
+              <div><strong>Category:</strong> {selectedObligation.category}</div>
+              <div><strong>Evidence Status:</strong> {selectedObligation.evidence}</div>
+            </div>
+            {selectedObligation.description && (
+              <div style={{ marginTop: 14, fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                <strong>Statutory Scope:</strong> {selectedObligation.description}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="gov-btn gov-btn-outline"
+                onClick={() => setSelectedObligation(null)}
+              >
+                Close
+              </button>
+              {selectedObligation.status !== 'Compliant' && (
+                <button
+                  type="button"
+                  className="gov-btn gov-btn-primary"
+                  onClick={() => handleMarkCompliant(selectedObligation.id)}
+                >
+                  <CheckCircle2 size={14} style={{ marginRight: 4 }} />
+                  Mark Compliant
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

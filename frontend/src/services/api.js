@@ -1090,6 +1090,59 @@ class ApiService {
     }
   }
 
+  async getProcurementTransactions() {
+    try {
+      return await this.request('/procurement/transactions');
+    } catch {
+      return [];
+    }
+  }
+
+  async createProcurementTransaction(data) {
+    return await this.request('/procurement/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getSupplierAssessments() {
+    try {
+      return await this.request('/procurement/assessments');
+    } catch {
+      return [];
+    }
+  }
+
+  async createSupplierAssessment(data) {
+    return await this.request('/procurement/assessments', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getSupplierRisks() {
+    try {
+      return await this.request('/procurement/risks');
+    } catch {
+      return [];
+    }
+  }
+
+  async getProcurementActions() {
+    try {
+      return await this.request('/procurement/actions');
+    } catch {
+      return [];
+    }
+  }
+
+  async createProcurementAction(data) {
+    return await this.request('/procurement/actions', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
   // Corporate Social Responsibility (CSR Section 135)
   async getCSRSummary(reportingPeriodId = 'period-2025-09') {
     try {
@@ -1115,6 +1168,75 @@ class ApiService {
     });
   }
 
+  async getCSRCommunities() {
+    try {
+      return await this.request('/csr/communities');
+    } catch {
+      return [];
+    }
+  }
+
+  async createCSRCommunity(data) {
+    return await this.request('/csr/communities', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getCSRGrievances() {
+    try {
+      return await this.request('/csr/grievances');
+    } catch {
+      return [];
+    }
+  }
+
+  async createCSRGrievance(data) {
+    return await this.request('/csr/grievances', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getCSRStakeholders() {
+    try {
+      return await this.request('/csr/stakeholders');
+    } catch {
+      return [];
+    }
+  }
+
+  async createCSRStakeholder(data) {
+    return await this.request('/csr/stakeholders', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getCSRBeneficiaries() {
+    try {
+      return await this.request('/csr/beneficiaries');
+    } catch {
+      return [];
+    }
+  }
+
+  async getCSRImpact() {
+    try {
+      return await this.request('/csr/impact');
+    } catch {
+      return [];
+    }
+  }
+
+  async getCSRActions() {
+    try {
+      return await this.request('/csr/actions');
+    } catch {
+      return [];
+    }
+  }
+
   // Corporate Governance & Compliance
   async getGovernancePolicies(params = {}) {
     try {
@@ -1127,6 +1249,67 @@ class ApiService {
 
   async createGovernancePolicy(data) {
     return await this.request('/governance/policies', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getGovernanceObligations() {
+    try {
+      return await this.request('/governance/obligations');
+    } catch {
+      return [];
+    }
+  }
+
+  async createGovernanceObligation(data) {
+    return await this.request('/governance/obligations', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getGovernanceControls() {
+    try {
+      return await this.request('/governance/controls');
+    } catch {
+      return [];
+    }
+  }
+
+  async createGovernanceControl(data) {
+    return await this.request('/governance/controls', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getGovernanceAssessments() {
+    try {
+      return await this.request('/governance/assessments');
+    } catch {
+      return [];
+    }
+  }
+
+  async getCorporateDisclosures() {
+    try {
+      return await this.request('/governance/disclosures');
+    } catch {
+      return [];
+    }
+  }
+
+  async getGovernanceActions() {
+    try {
+      return await this.request('/governance/actions');
+    } catch {
+      return [];
+    }
+  }
+
+  async createGovernanceAction(data) {
+    return await this.request('/governance/actions', {
       method: 'POST',
       body: JSON.stringify(data)
     });

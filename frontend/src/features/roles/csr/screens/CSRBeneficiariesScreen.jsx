@@ -3,14 +3,47 @@ import {
   Users,
   Plus,
   Upload,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 import { INITIAL_BENEFICIARIES_DATA } from '../csrData';
+import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
 
 const DIST_COLORS = ['#2563EB', '#DB2777', '#0284C7', '#059669', '#D97706', '#8B5CF6'];
 
 export default function CSRBeneficiariesScreen({ onNavigateTab: _onNavigateTab }) {
-  const data = INITIAL_BENEFICIARIES_DATA;
+  const [data, setData] = useState(INITIAL_BENEFICIARIES_DATA);
+  const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
+  const [newGroupForm, setNewGroupForm] = useState({ group: '', count: '', pct: '' });
+
+  const handleImport = () => {
+    triggerFileInput((file) => {
+      console.log('Ingested beneficiary file:', file.name);
+    }, '.csv,.xlsx');
+  };
+
+  const handleExport = () => {
+    exportToCsv('MEIL_CSR_Beneficiary_Distribution.csv', [
+      { Metric: 'Total Beneficiaries', Count: data.total, Note: 'Verified' },
+      { Metric: 'Female Beneficiaries', Count: data.female, Note: 'Women & Girls' },
+      { Metric: 'Male Beneficiaries', Count: data.male, Note: 'Men & Boys' },
+      ...data.distribution.map(d => ({ Metric: d.group, Count: d.count, Note: `${d.pct}% of total` }))
+    ]);
+  };
+
+  const handleAddGroupSubmit = (e) => {
+    e.preventDefault();
+    if (!newGroupForm.group) return;
+    const addedCount = parseInt(newGroupForm.count) || 1000;
+    const addedPct = parseFloat(newGroupForm.pct) || 5.0;
+    setData(prev => ({
+      ...prev,
+      total: prev.total + addedCount,
+      distribution: [...prev.distribution, { group: newGroupForm.group, count: addedCount, pct: addedPct }]
+    }));
+    setIsAddGroupOpen(false);
+    setNewGroupForm({ group: '', count: '', pct: '' });
+  };
 
   const barCategories = [
     { name: 'Education', count: 5200, height: 180 },
@@ -49,15 +82,15 @@ export default function CSRBeneficiariesScreen({ onNavigateTab: _onNavigateTab }
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-primary" onClick={() => alert('Opening Add Beneficiary Group Dialog...')}>
+            <button className="csr-btn-primary" onClick={() => setIsAddGroupOpen(true)}>
               <Plus size={16} />
               + Add Beneficiary Group
             </button>
-            <button className="csr-btn-outline" onClick={() => alert('Importing Beneficiary Logs...')}>
+            <button className="csr-btn-outline" onClick={handleImport} title="Import Beneficiary Logs">
               <Upload size={15} />
               Import
             </button>
-            <button className="csr-btn-outline" onClick={() => alert('Exporting Beneficiary Audit Report...')}>
+            <button className="csr-btn-outline" onClick={handleExport} title="Export Beneficiary Audit Report">
               <Download size={15} />
               Export
             </button>
@@ -247,6 +280,106 @@ export default function CSRBeneficiariesScreen({ onNavigateTab: _onNavigateTab }
           </div>
         </div>
       </div>
+
+      {/* Add Beneficiary Group Modal */}
+      {isAddGroupOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setIsAddGroupOpen(false)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                Add Beneficiary Demographic Group
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddGroupOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddGroupSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Demographic Category Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Tribal Communities (ITDA)"
+                  value={newGroupForm.group}
+                  onChange={(e) => setNewGroupForm({ ...newGroupForm, group: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Beneficiary Count</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="e.g. 1850"
+                    value={newGroupForm.count}
+                    onChange={(e) => setNewGroupForm({ ...newGroupForm, count: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Percentage (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    required
+                    placeholder="e.g. 10.0"
+                    value={newGroupForm.pct}
+                    onChange={(e) => setNewGroupForm({ ...newGroupForm, pct: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="csr-btn-outline"
+                  onClick={() => setIsAddGroupOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="csr-btn-primary"
+                >
+                  Save Group
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

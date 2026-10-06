@@ -7,13 +7,64 @@ import {
   FileCheck2,
   Paperclip,
   Eye,
-  Edit2
+  Edit2,
+  X
 } from 'lucide-react';
 import { INITIAL_IMPACT_INDICATORS } from '../csrData';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRSocialImpactScreen({ onNavigateTab }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [indicators, setIndicators] = useState(INITIAL_IMPACT_INDICATORS);
+  const [isRecordImpactOpen, setIsRecordImpactOpen] = useState(false);
+  const [isAddIndicatorOpen, setIsAddIndicatorOpen] = useState(false);
+  const [activeEvidenceModal, setActiveEvidenceModal] = useState(null);
+  const [editingIndicator, setEditingIndicator] = useState(null);
+
+  const [newIndicatorForm, setNewIndicatorForm] = useState({
+    indicator: '',
+    project: 'Clean Drinking Water RO Plants',
+    baseline: '0',
+    target: '100',
+    current: '25',
+    unit: 'Units',
+    evidence_ref: 'EV-CSR-2026-091'
+  });
+
+  const handleAddIndicatorSubmit = (e) => {
+    e.preventDefault();
+    if (!newIndicatorForm.indicator) return;
+    const created = {
+      id: `IND-${Date.now().toString().slice(-4)}`,
+      indicator: newIndicatorForm.indicator,
+      project: newIndicatorForm.project,
+      baseline: newIndicatorForm.baseline,
+      target: newIndicatorForm.target,
+      current: newIndicatorForm.current,
+      unit: newIndicatorForm.unit,
+      status: 'In Progress',
+      evidence_ref: newIndicatorForm.evidence_ref
+    };
+    setIndicators([created, ...indicators]);
+    setIsAddIndicatorOpen(false);
+    setIsRecordImpactOpen(false);
+    setNewIndicatorForm({
+      indicator: '',
+      project: 'Clean Drinking Water RO Plants',
+      baseline: '0',
+      target: '100',
+      current: '25',
+      unit: 'Units',
+      evidence_ref: 'EV-CSR-2026-091'
+    });
+  };
+
+  const handleUpdateCurrentValue = (e) => {
+    e.preventDefault();
+    if (!editingIndicator) return;
+    setIndicators(prev => prev.map(ind => ind.id === editingIndicator.id ? { ...ind, current: editingIndicator.current } : ind));
+    setEditingIndicator(null);
+  };
 
   const filteredIndicators = indicators.filter((ind) =>
     ind.indicator.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,11 +105,11 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
           </div>
 
           <div className="csr-banner-actions">
-            <button className="csr-btn-primary" onClick={() => alert('Opening Record Social Impact Dialog...')}>
+            <button className="csr-btn-primary" onClick={() => setIsRecordImpactOpen(true)}>
               <Plus size={16} />
               + Record Impact
             </button>
-            <button className="csr-btn-outline" onClick={() => alert('Add Custom KPI Indicator...')}>
+            <button className="csr-btn-outline" onClick={() => setIsAddIndicatorOpen(true)}>
               <Plus size={15} />
               + Add Indicator
             </button>
@@ -167,7 +218,7 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
                       className="csr-btn-outline"
                       style={{ padding: '4px 8px' }}
                       title="View Evidence & Methodology"
-                      onClick={() => alert(`Indicator: ${ind.indicator}\nEvidence Ref: ${ind.evidence_ref}`)}
+                      onClick={() => setActiveEvidenceModal(ind)}
                     >
                       <Eye size={13} />
                     </button>
@@ -175,7 +226,7 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
                       className="csr-btn-outline"
                       style={{ padding: '4px 8px' }}
                       title="Update Value"
-                      onClick={() => alert(`Update current measured value for ${ind.indicator}`)}
+                      onClick={() => setEditingIndicator({ ...ind })}
                     >
                       <Edit2 size={13} />
                     </button>
@@ -186,6 +237,276 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
           </tbody>
         </table>
       </div>
+
+      {/* Record Impact / Add Indicator Modal */}
+      {(isRecordImpactOpen || isAddIndicatorOpen) && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => { setIsRecordImpactOpen(false); setIsAddIndicatorOpen(false); }}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                {isRecordImpactOpen ? 'Record Social Impact Metric' : 'Add Custom KPI Indicator'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => { setIsRecordImpactOpen(false); setIsAddIndicatorOpen(false); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddIndicatorSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Indicator Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Total Direct Beneficiaries Reached"
+                  value={newIndicatorForm.indicator}
+                  onChange={(e) => setNewIndicatorForm({ ...newIndicatorForm, indicator: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>CSR Program / Project</label>
+                <input
+                  type="text"
+                  required
+                  value={newIndicatorForm.project}
+                  onChange={(e) => setNewIndicatorForm({ ...newIndicatorForm, project: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Baseline</label>
+                  <input
+                    type="number"
+                    value={newIndicatorForm.baseline}
+                    onChange={(e) => setNewIndicatorForm({ ...newIndicatorForm, baseline: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Target</label>
+                  <input
+                    type="number"
+                    value={newIndicatorForm.target}
+                    onChange={(e) => setNewIndicatorForm({ ...newIndicatorForm, target: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Current</label>
+                  <input
+                    type="number"
+                    value={newIndicatorForm.current}
+                    onChange={(e) => setNewIndicatorForm({ ...newIndicatorForm, current: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="csr-btn-outline"
+                  onClick={() => { setIsRecordImpactOpen(false); setIsAddIndicatorOpen(false); }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="csr-btn-primary"
+                >
+                  Save Indicator
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Evidence & Methodology Modal */}
+      {activeEvidenceModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setActiveEvidenceModal(null)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                  {activeEvidenceModal.indicator}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  {activeEvidenceModal.project} • Evidence Ref: {activeEvidenceModal.evidence_ref}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveEvidenceModal(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>Evaluation Methodology</div>
+              <div style={{ fontSize: '13px', color: '#1E293B', marginTop: '4px' }}>
+                {activeEvidenceModal.methodology || 'Third-party social audit conducted by accredited agency following SROI (Social Return On Investment) framework.'}
+              </div>
+            </div>
+
+            <div style={{ padding: '12px', background: '#EFF6FF', borderRadius: '10px', fontSize: '12px', color: '#1E40AF', marginBottom: '14px' }}>
+              Statutory verification compliant with Schedule VII of Companies Act 2013 and SEBI BRSR Core.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="csr-btn-outline"
+                onClick={() => setActiveEvidenceModal(null)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="csr-btn-primary"
+                onClick={() => {
+                  exportToCsv(`Impact_Evidence_${activeEvidenceModal.id}.csv`, [activeEvidenceModal]);
+                  setActiveEvidenceModal(null);
+                }}
+              >
+                Export Evidence Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit / Update Value Modal */}
+      {editingIndicator && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setEditingIndicator(null)}
+        >
+          <div
+            className="csr-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '460px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                Update Measured Value
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingIndicator(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateCurrentValue} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>Indicator</label>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{editingIndicator.indicator}</div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>New Measured Value ({editingIndicator.unit})</label>
+                <input
+                  type="number"
+                  required
+                  value={editingIndicator.current}
+                  onChange={(e) => setEditingIndicator({ ...editingIndicator, current: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '14px', fontWeight: 700 }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="csr-btn-outline"
+                  onClick={() => setEditingIndicator(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="csr-btn-primary"
+                >
+                  Save Measurement
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

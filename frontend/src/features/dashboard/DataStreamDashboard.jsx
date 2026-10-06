@@ -22,6 +22,7 @@ import {
 import DataStreamSkeleton from './DataStreamSkeleton';
 import { esgStore } from '../../services/esgStore';
 import { api } from '../../services/api';
+import { exportToCsv } from '../../utils/exportUtils';
 import './DataStreamDashboard.css';
 
 export default function DataStreamDashboard({
@@ -882,7 +883,13 @@ export default function DataStreamDashboard({
                   type="button" 
                   className="ds-pill-btn" 
                   style={{ background: '#258BE6', borderColor: '#258BE6', color: '#FFFFFF', fontWeight: 600, fontSize: '10.5px', padding: '2.5px 10px' }}
-                  onClick={() => alert('Downloading Site ESG Capex & Financial Statement (FY 2026-27)...')}
+                  onClick={() => exportToCsv('MEIL_Site_ESG_Capex_Statement_FY27.csv', [
+                    { Metric: 'Total ESG Capex', BudgetINR_Cr: 24.50, SpentINR_Cr: 18.82, UtilizationPct: '76.8%', Period: 'FY 2026-27' },
+                    { Metric: 'Clean Tech & Decarbonization', BudgetINR_Cr: 12.00, SpentINR_Cr: 9.80, UtilizationPct: '81.7%', Period: 'FY 2026-27' },
+                    { Metric: 'Zero Liquid Discharge & Water Recycling', BudgetINR_Cr: 6.50, SpentINR_Cr: 4.90, UtilizationPct: '75.4%', Period: 'FY 2026-27' },
+                    { Metric: 'Health, Safety & Ergonomics', BudgetINR_Cr: 4.00, SpentINR_Cr: 3.12, UtilizationPct: '78.0%', Period: 'FY 2026-27' },
+                    { Metric: 'Waste Diversion & Circular Economy', BudgetINR_Cr: 2.00, SpentINR_Cr: 1.00, UtilizationPct: '50.0%', Period: 'FY 2026-27' }
+                  ])}
                 >
                   <Download size={12} style={{ marginRight: '4px' }} />
                   Statement

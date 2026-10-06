@@ -7,11 +7,25 @@ import {
   ShieldCheck,
   Building
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function ProcurementAnalyticsScreen({ onNavigateTab }) {
   const [selectedSupplier, setSelectedSupplier] = useState('All Suppliers');
   const [selectedBU, setSelectedBU] = useState('All Business Units');
   const [selectedPeriod, setSelectedPeriod] = useState('Sep 2026');
+
+  const handleExportReport = () => {
+    const reportData = [
+      { Metric: 'Total Procurement Spend', Value: '₹248.6 Cr', Scope: 'Group-wide MEIL', Period: selectedPeriod },
+      { Metric: 'Assessed Spend (Scope 3 Tier 1)', Value: '₹194.2 Cr', Scope: '78% Coverage', Period: selectedPeriod },
+      { Metric: 'MSME Direct Spend', Value: '₹72.6 Cr', Scope: '29% Priority Sector', Period: selectedPeriod },
+      { Metric: 'BRSR Core Verified Spend', Value: '₹158.2 Cr', Scope: '64% Verified', Period: selectedPeriod },
+      { Metric: 'Materials Category Spend', Value: '₹79.5 Cr', Scope: 'Cement & Steel (32%)', Period: selectedPeriod },
+      { Metric: 'Services Category Spend', Value: '₹59.6 Cr', Scope: 'Logistics & Civil (24%)', Period: selectedPeriod },
+      { Metric: 'High Risk Suppliers', Value: '58 vendors (12%)', Scope: 'Mandatory Audits Issued', Period: selectedPeriod }
+    ];
+    exportToCsv(`MEIL_Procurement_ESG_Analytics_${selectedPeriod.replace(/\s+/g, '_')}.csv`, reportData);
+  };
 
   const kpis = [
     { label: 'Total Procurement Value', value: '₹248.6 Cr', sub: 'Group-wide total', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)', icon: TrendingUp },
@@ -56,7 +70,7 @@ export default function ProcurementAnalyticsScreen({ onNavigateTab }) {
           <button
             type="button"
             className="proc-btn proc-btn-outline"
-            onClick={() => alert('Exporting Procurement ESG Analytics Report (PDF/Excel)')}
+            onClick={handleExportReport}
             style={{ padding: '7px 14px', fontSize: '12.5px' }}
           >
             <Download size={14} />

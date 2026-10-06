@@ -7,8 +7,10 @@ import {
   AlertTriangle,
   Eye,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Download
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovComplaintsScreen({
   complaints = [],
@@ -17,8 +19,59 @@ export default function GovComplaintsScreen({
 }) {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [localComplaints, setLocalComplaints] = useState(complaints);
+  const [newComp, setNewComp] = useState({
+    type: 'Community',
+    project: 'Polavaram Hydroelectric Project (AP)',
+    severity: 'Medium',
+    description: 'Local village council representation regarding water tanker scheduling'
+  });
 
-  const filtered = complaints.filter(c => {
+  React.useEffect(() => {
+    if (complaints && complaints.length > 0) {
+      setLocalComplaints(complaints);
+    }
+  }, [complaints]);
+
+  const handleExport = () => {
+    const rows = localComplaints.map(c => ({
+      ID: c.id,
+      Type: c.type,
+      Project: c.project,
+      Severity: c.severity,
+      Status: c.status,
+      Date: c.date,
+      Resolution: c.resolution
+    }));
+    exportToCsv('MEIL_Stakeholder_Grievances', rows);
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `GRV-GOV-${Date.now().toString().slice(-4)}`,
+      type: newComp.type,
+      project: newComp.project,
+      severity: newComp.severity,
+      description: newComp.description,
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      status: 'Open',
+      resolution: 'Grievance officer assigned for field inquiry'
+    };
+    setLocalComplaints([created, ...localComplaints]);
+    setIsRegisterOpen(false);
+  };
+
+  const handleResolveGrievance = (id) => {
+    setLocalComplaints(prev => prev.map(c => c.id === id ? { ...c, status: 'Resolved', resolution: 'Issue resolved with stakeholder concurrence.' } : c));
+    if (selectedComplaint && selectedComplaint.id === id) {
+      setSelectedComplaint({ ...selectedComplaint, status: 'Resolved', resolution: 'Issue resolved with stakeholder concurrence.' });
+    }
+  };
+
+  const filtered = localComplaints.filter(c => {
     const matchesType = typeFilter === 'all' || c.type.toLowerCase().includes(typeFilter.toLowerCase());
     const matchesStatus = statusFilter === 'all' || c.status.toLowerCase().replace(/\s+/g, '-') === statusFilter;
     return matchesType && matchesStatus;
@@ -64,10 +117,18 @@ export default function GovComplaintsScreen({
             </select>
             <button 
               className="gov-btn gov-btn-primary"
-              onClick={onOpenRegisterComplaint}
+              onClick={onOpenRegisterComplaint || (() => setIsRegisterOpen(true))}
             >
               <Plus size={15} />
               Register Complaint
+            </button>
+            <button 
+              className="gov-btn gov-btn-outline"
+              onClick={handleExport}
+              title="Export Grievances to CSV"
+            >
+              <Download size={14} />
+              Export
             </button>
           </div>
         </div>
@@ -174,7 +235,7 @@ export default function GovComplaintsScreen({
                     <button 
                       className="gov-page-btn"
                       title="View Grievance"
-                      onClick={() => alert(`Grievance ${item.id}:\n${item.description}\nProject: ${item.project}\nResolution: ${item.resolution}`)}
+                      onClick={() => setSelectedComplaint(item)}
                     >
                       <Eye size={13} />
                     </button>
@@ -187,7 +248,7 @@ export default function GovComplaintsScreen({
 
         {/* ──── PAGINATION ROW ──── */}
         <div className="gov-pagination-row">
-          <span>Showing 1 to {filtered.length} of {complaints.length} complaints</span>
+          <span>Showing 1 to {filtered.length} of {localComplaints.length} complaints</span>
           <div className="gov-pagination-buttons">
             <button className="gov-page-btn" disabled><ChevronLeft size={14} /></button>
             <button className="gov-page-btn active">1</button>
@@ -195,6 +256,121 @@ export default function GovComplaintsScreen({
           </div>
         </div>
       </div>
+
+      {/* VIEW GRIEVANCE MODAL */}
+      {selectedComplaint && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 500, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <span className={`gov-status-chip gov-status-${selectedComplaint.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {selectedComplaint.status}
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>{selectedComplaint.id} - {selectedComplaint.type}</h3>
+              </div>
+              <button onClick={() => setSelectedComplaint(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: '#334155', background: '#F8FAFC', padding: 14, borderRadius: 10 }}>
+              <div><strong>Project:</strong> {selectedComplaint.project}</div>
+              <div><strong>Severity:</strong> <span style={{ color: selectedComplaint.severity === 'Critical' ? '#DC2626' : '#D97706', fontWeight: 700 }}>{selectedComplaint.severity}</span></div>
+              <div><strong>Date:</strong> {selectedComplaint.date}</div>
+              <div><strong>Status:</strong> {selectedComplaint.status}</div>
+            </div>
+            <div style={{ marginTop: 14, fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+              <strong>Description:</strong> {selectedComplaint.description}
+            </div>
+            {selectedComplaint.resolution && (
+              <div style={{ marginTop: 10, fontSize: '13px', color: '#166534', background: '#F0FDF4', padding: 10, borderRadius: 8 }}>
+                <strong>Resolution Status:</strong> {selectedComplaint.resolution}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 20 }}>
+              <button
+                type="button"
+                className="gov-btn gov-btn-outline"
+                onClick={() => setSelectedComplaint(null)}
+              >
+                Close
+              </button>
+              {selectedComplaint.status !== 'Resolved' && (
+                <button
+                  type="button"
+                  className="gov-btn gov-btn-primary"
+                  onClick={() => handleResolveGrievance(selectedComplaint.id)}
+                >
+                  <CheckCircle2 size={14} style={{ marginRight: 4 }} />
+                  Resolve Grievance
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REGISTER GRIEVANCE MODAL */}
+      {isRegisterOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 480, maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Register Stakeholder Grievance</h3>
+            <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Grievance Category</label>
+                <select
+                  value={newComp.type}
+                  onChange={e => setNewComp({ ...newComp, type: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                >
+                  <option value="Community">Community</option>
+                  <option value="HR Related">HR Related</option>
+                  <option value="Vendor">Vendor</option>
+                  <option value="Environmental">Environmental</option>
+                  <option value="Safety">Safety</option>
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Project Site</label>
+                  <input
+                    type="text"
+                    required
+                    value={newComp.project}
+                    onChange={e => setNewComp({ ...newComp, project: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Severity</label>
+                  <select
+                    value={newComp.severity}
+                    onChange={e => setNewComp({ ...newComp, severity: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                  >
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Grievance Details</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={newComp.description}
+                  onChange={e => setNewComp({ ...newComp, description: e.target.value })}
+                  placeholder="Detail the stakeholder complaint, location, and requested resolution..."
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: '13px', marginTop: 4 }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 12 }}>
+                <button type="button" className="gov-btn gov-btn-outline" onClick={() => setIsRegisterOpen(false)}>Cancel</button>
+                <button type="submit" className="gov-btn gov-btn-primary">Register Grievance</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

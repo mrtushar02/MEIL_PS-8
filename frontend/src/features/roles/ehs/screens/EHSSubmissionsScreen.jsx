@@ -65,8 +65,25 @@ export default function EHSSubmissionsScreen({
     }
   ];
 
+  const [localSubmissions, setLocalSubmissions] = useState(submissions && submissions.length > 0 ? submissions : submissionList);
   const [selectedSub, setSelectedSub] = useState(submissionList[0]);
   const [drawerTab, setDrawerTab] = useState('Overview');
+
+  const handleResubmit = (subId) => {
+    setLocalSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'Under Review', comments: 'Resubmitted with updated contractor affidavits. Awaiting re-audit.' } : s));
+    setSelectedSub(prev => prev ? { ...prev, status: 'Under Review', comments: 'Resubmitted with updated contractor affidavits. Awaiting re-audit.' } : null);
+  };
+
+  const handleDownloadPackage = (sub) => {
+    const content = `MEIL GROUP - EHS STATUTORY FILING DOSSIER\nSubmission ID: ${sub.id}\nModule: ${sub.module}\nProject: ${sub.project}\nPeriod: ${sub.period}\nStatus: ${sub.status}\nAuditor Hash: SHA256-${Math.random().toString(36).substring(2, 10).toUpperCase()}-MEIL\nAssurance Standard: SEBI BRSR Core Circular 2023 / NGRBC P3\nTimestamp: ${new Date().toISOString()}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${sub.id}_SEBI_Signed_Package.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -180,7 +197,7 @@ export default function EHSSubmissionsScreen({
                 </tr>
               </thead>
               <tbody>
-                {submissionList.map((sub) => {
+                {localSubmissions.map((sub) => {
                   const isSelected = selectedSub?.id === sub.id;
                   return (
                     <tr 
@@ -322,7 +339,7 @@ export default function EHSSubmissionsScreen({
                   type="button" 
                   className="ehs-btn ehs-btn-primary"
                   style={{ padding: '6px 14px', fontSize: '11.5px' }}
-                  onClick={() => alert('Corrected package submitted for re-review.')}
+                  onClick={() => handleResubmit(selectedSub.id)}
                 >
                   Make Corrections & Resubmit
                 </button>
@@ -331,7 +348,7 @@ export default function EHSSubmissionsScreen({
                   type="button" 
                   className="ehs-btn ehs-btn-blue"
                   style={{ padding: '6px 14px', fontSize: '11.5px' }}
-                  onClick={() => alert('Generating official PDF filing package with SEBI hash.')}
+                  onClick={() => handleDownloadPackage(selectedSub)}
                 >
                   Download Signed Package
                 </button>

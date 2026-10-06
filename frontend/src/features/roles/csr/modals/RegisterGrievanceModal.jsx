@@ -17,10 +17,7 @@ export default function RegisterGrievanceModal({ isOpen, onClose, onRegisterGrie
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.description) {
-      alert('Please enter a description of the community grievance.');
-      return;
-    }
+    if (!formData.description) return;
     const newGrv = {
       ...formData,
       date: '21 Sep 2026',

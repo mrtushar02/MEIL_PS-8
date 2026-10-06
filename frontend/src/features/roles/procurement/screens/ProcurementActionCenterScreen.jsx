@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import {
-  Calendar
+  Calendar,
+  X,
+  Clock,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function ProcurementActionCenterScreen({
   actionItems = [],
   onNavigateTab
 }) {
   const [activeFilterTab, setActiveFilterTab] = useState('all');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const filterTabs = [
     { id: 'all', label: 'All (54)' },
@@ -59,7 +65,7 @@ export default function ProcurementActionCenterScreen({
     else if (item.type === 'Evidence') onNavigateTab?.('evidence');
     else if (item.type === 'Risk') onNavigateTab?.('risk');
     else if (item.type === 'Submission') onNavigateTab?.('submissions');
-    else alert(`Executing action: ${item.action}`);
+    else onNavigateTab?.('actions');
   };
 
   return (
@@ -79,7 +85,7 @@ export default function ProcurementActionCenterScreen({
           <button
             type="button"
             className="proc-btn proc-btn-outline"
-            onClick={() => alert('Opening BRSR Compliance Deadlines Calendar')}
+            onClick={() => setIsCalendarOpen(true)}
             style={{ padding: '7px 14px', fontSize: '12.5px' }}
           >
             <Calendar size={14} color="#2563EB" />
@@ -182,6 +188,94 @@ export default function ProcurementActionCenterScreen({
           </table>
         </div>
       </div>
+
+      {/* Calendar Modal */}
+      {isCalendarOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setIsCalendarOpen(false)}
+        >
+          <div
+            className="proc-glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '560px',
+              padding: '24px',
+              borderRadius: '20px',
+              background: '#FFFFFF'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Calendar size={20} color="#2563EB" />
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
+                  BRSR Statutory Compliance Calendar
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCalendarOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { date: '15 Oct 2026', title: 'Q2 Value Chain Spend Data Freeze', status: 'Upcoming', desc: 'Consolidation of Top 75% vendor spend invoices across all projects.' },
+                { date: '28 Oct 2026', title: 'Supplier GHG Scope 3 Baseline Cutoff', status: 'Mandatory', desc: 'Collection of Scope 3 Category 1 purchased goods emissions data.' },
+                { date: '10 Nov 2026', title: 'Independent BRSR Assurance Audit', status: 'Scheduled', desc: 'Statutory verification by external ESG assurance agency.' },
+                { date: '30 Nov 2026', title: 'Annual SEBI Group Filing Review', status: 'Board Gate', desc: 'Final review and signoff by MEIL Board Sustainability Committee.' }
+              ].map((item, idx) => (
+                <div key={idx} style={{ padding: '12px', background: '#F8FAFC', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: '#2563EB' }}>{item.date} • {item.title}</div>
+                    <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>{item.desc}</div>
+                  </div>
+                  <span className="proc-status-chip pending">{item.status}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '18px' }}>
+              <button
+                type="button"
+                className="proc-btn proc-btn-outline"
+                onClick={() => setIsCalendarOpen(false)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="proc-btn proc-btn-blue"
+                onClick={() => {
+                  exportToCsv('MEIL_BRSR_Compliance_Calendar.csv', [
+                    { Deadline: '15 Oct 2026', Task: 'Q2 Value Chain Spend Freeze', Standard: 'SEBI BRSR Core' },
+                    { Deadline: '28 Oct 2026', Task: 'Supplier Scope 3 Baseline', Standard: 'GHG Protocol' },
+                    { Deadline: '10 Nov 2026', Task: 'Assurance Audit', Standard: 'SEBI Circular 2023' },
+                    { Deadline: '30 Nov 2026', Task: 'Board Approval', Standard: 'NGRBC / SEBI' }
+                  ]);
+                  setIsCalendarOpen(false);
+                }}
+              >
+                Export Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

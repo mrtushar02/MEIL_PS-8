@@ -23,10 +23,7 @@ export default function RegisterCaseModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.description.trim()) {
-      alert('Please enter a description');
-      return;
-    }
+    if (!formData.description.trim()) return;
     onRegisterCase?.(formData);
     onClose();
   };

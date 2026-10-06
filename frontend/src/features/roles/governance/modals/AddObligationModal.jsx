@@ -24,10 +24,7 @@ export default function AddObligationModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.requirement.trim()) {
-      alert('Please enter a Requirement title');
-      return;
-    }
+    if (!formData.requirement.trim()) return;
     onAddObligation?.(formData);
     onClose();
   };

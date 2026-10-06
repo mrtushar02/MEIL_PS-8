@@ -248,6 +248,7 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [rowMenuOpenId, setRowMenuOpenId] = useState(null);
 
   // Form states for modals
@@ -996,7 +997,16 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
                   </div>
                   <button 
                     type="button" 
-                    onClick={() => alert(`Downloading ${doc.name}...`)}
+                    onClick={() => {
+                      const content = `MEIL PROJECT REPOSITORY DOCUMENT\nDocument: ${doc.name}\nSize: ${doc.size}\nDate: ${doc.date}\nClassification: Internal Regulatory ESG Record\nVerified by: Project Site HSE Manager`;
+                      const blob = new Blob([content], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${doc.name}.txt`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563EB', fontSize: '11px', fontWeight: 600 }}
                   >
                     View
@@ -1185,7 +1195,7 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
             <button 
               type="button" 
               className="mp-bottom-pill-btn"
-              onClick={() => alert('Calendar view: Site deadlines synchronized with SEBI BRSR Core schedule.')}
+              onClick={() => setIsCalendarModalOpen(true)}
             >
               View Calendar
             </button>
@@ -1466,6 +1476,50 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
         </div>
       )}
 
+      {/* Calendar Deadlines Modal */}
+      {isCalendarModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 16, width: 560, maxWidth: '92%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>BRSR Statutory Calendar</h3>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: 4 }}>SEBI Core & NGRBC Reporting Milestones (FY 2026-27)</div>
+              </div>
+              <button onClick={() => setIsCalendarModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: 18 }}>
+              {[
+                { date: '15 Oct 2026', title: 'Q2 Energy & GHG Scope 1/2 Telemetry Filing', status: 'Pending Review', color: '#D97706' },
+                { date: '20 Oct 2026', title: 'Water Withdrawal & Zero Liquid Discharge Manifest', status: 'Under Verification', color: '#0284C7' },
+                { date: '31 Oct 2026', title: 'HSE Safety Affidavits & Lost Time Injury Frequency Rate (LTIFR)', status: 'Approved', color: '#16A34A' },
+                { date: '15 Nov 2026', title: 'Scope 3 Upstream Value Chain Procurement ESG Audit', status: 'Upcoming', color: '#64748B' },
+                { date: '31 Dec 2026', title: 'Half-Yearly Corporate Sustainability Board Disclosure', status: 'Scheduled', color: '#475569' }
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 10, background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase' }}>{item.date}</span>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginTop: 2 }}>{item.title}</div>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: item.color, background: `${item.color}15`, padding: '4px 8px', borderRadius: 6 }}>
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="mp-btn-primary-action"
+                onClick={() => setIsCalendarModalOpen(false)}
+              >
+                Close Calendar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

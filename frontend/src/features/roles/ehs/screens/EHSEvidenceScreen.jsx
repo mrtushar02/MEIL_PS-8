@@ -77,7 +77,24 @@ export default function EHSEvidenceScreen({
     }
   ];
 
+  const [items, setItems] = useState(evidenceList);
   const [selectedEv, setSelectedEv] = useState(evidenceList[0]);
+
+  const handleDownloadEvidence = (ev) => {
+    const content = `MEIL ESG EVIDENCE VAULT\nDocument ID: ${ev.id}\nFile: ${ev.fileName}\nModule: ${ev.module || 'EHS'}\nAssurance: SEBI BRSR Core Type 2\nHash: ${ev.hash || 'SHA256-AUTHENTICATED'}\nTimestamp: ${new Date().toISOString()}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${ev.fileName || 'evidence'}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleVerifyEvidence = (evId) => {
+    setItems(prev => prev.map(ev => ev.id === evId ? { ...ev, status: 'Verified' } : ev));
+    setSelectedEv(prev => prev ? { ...prev, status: 'Verified' } : null);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -241,7 +258,7 @@ export default function EHSEvidenceScreen({
                 </tr>
               </thead>
               <tbody>
-                {evidenceList.map((ev) => {
+                {items.map((ev) => {
                   const isSelected = selectedEv?.id === ev.id;
                   return (
                     <tr 
@@ -440,7 +457,7 @@ export default function EHSEvidenceScreen({
                 type="button" 
                 className="ehs-btn ehs-btn-outline"
                 style={{ padding: '6px 12px', fontSize: '11.5px' }}
-                onClick={() => alert(`Downloading: ${selectedEv.fileName}`)}
+                onClick={() => handleDownloadEvidence(selectedEv)}
               >
                 <Download size={13} />
                 <span>Download</span>
@@ -450,10 +467,7 @@ export default function EHSEvidenceScreen({
                 type="button" 
                 className="ehs-btn ehs-btn-primary"
                 style={{ padding: '6px 14px', fontSize: '11.5px' }}
-                onClick={() => {
-                  setSelectedEv(prev => ({ ...prev, status: 'Verified' }));
-                  alert('Evidence cryptographically verified and locked for SEBI audit.');
-                }}
+                onClick={() => handleVerifyEvidence(selectedEv.id)}
               >
                 <CheckCircle2 size={13} />
                 <span>Verify Proof</span>
