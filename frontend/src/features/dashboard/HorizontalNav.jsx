@@ -116,12 +116,14 @@ export default function HorizontalNav({
           { id: 'review-queue', label: 'Review Queue', icon: Inbox },
           { id: 'my-bu', label: 'My Business Unit', icon: Building2 },
           { id: 'submissions', label: 'Submissions', icon: Send },
+          { id: 'data-validation', label: 'Data & Validation', icon: CheckSquare },
           { id: 'evidence', label: 'Evidence', icon: Paperclip },
           { id: 'consolidation', label: 'Consolidation', icon: BarChart3 },
-          { id: 'exceptions', label: 'Exceptions', icon: AlertCircle },
-          { id: 'reports', label: 'Reports', icon: FileText },
+          { id: 'exceptions', label: 'Exceptions & SLA', icon: AlertCircle },
           { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-          { id: 'audit', label: 'Audit & Traceability', icon: Clock }
+          { id: 'reports', label: 'Reports', icon: FileText },
+          { id: 'audit', label: 'Audit & Traceability', icon: Clock },
+          { id: 'more', label: 'More', icon: MoreHorizontal }
         ];
       case 'PROJECT_OFFICER':
       default:

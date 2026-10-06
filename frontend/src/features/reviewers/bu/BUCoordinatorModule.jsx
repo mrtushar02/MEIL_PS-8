@@ -7,17 +7,23 @@ import {
 import api from '../../../services/api';
 import './BUCoordinatorModule.css';
 
-// Import all 10 screens
+// Import Context Bar
+import BUContextBar from './components/BUContextBar';
+
+// Import all screens
 import BUOverviewScreen from './screens/BUOverviewScreen';
 import BUReviewQueueScreen from './screens/BUReviewQueueScreen';
 import BUSubmissionReviewScreen from './screens/BUSubmissionReviewScreen';
 import BUConsolidationScreen from './screens/BUConsolidationScreen';
 import BUExceptionsScreen from './screens/BUExceptionsScreen';
 import BUMyBusinessUnitScreen from './screens/BUMyBusinessUnitScreen';
+import BUProjectDetailScreen from './screens/BUProjectDetailScreen';
+import BUDataValidationScreen from './screens/BUDataValidationScreen';
 import BUEvidenceCenterScreen from './screens/BUEvidenceCenterScreen';
 import BUAnalyticsScreen from './screens/BUAnalyticsScreen';
 import BUReportsScreen from './screens/BUReportsScreen';
 import BUAuditScreen from './screens/BUAuditScreen';
+import BUMoreScreen from './screens/BUMoreScreen';
 
 // Import modals
 import ApprovalModal from './modals/ApprovalModal';
@@ -26,6 +32,7 @@ import RequestCorrectionModal from './modals/RequestCorrectionModal';
 export default function BUCoordinatorModule({ user, activeTab = 'overview', onTabChange }) {
   const [internalView, setInternalView] = useState('overview');
   const [selectedSubmissionId, setSelectedSubmissionId] = useState('SUB-2026-091');
+  const [selectedProject, setSelectedProject] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -43,6 +50,8 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
         setInternalView('consolidation');
       } else if (activeTab === 'exceptions') {
         setInternalView('exceptions');
+      } else if (activeTab === 'data-validation') {
+        setInternalView('data-validation');
       } else if (activeTab === 'evidence') {
         setInternalView('evidence');
       } else if (activeTab === 'analytics') {
@@ -53,6 +62,8 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
         setInternalView('audit');
       } else if (activeTab === 'my-bu') {
         setInternalView('my-bu');
+      } else if (activeTab === 'more') {
+        setInternalView('more');
       } else if (activeTab === 'overview') {
         setInternalView('overview');
       }
@@ -149,10 +160,21 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
         </div>
       )}
 
-      {/* Screen Router Outlet - Takes 100% Full Width without duplicate navbars */}
+      {/* Business Context Bar matching Section 7 */}
+      <BUContextBar
+        group="MEIL Group"
+        division="MEIL Core Infrastructure Division"
+        businessUnit="Tunnels Business Unit"
+        buShortName="Tunnels"
+        reportingPeriod="September 2026"
+        cycleStatus="Review Cycle Active"
+      />
+
+      {/* Screen Router Outlet */}
       <div className="bu-content-wrapper">
         {internalView === 'overview' && (
           <BUOverviewScreen
+            submissions={submissions}
             onNavigate={navigateTo}
             onOpenSubmission={handleOpenSubmission}
           />
@@ -210,6 +232,10 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
 
         {internalView === 'consolidation' && <BUConsolidationScreen />}
 
+        {internalView === 'data-validation' && (
+          <BUDataValidationScreen onOpenSubmission={handleOpenSubmission} />
+        )}
+
         {internalView === 'exceptions' && (
           <BUExceptionsScreen
             submissions={submissions}
@@ -220,8 +246,30 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
         {internalView === 'my-bu' && (
           <BUMyBusinessUnitScreen
             onSelectProject={projectName => {
-              navigateTo('review-queue');
+              setSelectedProject({
+                name: projectName || 'Zojila Tunnel',
+                code: 'SITE-ZOJILA-01',
+                bu: 'Tunnels Business Unit',
+                subsidiary: 'Megha Core Infrastructure Division',
+                location: 'Sonamarg - Dras, Jammu & Kashmir',
+                period: 'September 2026',
+                dataQuality: 98,
+                evidenceCount: 14,
+                validationRate: 100,
+                risk: 'Low',
+                submissionsCount: 8,
+                leadEngineer: 'Tenzin Dorjey'
+              });
+              setInternalView('project-detail');
             }}
+          />
+        )}
+
+        {internalView === 'project-detail' && (
+          <BUProjectDetailScreen
+            project={selectedProject || undefined}
+            onBack={() => navigateTo('my-bu')}
+            onOpenSubmission={handleOpenSubmission}
           />
         )}
 
@@ -242,6 +290,8 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
             onSelectSubmission={subId => setSelectedSubmissionId(subId)}
           />
         )}
+
+        {internalView === 'more' && <BUMoreScreen user={user} />}
       </div>
 
       {/* Global Modals */}
