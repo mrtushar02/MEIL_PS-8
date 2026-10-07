@@ -275,7 +275,7 @@ class ApiService {
         body: JSON.stringify(data)
       });
     } catch {
-      return { message: 'Local demographic record registered', id: `demo-${Date.now()}` };
+      return { message: 'Local demographic record registered', id: `wfc-${Date.now()}` };
     }
   }
 

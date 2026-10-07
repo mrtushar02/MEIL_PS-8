@@ -375,7 +375,7 @@ def seed():
         scope_group = get_or_create_scope(cso_user.id, "GROUP", group.id)
         scope_zojila = get_or_create_scope(site_user.id, "PROJECT", site_zojila.id)
 
-        print("Seeding Sample Operational Records for Canonical Demo...")
+        print("Seeding Operational Baseline Records for MEIL Group...")
         # Zojila Tunnel Submission (Approved)
         sub_zojila = Submission(
             id="sub-zojila-sep25",

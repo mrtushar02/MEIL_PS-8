@@ -33,7 +33,8 @@ def test_auth_login():
     return token
 
 def test_organization_tree():
-    response = client.get("/api/v1/organization/tree")
+    headers = _get_auth_headers()
+    response = client.get("/api/v1/organization/tree", headers=headers)
     assert response.status_code == 200
     tree = response.json()
     assert tree["group"]["code"] == "MEIL-CORP"
@@ -43,6 +44,7 @@ def test_organization_tree():
     print(f"[OK] Organization Hierarchy Verified: {tree['group']['name']} with {tree['total_subsidiaries']} Subsidiaries, {tree['total_business_units']} BUs, {tree['total_projects']} Projects")
 
 def test_emission_calculator():
+    headers = _get_auth_headers()
     payload = {
         "diesel_litres": 15000.0,
         "petrol_litres": 2000.0,
@@ -53,7 +55,7 @@ def test_emission_calculator():
         "steel_tonnes": 120.0,
         "turnover_inr_cr": 45.0
     }
-    response = client.post("/api/v1/reports/calculator", json=payload)
+    response = client.post("/api/v1/reports/calculator", json=payload, headers=headers)
     assert response.status_code == 200
     calc = response.json()
     assert calc["scope1_co2e_tonnes"] > 0
