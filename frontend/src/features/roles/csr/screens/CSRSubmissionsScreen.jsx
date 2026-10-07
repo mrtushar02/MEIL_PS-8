@@ -7,9 +7,11 @@ import {
   Clock,
   AlertTriangle,
   FileCheck2,
+  Download,
   Eye
 } from 'lucide-react';
 import { INITIAL_SUBMISSIONS } from '../csrData';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRSubmissionsScreen({ onNavigateTab }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +27,21 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
     submitted_by: 'CSR Field Lead',
     remarks: 'Field telemetry and beneficiary records audited'
   });
+
+  const handleExportCsv = () => {
+    exportToCsv('MEIL_CSR_Submissions.csv', submissions.map(s => ({
+      Submission_ID: s.id,
+      Module: s.module,
+      Scope: s.scope,
+      Period: s.period,
+      Submitted_By: s.submitted_by,
+      Submission_Date: s.date,
+      Status: s.status,
+      Reviewer: s.reviewer,
+      Approver: s.approver,
+      Remarks: s.remarks || ''
+    })));
+  };
 
   const handleCreateSubmission = (e) => {
     e.preventDefault();
@@ -104,6 +121,10 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
           </div>
 
           <div className="csr-banner-actions">
+            <button className="csr-btn-outline" onClick={handleExportCsv} title="Export Submissions to CSV">
+              <Download size={15} />
+              Export CSV
+            </button>
             <button className="csr-btn-primary" onClick={() => setIsCreateOpen(true)}>
               <Plus size={16} />
               + Create Submission
@@ -117,7 +138,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Submissions</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>18</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{submissions.length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Send size={18} />
@@ -127,7 +148,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Submitted / Pending</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#2563EB', marginTop: '2px' }}>10</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#2563EB', marginTop: '2px' }}>{submissions.filter(s => s.status?.toLowerCase() === 'submitted').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Clock size={18} />
@@ -137,7 +158,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Under Review</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>4</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>{submissions.filter(s => s.status?.toLowerCase() === 'under review').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FileCheck2 size={18} />
@@ -147,7 +168,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Approved</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>3</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{submissions.filter(s => s.status?.toLowerCase() === 'approved').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CheckCircle2 size={18} />
@@ -157,7 +178,7 @@ export default function CSRSubmissionsScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Correction Required</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#EA580C', marginTop: '2px' }}>1</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#EA580C', marginTop: '2px' }}>{submissions.filter(s => s.status?.toLowerCase().includes('correction')).length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(234, 88, 12, 0.1)', color: '#EA580C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AlertTriangle size={18} />

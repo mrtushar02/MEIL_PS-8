@@ -1,5 +1,6 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2, ShieldCheck, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ShieldCheck, Clock, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GapAnalysisScreen() {
   const gaps = [
@@ -7,6 +8,15 @@ export default function GapAnalysisScreen() {
     { area: 'Green Credits & Verified Carbon Offsets', requirement: 'MCA ESG Voluntary Scheme', status: 'In Evaluation', action: 'Draft green credit purchase policy submitted to Board committee' },
     { area: 'Life Cycle Assessment (LCA) Disclosures', requirement: 'Principle 2 Essential Indicator', status: '100% Compliant', action: 'LCA completed for 4 key product & infrastructure construction categories' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_BRSR_Regulatory_Gap_Analysis.csv', gaps.map(g => ({
+      'Disclosure Focus Area': g.area,
+      'Regulatory Mandate': g.requirement,
+      'Current Status': g.status,
+      'Remediation Strategy': g.action
+    })));
+  };
 
   return (
     <div className="brsr-mgr-gaps">
@@ -18,7 +28,12 @@ export default function GapAnalysisScreen() {
               Preparedness against upcoming SEBI Circular 2025 mandates and global sustainability taxonomy convergence
             </p>
           </div>
-          <span className="brsr-mgr-badge-blue">Zero High-Risk Non-Compliance Gaps</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="brsr-mgr-badge-blue">Zero High-Risk Non-Compliance Gaps</span>
+            <button className="brsr-mgr-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Gap Analysis
+            </button>
+          </div>
         </div>
       </div>
 

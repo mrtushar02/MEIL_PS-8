@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ShieldCheck, PlusCircle, FileCheck2, X, Calendar } from 'lucide-react';
 import { GlassCard, GlassButton, GlassBadge, GlassKPI } from '../../../../components/glass';
 
@@ -47,6 +47,14 @@ export default function EHSInspectionsScreen({
   const [selectedRange, setSelectedRange] = useState('Sep 2026');
   const [selectedStatus, setSelectedStatus] = useState('All Statuses');
   const [selectedInsp, setSelectedInsp] = useState(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newInspForm, setNewInspForm] = useState({
+    title: '',
+    project_name: 'Zojila Tunnel Project',
+    type: 'Safety Checklist',
+    inspector: 'Rohit Kumar (Safety Lead)',
+    scheduled_date: new Date().toISOString().split('T')[0]
+  });
 
   const inspectionList = useMemo(() => Array.isArray(inspections) ? inspections : [], [inspections]);
 
@@ -105,7 +113,7 @@ export default function EHSInspectionsScreen({
               </div>
             </div>
             <div className="ehs-banner-actions">
-              <GlassButton variant="primary" size="sm" icon={PlusCircle} onClick={() => onCreateInspection?.()}>
+              <GlassButton variant="primary" size="sm" icon={PlusCircle} onClick={() => setIsCreateModalOpen(true)}>
                 Create Inspection
               </GlassButton>
             </div>
@@ -295,6 +303,127 @@ export default function EHSInspectionsScreen({
           )}
         </div>
       </GlassCard>
+
+      {/* Create Inspection Modal */}
+      {isCreateModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '24px', width: '92%', maxWidth: '480px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', border: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', margin: 0 }}>Schedule Site Inspection</h3>
+              <button 
+                type="button" 
+                onClick={() => setIsCreateModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              onCreateInspection?.({
+                title: newInspForm.title || `${newInspForm.type} - ${newInspForm.project_name}`,
+                project_name: newInspForm.project_name,
+                type: newInspForm.type,
+                inspector: newInspForm.inspector,
+                scheduled_date: newInspForm.scheduled_date,
+                status: 'Scheduled',
+                findings_count: 0,
+                checklist_summary: 'Scheduled inspection pending site execution walk-through.'
+              });
+              setIsCreateModalOpen(false);
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Inspection Title
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Weekly Scaffolding & Lifeline Audit"
+                    value={newInspForm.title}
+                    onChange={(e) => setNewInspForm(prev => ({ ...prev, title: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Project Site
+                  </label>
+                  <select
+                    value={newInspForm.project_name}
+                    onChange={(e) => setNewInspForm(prev => ({ ...prev, project_name: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Zojila Tunnel Project">Zojila Tunnel Project</option>
+                    <option value="Hyderabad Metro Phase 2">Hyderabad Metro Phase 2</option>
+                    <option value="Olectra EV Mega Plant">Olectra EV Mega Plant</option>
+                    <option value="Polavaram Dam Project">Polavaram Dam Project</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Audit Type
+                  </label>
+                  <select
+                    value={newInspForm.type}
+                    onChange={(e) => setNewInspForm(prev => ({ ...prev, type: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Safety Checklist">Safety Checklist</option>
+                    <option value="Scaffolding Audit">Scaffolding Audit</option>
+                    <option value="Electrical Inspection">Electrical Inspection</option>
+                    <option value="Environmental Walkthrough">Environmental Walkthrough</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Lead Inspector
+                  </label>
+                  <input
+                    type="text"
+                    value={newInspForm.inspector}
+                    onChange={(e) => setNewInspForm(prev => ({ ...prev, inspector: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Scheduled Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newInspForm.scheduled_date}
+                    onChange={(e) => setNewInspForm(prev => ({ ...prev, scheduled_date: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: '#475569' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#2563EB', color: '#FFFFFF', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Confirm & Schedule
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, Unlock, ShieldCheck, CheckCircle2, AlertCircle, FileText, KeyRound, Award } from 'lucide-react';
+import { esgStore } from '../../../../services/esgStore';
 
 export default function GroupFinalApprovalLockScreen() {
   const [isLocked, setIsLocked] = useState(false);
@@ -14,6 +15,19 @@ export default function GroupFinalApprovalLockScreen() {
   ];
 
   const handleLock = () => {
+    try {
+      if (esgStore && esgStore.addAuditLog) {
+        esgStore.addAuditLog({
+          action: 'GROUP_PERIOD_LOCKED_AND_SEALED',
+          entity: 'Group Statutory Reporting Period',
+          entity_id: 'FY-2024-25-Q2',
+          user: 'Group CSO (Dr. Rajeshwar Rao)',
+          details: 'Locked reporting period across 258 project sites with SHA-256 statutory seal.'
+        });
+      }
+    } catch (e) {
+      console.warn(e);
+    }
     setIsLocked(true);
     setShowModal(false);
   };

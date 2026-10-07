@@ -1,5 +1,6 @@
 import React from 'react';
-import { Award, BarChart3, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Award, BarChart3, TrendingUp, CheckCircle2, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function ESGRatingsBenchmarkingScreen() {
   const peers = [
@@ -9,6 +10,17 @@ export default function ESGRatingsBenchmarkingScreen() {
     { entity: 'Afcons Infrastructure', msci: 'BB', spGlobal: '52 / 100', crisil: 'Adequate', carbonIntensity: '8.40 t / ₹ Cr', renewableMix: '19.4%' },
     { entity: 'Dilip Buildcon Limited', msci: 'B', spGlobal: '44 / 100', crisil: 'Moderate', carbonIntensity: '9.80 t / ₹ Cr', renewableMix: '12.0%' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_ESG_Peer_Benchmark.csv', peers.map(p => ({
+      'Peer Entity': p.entity,
+      'MSCI ESG Rating': p.msci,
+      'S&P Global ESG Score': p.spGlobal,
+      'CRISIL ESG Evaluation': p.crisil,
+      'Carbon Intensity': p.carbonIntensity,
+      'Renewable Energy Mix': p.renewableMix
+    })));
+  };
 
   return (
     <div className="exec-bd-ratings">
@@ -20,7 +32,12 @@ export default function ESGRatingsBenchmarkingScreen() {
               Benchmarking against leading Indian and global infrastructure EPC conglomerates
             </p>
           </div>
-          <span className="exec-bd-badge-slate">Top Decile Operational Metrics</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="exec-bd-badge-slate">Top Decile Operational Metrics</span>
+            <button className="exec-bd-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Benchmarking
+            </button>
+          </div>
         </div>
       </div>
 

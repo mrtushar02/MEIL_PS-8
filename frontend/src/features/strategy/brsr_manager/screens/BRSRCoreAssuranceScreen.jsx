@@ -1,5 +1,6 @@
 import React from 'react';
 import { Award, ShieldCheck, CheckCircle2, FileText, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function BRSRCoreAssuranceScreen() {
   const coreKpis = [
@@ -12,6 +13,17 @@ export default function BRSRCoreAssuranceScreen() {
     { code: 'P8_S2', indicator: 'Lost Time Injury Frequency Rate (LTIFR)', value: '0.08 per mn hours', auditStandard: 'ISAE 3000', assurance: 'Reasonable Assurance', status: 'TUV Verified' }
   ];
 
+  const handleExport = () => {
+    exportToCsv('MEIL_BRSR_Core_Assurance_Matrix.csv', coreKpis.map(k => ({
+      'Indicator Code': k.code,
+      'Core Metric Description': k.indicator,
+      'Group Audited Total': k.value,
+      'Assurance Standard': k.auditStandard,
+      'Assurance Scope': k.assurance,
+      'Auditor Verification': k.status
+    })));
+  };
+
   return (
     <div className="brsr-mgr-core">
       <div className="brsr-mgr-card" style={{ marginBottom: '1.25rem' }}>
@@ -22,10 +34,15 @@ export default function BRSRCoreAssuranceScreen() {
               All 9 quantitative ESG parameters requiring mandatory third-party independent assurance before SEBI filing
             </p>
           </div>
-          <span className="brsr-mgr-badge-blue">
-            <ShieldCheck size={14} style={{ display: 'inline', marginRight: '0.2rem' }} />
-            100% Assurance Signed
-          </span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="brsr-mgr-badge-blue">
+              <ShieldCheck size={14} style={{ display: 'inline', marginRight: '0.2rem' }} />
+              100% Assurance Signed
+            </span>
+            <button className="brsr-mgr-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Assurance Matrix
+            </button>
+          </div>
         </div>
       </div>
 

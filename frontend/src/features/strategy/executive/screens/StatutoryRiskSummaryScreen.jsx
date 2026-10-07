@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldAlert, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle2, ShieldCheck, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function StatutoryRiskSummaryScreen() {
   const risks = [
@@ -7,6 +8,15 @@ export default function StatutoryRiskSummaryScreen() {
     { risk: 'Central Ground Water Authority (CGWA) Abstraction Quota', probability: 'Medium', financialExposure: '₹ 30 Cr', boardMitigation: '100% STP treated effluent recycling in road compaction.' },
     { risk: 'Extreme Weather Induced Himalayan Site Disruption', probability: 'Medium', financialExposure: '₹ 80 Cr', boardMitigation: 'Early warning automated radar warning & dewatering systems deployed.' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Executive_Statutory_Risk_Briefing.csv', risks.map(r => ({
+      'Risk Dimension': r.risk,
+      'Probability': r.probability,
+      'Financial Exposure': r.financialExposure,
+      'Board Approved Mitigation': r.boardMitigation
+    })));
+  };
 
   return (
     <div className="exec-bd-risks">
@@ -18,7 +28,12 @@ export default function StatutoryRiskSummaryScreen() {
               Financial quantification of top ESG and environmental compliance risks submitted to Board Audit & Risk Committee
             </p>
           </div>
-          <span className="exec-bd-badge-slate">Zero Unmitigated Red Flags</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="exec-bd-badge-slate">Zero Unmitigated Red Flags</span>
+            <button className="exec-bd-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Risk Matrix
+            </button>
+          </div>
         </div>
       </div>
 

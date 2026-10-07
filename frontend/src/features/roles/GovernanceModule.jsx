@@ -285,6 +285,11 @@ export default function GovernanceModule({
       case 'analytics':
         return (
           <GovAnalyticsScreen
+            policies={policies}
+            obligations={obligations}
+            controls={controls}
+            actions={actions}
+            complaints={complaints}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -320,6 +325,12 @@ export default function GovernanceModule({
       default:
         return (
           <GovOverviewScreen
+            policies={policies}
+            obligations={obligations}
+            controls={controls}
+            cases={cases}
+            complaints={complaints}
+            actions={actions}
             onNavigateTab={onNavigateTab}
             onOpenAddPolicy={() => setIsAddPolicyOpen(true)}
             onOpenAddRecord={() => setIsAddObligationOpen(true)}

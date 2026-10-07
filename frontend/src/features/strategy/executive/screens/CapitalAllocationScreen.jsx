@@ -1,5 +1,6 @@
 import React from 'react';
-import { DollarSign, CheckCircle2, TrendingUp, Layers } from 'lucide-react';
+import { DollarSign, CheckCircle2, TrendingUp, Layers, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CapitalAllocationScreen() {
   const allocations = [
@@ -9,6 +10,16 @@ export default function CapitalAllocationScreen() {
     { program: 'Smart IoT Continuous Emissions & Flow Telemetry', budgeted: '₹ 25 Cr', deployed: '₹ 22 Cr (88%)', roeiTarget: 'Real-time Audit Trail', esgPayoff: 'Zero manual estimation error' },
     { program: 'Community Health, Skilling & CSR Schedule VII', budgeted: '₹ 85 Cr', deployed: '₹ 84.6 Cr (99%)', roeiTarget: 'Social License to Operate', esgPayoff: '100% 2% PAT Statutory Delivery' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Green_Capex_Allocations.csv', allocations.map(a => ({
+      'Green Capital Program': a.program,
+      'Budgeted Allocation': a.budgeted,
+      'Capital Deployed': a.deployed,
+      'Target Financial ROI / IRR': a.roeiTarget,
+      'Quantified ESG Payoff': a.esgPayoff
+    })));
+  };
 
   return (
     <div className="exec-bd-capex">
@@ -20,7 +31,12 @@ export default function CapitalAllocationScreen() {
               Return on Sustainability Investment (ROSI) analysis and capital deployment across decarbonization assets
             </p>
           </div>
-          <span className="exec-bd-badge-slate">Total Green Capex: ₹ 475 Cr Budgeted</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="exec-bd-badge-slate">Total Green Capex: ₹ 475 Cr Budgeted</span>
+            <button className="exec-bd-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Capex
+            </button>
+          </div>
         </div>
       </div>
 

@@ -24,11 +24,31 @@ export default function ProcurementOverviewScreen({
   const [businessUnit, setBusinessUnit] = useState('All Units');
   const [supplierCategory, setSupplierCategory] = useState('All Categories');
 
+  const totalSuppliersCount = suppliers.length > 0 ? suppliers.length : 486;
+  const activeSuppliersCount = suppliers.length > 0 ? suppliers.filter(s => s.status !== 'Inactive').length : 428;
+  const totalSpendNum = transactions.length > 0 
+    ? transactions.reduce((acc, t) => acc + (parseFloat(t.amount || t.value || t.spend || 0) || 0), 0)
+    : 0;
+  const spendDisplay = totalSpendNum > 0 ? `₹${(totalSpendNum / 10000000).toFixed(1)} Cr` : '₹248.6 Cr';
+  const esgAssessedCount = suppliers.length > 0 
+    ? suppliers.filter(s => s.esgScore || s.esgAssessed || s.status === 'Assessed').length 
+    : 312;
+  const msmeCount = suppliers.length > 0 
+    ? suppliers.filter(s => s.isMsme || s.tier === 'Tier 3' || s.category === 'MSME').length 
+    : 142;
+  const localCount = suppliers.length > 0 
+    ? suppliers.filter(s => s.isLocal || s.localSourcing).length 
+    : 186;
+  const highRiskCount = suppliers.length > 0 
+    ? suppliers.filter(s => s.riskLevel === 'High' || s.risk === 'High').length 
+    : 18;
+  const pendingCount = Math.max(totalSuppliersCount - esgAssessedCount, 14);
+
   const kpis = [
     {
       label: 'Total Suppliers',
-      value: '486',
-      sub: '+1.2% vs last period',
+      value: String(totalSuppliersCount),
+      sub: `${activeSuppliersCount} active vendors`,
       deltaType: 'up',
       icon: Users,
       color: '#2563EB',
@@ -37,8 +57,8 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'Active Suppliers',
-      value: '428',
-      sub: '88% active rate',
+      value: String(activeSuppliersCount),
+      sub: `${Math.round((activeSuppliersCount / totalSuppliersCount) * 100)}% active rate`,
       deltaType: 'neutral',
       icon: CheckCircle2,
       color: '#059669',
@@ -47,7 +67,7 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'Procurement Value',
-      value: '₹248.6 Cr',
+      value: spendDisplay,
       sub: '+9.4% vs last period',
       deltaType: 'up',
       icon: TrendingUp,
@@ -57,8 +77,8 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'Suppliers ESG Assessed',
-      value: '312',
-      sub: '64% coverage',
+      value: String(esgAssessedCount),
+      sub: `${Math.round((esgAssessedCount / totalSuppliersCount) * 100)}% coverage`,
       deltaType: 'neutral',
       icon: ShieldCheck,
       color: '#0284C7',
@@ -67,8 +87,8 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'MSME / Small Producer',
-      value: '142',
-      sub: '29% of supplier base',
+      value: String(msmeCount),
+      sub: `${Math.round((msmeCount / totalSuppliersCount) * 100)}% of supplier base`,
       deltaType: 'neutral',
       icon: Building,
       color: '#7C3AED',
@@ -77,8 +97,8 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'Local Sourcing',
-      value: '186',
-      sub: '38% within 100km radius',
+      value: String(localCount),
+      sub: `${Math.round((localCount / totalSuppliersCount) * 100)}% within 100km radius`,
       deltaType: 'neutral',
       icon: MapPin,
       color: '#059669',
@@ -87,8 +107,8 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'High-Risk Suppliers',
-      value: '18',
-      sub: '3.7% requires mitigation',
+      value: String(highRiskCount),
+      sub: `${((highRiskCount / totalSuppliersCount) * 100).toFixed(1)}% requires mitigation`,
       deltaType: 'down',
       icon: AlertTriangle,
       color: '#DC2626',
@@ -97,8 +117,8 @@ export default function ProcurementOverviewScreen({
     },
     {
       label: 'Pending Assessments',
-      value: '94',
-      sub: '19% awaiting submission',
+      value: String(pendingCount),
+      sub: `${Math.round((pendingCount / totalSuppliersCount) * 100)}% awaiting submission`,
       deltaType: 'neutral',
       icon: Clock,
       color: '#D97706',

@@ -1,5 +1,6 @@
 import React from 'react';
-import { TrendingDown, BarChart2, Layers } from 'lucide-react';
+import { TrendingDown, BarChart2, Layers, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function IntensityModelingScreen() {
   const intensityData = [
@@ -9,6 +10,17 @@ export default function IntensityModelingScreen() {
     { division: 'Highways, Bridges & Expressway Packages', revenue: '₹ 5,100 Cr', scope1: '11,400 t', scope2: '1,920 t', intensity: '2.61 t / ₹ Cr', waterIntensity: '18.9 m³ / ₹ Cr' },
     { division: 'Metro Rail & Urban Mass Transit', revenue: '₹ 2,900 Cr', scope1: '6,100 t', scope2: '3,800 t', intensity: '3.41 t / ₹ Cr', waterIntensity: '14.5 m³ / ₹ Cr' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Carbon_Intensity_Models.csv', intensityData.map(d => ({
+      'Infrastructure Division': d.division,
+      'Revenue Turnover': d.revenue,
+      'Direct Scope 1': d.scope1,
+      'Indirect Scope 2': d.scope2,
+      'Carbon Intensity Ratio': d.intensity,
+      'Water Intensity Ratio': d.waterIntensity
+    })));
+  };
 
   return (
     <div className="esg-ana-intensity">
@@ -20,7 +32,12 @@ export default function IntensityModelingScreen() {
               Turnover-adjusted greenhouse gas emissions and water consumption intensity across infrastructure verticals
             </p>
           </div>
-          <span className="esg-ana-badge-cyan">SEBI Core Normalized Metrics</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="esg-ana-badge-cyan">SEBI Core Normalized Metrics</span>
+            <button className="esg-ana-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Intensity Matrix
+            </button>
+          </div>
         </div>
       </div>
 

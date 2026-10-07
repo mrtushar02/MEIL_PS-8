@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Database, Search, Filter, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Database, Search, Filter, ShieldCheck, CheckCircle2, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function EmissionFactorStudioScreen() {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const factors = [
     { code: 'EF-GRID-01', name: 'Indian National Grid Average', value: '0.716', unit: 'kg CO2e / kWh', authority: 'Central Electricity Authority (CEA) v19', year: '2024', status: 'Official Baseline' },
     { code: 'EF-DIESEL-01', name: 'High Speed Diesel (HSD) Combustion', value: '2.687', unit: 'kg CO2e / Liter', authority: 'IPCC AR6 Guidelines', year: '2023', status: 'Official Baseline' },
@@ -10,6 +13,24 @@ export default function EmissionFactorStudioScreen() {
     { code: 'EF-STEEL-01', name: 'Primary Blast Furnace Steel', value: '1.850', unit: 't CO2e / MT', authority: 'WorldSteel EPD Database', year: '2024', status: 'Value Chain' },
     { code: 'EF-CEMENT-01', name: 'Portland Slag Cement (PSC)', value: '0.510', unit: 't CO2e / MT', authority: 'CII Sohrabji Godrej Green Centre', year: '2024', status: 'Value Chain' }
   ];
+
+  const filtered = factors.filter(f => 
+    f.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    f.authority.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Emission_Factor_Master.csv', filtered.map(f => ({
+      'Factor Code': f.code,
+      'Activity Description': f.name,
+      'Factor Value': f.value,
+      'Standard Unit': f.unit,
+      'Authoritative Source': f.authority,
+      'Year': f.year,
+      'Status': f.status
+    })));
+  };
 
   return (
     <div className="esg-ana-factors">
@@ -21,10 +42,26 @@ export default function EmissionFactorStudioScreen() {
               Centralized library of audited emission coefficients mapped to GHG Protocol Scope 1, 2, and 3 activities
             </p>
           </div>
-          <span className="esg-ana-badge-cyan">
-            <ShieldCheck size={14} style={{ display: 'inline', marginRight: '0.2rem' }} />
-            CEA Baseline v19 Verified
-          </span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="esg-ana-badge-cyan">
+              <ShieldCheck size={14} style={{ display: 'inline', marginRight: '0.2rem' }} />
+              CEA Baseline v19 Verified
+            </span>
+            <button className="esg-ana-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Factors
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '0.4rem 0.8rem' }}>
+          <Search size={15} color="#64748B" style={{ marginRight: '0.5rem' }} />
+          <input 
+            type="text" 
+            placeholder="Search emission factor code, activity, or regulatory authority..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.82rem' }}
+          />
         </div>
       </div>
 
@@ -42,7 +79,7 @@ export default function EmissionFactorStudioScreen() {
               </tr>
             </thead>
             <tbody>
-              {factors.map(f => (
+              {filtered.map(f => (
                 <tr key={f.code}>
                   <td>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0891B2' }}>{f.code}</span>

@@ -1,14 +1,35 @@
 import React, { useState } from 'react';
 import {
   Clock,
-  Search
+  Search,
+  Download,
+  CheckCircle2
 } from 'lucide-react';
 import { INITIAL_ACTION_CENTER_ITEMS } from '../csrData';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRActionCenterScreen({ onNavigateTab }) {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [actionsList, setActionsList] = useState(INITIAL_ACTION_CENTER_ITEMS);
+
+  const handleExportCsv = () => {
+    exportToCsv('MEIL_CSR_Action_Items.csv', actionsList.map(a => ({
+      Action_ID: a.id,
+      Task: a.task || a.evidence_desc,
+      Module: a.module,
+      Project: a.project,
+      Owner: a.owner,
+      Due_Date: a.due_date,
+      Priority: a.priority,
+      Status: a.status
+    })));
+  };
+
+  const overdueCount = actionsList.filter(a => a.status === 'Overdue').length;
+  const dueThisWeekCount = actionsList.filter(a => a.due_date?.includes('21 Sep') || a.due_date?.includes('22 Sep') || a.due_date?.includes('23 Sep') || a.due_date?.includes('24 Sep')).length;
+  const openCount = actionsList.filter(a => a.status === 'Open' || a.status === 'In Progress').length;
+  const completedCount = actionsList.filter(a => a.status === 'Completed').length;
 
   const filteredActions = actionsList.filter((item) => {
     const text = (item.task || item.evidence_desc || '').toLowerCase();
@@ -19,8 +40,8 @@ export default function CSRActionCenterScreen({ onNavigateTab }) {
       item.owner.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeFilter === 'Overdue') return matchesSearch && item.status === 'Overdue';
-    if (activeFilter === 'Due This Week') return matchesSearch && (item.due_date.includes('21 Sep') || item.due_date.includes('22 Sep') || item.due_date.includes('23 Sep'));
-    if (activeFilter === 'Open') return matchesSearch && item.status === 'Open';
+    if (activeFilter === 'Due This Week') return matchesSearch && (item.due_date.includes('21 Sep') || item.due_date.includes('22 Sep') || item.due_date.includes('23 Sep') || item.due_date.includes('24 Sep'));
+    if (activeFilter === 'Open') return matchesSearch && (item.status === 'Open' || item.status === 'In Progress');
     if (activeFilter === 'Completed') return matchesSearch && item.status === 'Completed';
     return matchesSearch;
   });
@@ -70,18 +91,25 @@ export default function CSRActionCenterScreen({ onNavigateTab }) {
               </p>
             </div>
           </div>
+
+          <div className="csr-banner-actions">
+            <button className="csr-btn-outline" onClick={handleExportCsv} title="Export Actions to CSV">
+              <Download size={15} />
+              Export Actions
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ──── FILTER & SEARCH BAR (WITH ALL 19, OVERDUE 3, DUE THIS WEEK 7, OPEN 7, COMPLETED 2) ──── */}
+      {/* ──── FILTER & SEARCH BAR ──── */}
       <div className="csr-filter-bar">
         <div className="csr-filter-pills">
           {[
-            { id: 'All', label: 'All (19)' },
-            { id: 'Overdue', label: 'Overdue (3)' },
-            { id: 'Due This Week', label: 'Due This Week (7)' },
-            { id: 'Open', label: 'Open (7)' },
-            { id: 'Completed', label: 'Completed (2)' }
+            { id: 'All', label: `All (${actionsList.length})` },
+            { id: 'Overdue', label: `Overdue (${overdueCount})` },
+            { id: 'Due This Week', label: `Due This Week (${dueThisWeekCount})` },
+            { id: 'Open', label: `Open (${openCount})` },
+            { id: 'Completed', label: `Completed (${completedCount})` }
           ].map((tab) => (
             <button
               key={tab.id}

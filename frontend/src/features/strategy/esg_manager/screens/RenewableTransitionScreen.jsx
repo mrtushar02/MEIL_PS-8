@@ -1,13 +1,27 @@
 import React from 'react';
-import { Sun, Wind, Zap, CheckCircle2, Award } from 'lucide-react';
+import { Sun, Wind, Zap, CheckCircle2, Award, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function RenewableTransitionScreen() {
   const assets = [
-    { name: 'Pavagada Solar Park Captive Block', type: 'Solar PV', capacity: '100 MW', generation: '184 MU / yr', rpoMet: '100%', status: 'Operating' },
-    { name: 'Kurnool Wind-Solar Hybrid Feed', type: 'Hybrid', capacity: '50 MW', generation: '92 MU / yr', rpoMet: '100%', status: 'Operating' },
-    { name: 'Hyderabad Fabrication Yard Rooftops', type: 'Rooftop Solar', capacity: '12 MW', generation: '16 MU / yr', rpoMet: '85%', status: 'Operating' },
-    { name: 'Kaleshwaram Canal-Top Solar Pilot', type: 'Canal Solar', capacity: '25 MW', generation: '38 MU / yr', rpoMet: 'Commissioning', status: 'Near Completion' }
+    { name: 'Pavagada Solar Park Captive Block', type: 'Solar PV', capacity: '100 MW', capacityVal: 100, generation: '184 MU / yr', rpoMet: '100%', status: 'Operating' },
+    { name: 'Kurnool Wind-Solar Hybrid Feed', type: 'Hybrid', capacity: '50 MW', capacityVal: 50, generation: '92 MU / yr', rpoMet: '100%', status: 'Operating' },
+    { name: 'Hyderabad Fabrication Yard Rooftops', type: 'Rooftop Solar', capacity: '12 MW', capacityVal: 12, generation: '16 MU / yr', rpoMet: '85%', status: 'Operating' },
+    { name: 'Kaleshwaram Canal-Top Solar Pilot', type: 'Canal Solar', capacity: '25 MW', capacityVal: 25, generation: '38 MU / yr', rpoMet: 'Commissioning', status: 'Near Completion' }
   ];
+
+  const totalCapacity = assets.reduce((acc, a) => acc + a.capacityVal, 0);
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Clean_Power_Assets.csv', assets.map(a => ({
+      'Generation Asset': a.name,
+      'Technology': a.type,
+      'Capacity': a.capacity,
+      'Annual Clean Output': a.generation,
+      'RPO Compliance': a.rpoMet,
+      'Status': a.status
+    })));
+  };
 
   return (
     <div className="esg-mgr-renewables">
@@ -19,7 +33,12 @@ export default function RenewableTransitionScreen() {
               Renewable Purchase Obligation (RPO) compliance, green tariffs, and on-site generation portfolios
             </p>
           </div>
-          <span className="esg-mgr-badge-emerald">187 MW Installed Renewable Base</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="esg-mgr-badge-emerald">{totalCapacity} MW Installed Renewable Base</span>
+            <button className="esg-mgr-btn-outline" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Portfolio
+            </button>
+          </div>
         </div>
       </div>
 

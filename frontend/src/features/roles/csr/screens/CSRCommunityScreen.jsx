@@ -92,7 +92,7 @@ export default function CSRCommunityScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Communities</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>62</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{localCommunities.length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <MapPin size={18} />
@@ -102,7 +102,7 @@ export default function CSRCommunityScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Active Communities</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>54</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{localCommunities.filter(c => c.status === 'Active').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CheckCircle2 size={18} />
@@ -112,7 +112,7 @@ export default function CSRCommunityScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Population</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#DB2777', marginTop: '2px' }}>18,420</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#DB2777', marginTop: '2px' }}>{localCommunities.reduce((acc, c) => acc + (c.population || 0), 0).toLocaleString()}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(219, 39, 119, 0.1)', color: '#DB2777', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Users size={18} />
@@ -122,7 +122,7 @@ export default function CSRCommunityScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Districts Covered</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>28</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>{new Set(localCommunities.map(c => c.district)).size}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(2, 132, 199, 0.1)', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Compass size={18} />

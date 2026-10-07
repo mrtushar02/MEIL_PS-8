@@ -8,13 +8,11 @@ import {
 } from 'lucide-react';
 
 export default function EHSTrainingScreen({
-  _trainingBatches = [],
-  _onCreateTrainingBatch,
-  _onNavigateTab
+  trainingBatches = [],
+  onCreateTrainingBatch,
+  onNavigateTab
 }) {
-
-  // Batches matching image Panel 6
-  const batches = [
+  const defaultBatches = [
     {
       id: 'TB-2026-21',
       topic: 'Working at Height',
@@ -49,6 +47,46 @@ export default function EHSTrainingScreen({
     }
   ];
 
+  const [batches, setBatches] = useState(
+    trainingBatches && trainingBatches.length > 0 ? trainingBatches : defaultBatches
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filterType, setFilterType] = useState('All');
+  const [newBatch, setNewBatch] = useState({
+    topic: 'Confined Space Entry',
+    project: 'Zojila Tunnel',
+    participants: 25,
+    type: 'Mandatory',
+    status: 'In Progress'
+  });
+
+  // Dynamic KPI calculations
+  const totalParticipants = batches.reduce((acc, b) => acc + (Number(b.participants) || 0), 0);
+  const completedCount = batches.filter(b => b.status === 'Completed').length;
+  const trainingCoverage = batches.length > 0 ? Math.round((completedCount / batches.length) * 100) : 92;
+  const trainingHours = Math.round(totalParticipants * 3.8);
+  const pendingCount = batches.filter(b => b.status === 'In Progress' || b.status === 'Scheduled').length;
+  const expiredCount = 18; // Statutory recertifications due
+
+  const handleCreateBatch = (e) => {
+    e.preventDefault();
+    const batchId = `TB-2026-${String(batches.length + 22).padStart(2, '0')}`;
+    const created = {
+      id: batchId,
+      ...newBatch,
+      participants: Number(newBatch.participants) || 20
+    };
+    const updated = [created, ...batches];
+    setBatches(updated);
+    if (onCreateTrainingBatch) onCreateTrainingBatch(created);
+    setIsModalOpen(false);
+  };
+
+  const filteredBatches = batches.filter(b => {
+    if (filterType !== 'All' && b.type !== filterType) return false;
+    return true;
+  });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* ──── 1. PAGE HEADER (Matching Image Panel 6) ──── */}
@@ -64,20 +102,25 @@ export default function EHSTrainingScreen({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button 
-              type="button" 
-              className="ehs-btn ehs-btn-outline"
-              style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
+            <select
+              className="ehs-select-control"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}
             >
-              + Log Training Batch
-            </button>
+              <option value="All">All Types</option>
+              <option value="Mandatory">Mandatory</option>
+              <option value="Refresher">Refresher</option>
+              <option value="Specialized">Specialized</option>
+            </select>
             <button 
               type="button" 
               className="ehs-btn ehs-btn-blue"
+              onClick={() => setIsModalOpen(true)}
               style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
             >
               <PlusCircle size={14} />
-              <span>+ Create Requirement</span>
+              <span>+ Log Training Batch</span>
             </button>
           </div>
         </div>
@@ -91,7 +134,7 @@ export default function EHSTrainingScreen({
             <GraduationCap size={14} color="#059669" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">92%</span>
+            <span className="ehs-kpi-main-val">{trainingCoverage}%</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span style={{ color: '#059669', fontWeight: 700 }}>Mandatory Inductions</span>
@@ -104,7 +147,7 @@ export default function EHSTrainingScreen({
             <Users size={14} color="#2563EB" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">1,284</span>
+            <span className="ehs-kpi-main-val">{totalParticipants.toLocaleString()}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Direct + Contract workers</span>
@@ -117,10 +160,10 @@ export default function EHSTrainingScreen({
             <Clock size={14} color="#2563EB" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">4,860</span>
+            <span className="ehs-kpi-main-val">{trainingHours.toLocaleString()}</span>
           </div>
           <div className="ehs-kpi-subtext">
-            <span>28.4 hrs / employee avg</span>
+            <span>{(trainingHours / Math.max(totalParticipants, 1)).toFixed(1)} hrs / employee avg</span>
           </div>
         </div>
 
@@ -130,7 +173,7 @@ export default function EHSTrainingScreen({
             <Clock size={14} color="#D97706" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">102</span>
+            <span className="ehs-kpi-main-val">{pendingCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Scheduled this cycle</span>
@@ -143,7 +186,7 @@ export default function EHSTrainingScreen({
             <AlertTriangle size={14} color="#DC2626" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>18</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>{expiredCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span style={{ color: '#DC2626', fontWeight: 700 }}>Recertification Due</span>
@@ -210,7 +253,7 @@ export default function EHSTrainingScreen({
             <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
               Recent Training Batches
             </h3>
-            <span style={{ fontSize: '11px', color: '#64748B' }}>Daily Rosters</span>
+            <span style={{ fontSize: '11px', color: '#64748B' }}>Showing {filteredBatches.length} batches</span>
           </div>
 
           <div className="ehs-table-container">
@@ -226,7 +269,7 @@ export default function EHSTrainingScreen({
                 </tr>
               </thead>
               <tbody>
-                {batches.map((b) => (
+                {filteredBatches.map((b) => (
                   <tr key={b.id}>
                     <td style={{ fontWeight: 800, color: '#2563EB' }}>{b.id}</td>
                     <td style={{ fontWeight: 700, color: '#0F172A' }}>{b.topic}</td>
@@ -254,6 +297,97 @@ export default function EHSTrainingScreen({
           </div>
         </div>
       </div>
+
+      {/* ──── LOG TRAINING BATCH MODAL ──── */}
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div className="ehs-glass-card" style={{ background: '#FFFFFF', maxWidth: '480px', width: '100%', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '0 0 16px 0' }}>Log Safety Training Batch</h3>
+            <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Topic / Module</label>
+                <input
+                  type="text"
+                  required
+                  value={newBatch.topic}
+                  onChange={(e) => setNewBatch({ ...newBatch, topic: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Project Site</label>
+                  <select
+                    value={newBatch.project}
+                    onChange={(e) => setNewBatch({ ...newBatch, project: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Zojila Tunnel">Zojila Tunnel</option>
+                    <option value="Main Tunnel">Main Tunnel</option>
+                    <option value="Access Road">Access Road</option>
+                    <option value="Bridge Site">Bridge Site</option>
+                    <option value="Camp Area">Camp Area</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Participants</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={newBatch.participants}
+                    onChange={(e) => setNewBatch({ ...newBatch, participants: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Training Type</label>
+                  <select
+                    value={newBatch.type}
+                    onChange={(e) => setNewBatch({ ...newBatch, type: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Mandatory">Mandatory</option>
+                    <option value="Refresher">Refresher</option>
+                    <option value="Specialized">Specialized</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Status</label>
+                  <select
+                    value={newBatch.status}
+                    onChange={(e) => setNewBatch({ ...newBatch, status: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Completed">Completed</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Scheduled">Scheduled</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="ehs-btn ehs-btn-outline"
+                  style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="ehs-btn ehs-btn-blue"
+                  style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
+                >
+                  Save Batch
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

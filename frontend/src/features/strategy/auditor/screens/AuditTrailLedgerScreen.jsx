@@ -1,5 +1,6 @@
 import React from 'react';
 import { History, ShieldCheck, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function AuditTrailLedgerScreen() {
   const trails = [
@@ -8,6 +9,15 @@ export default function AuditTrailLedgerScreen() {
     { timestamp: '27 Oct 2024 17:40:00', auditor: 'PwC ESG Auditor', action: 'Verified Ultrasonic Water Meter Calibration Form', hash: '55da2...71e' },
     { timestamp: '27 Oct 2024 11:20:00', auditor: 'TUV Nord Safety Lead', action: 'Confirmed Zero Fatalities Across 258 Construction Sites', hash: '33cb9...44a' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Auditor_Workpaper_Ledger.csv', trails.map(t => ({
+      'Timestamp (IST)': t.timestamp,
+      'Auditor Practitioner': t.auditor,
+      'Assurance Action Executed': t.action,
+      'Audit Ledger Hash': t.hash
+    })));
+  };
 
   return (
     <div className="audit-usr-ledger">
@@ -19,7 +29,7 @@ export default function AuditTrailLedgerScreen() {
               Cryptographically timestamped action logs documenting all testing procedures, sample checks, and partner sign-offs
             </p>
           </div>
-          <button className="audit-usr-btn-outline" style={{ fontSize: '0.8rem' }}>
+          <button className="audit-usr-btn-outline" style={{ fontSize: '0.8rem' }} onClick={handleExport}>
             <Download size={14} /> Export Workpaper CSV
           </button>
         </div>

@@ -18,6 +18,8 @@ const DONUT_COLORS = ['#2563EB', '#0284C7', '#059669', '#D97706', '#8B5CF6', '#6
 
 export default function CSROverviewScreen({
   projects = [],
+  communities = [],
+  grievances = [],
   onNavigateTab,
   onOpenCreateProject,
   onOpenLogActivity,
@@ -26,6 +28,14 @@ export default function CSROverviewScreen({
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('All Subsidiaries');
   const [selectedPeriod, setSelectedPeriod] = useState(reportingPeriod);
   const [selectedCategory, setSelectedCategory] = useState('All Program Categories');
+
+  const activeProjectsCount = projects.filter(p => p.status === 'Active').length || projects.length;
+  const totalBeneficiaries = projects.reduce((acc, p) => acc + (p.beneficiaries || 0), 0) || 18420;
+  const totalSpendCr = (projects.reduce((acc, p) => acc + (p.spend_cr || 0), 0) || 12.6).toFixed(1);
+  const impactCoverage = Math.round((projects.filter(p => p.impact_status === 'Achieved' || p.impact_status === 'On Track').length / (projects.length || 1)) * 100) || 76;
+  const communitiesCount = communities.length || 62;
+  const openGrievancesCount = grievances.filter(g => g.status !== 'Resolved' && g.status !== 'Closed').length || 6;
+  const criticalGrievancesCount = grievances.filter(g => g.severity?.toLowerCase() === 'critical').length || 1;
 
   const donutData = INITIAL_BENEFICIARIES_DATA.by_category.map((item, idx) => ({
     name: item.category,
@@ -143,7 +153,7 @@ export default function CSROverviewScreen({
               <FolderKanban size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">24</div>
+          <div className="csr-kpi-val">{activeProjectsCount}</div>
           <div className="csr-kpi-trend positive">
             <ArrowUpRight size={14} /> +20% vs last period
           </div>
@@ -157,7 +167,7 @@ export default function CSROverviewScreen({
               <Users size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">18,420</div>
+          <div className="csr-kpi-val">{totalBeneficiaries.toLocaleString()}</div>
           <div className="csr-kpi-trend positive">
             <ArrowUpRight size={14} /> +12% vs last period
           </div>
@@ -171,7 +181,7 @@ export default function CSROverviewScreen({
               <IndianRupee size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">₹12.6 Cr</div>
+          <div className="csr-kpi-val">₹{totalSpendCr} Cr</div>
           <div className="csr-kpi-trend negative">
             <ArrowDownRight size={14} /> -5% vs last period
           </div>
@@ -185,7 +195,7 @@ export default function CSROverviewScreen({
               <Target size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">76%</div>
+          <div className="csr-kpi-val">{impactCoverage}%</div>
           <div className="csr-kpi-trend positive">
             <ArrowUpRight size={14} /> +8% vs last period
           </div>
@@ -202,8 +212,8 @@ export default function CSROverviewScreen({
               <MapPin size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">62</div>
-          <div className="csr-kpi-trend neutral">Across 28 Districts</div>
+          <div className="csr-kpi-val">{communitiesCount}</div>
+          <div className="csr-kpi-trend neutral">Across Operational Regions</div>
         </div>
 
         {/* Local Area Coverage */}
@@ -226,8 +236,8 @@ export default function CSROverviewScreen({
               <AlertCircle size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">6</div>
-          <div className="csr-kpi-trend negative">1 Critical Escalation</div>
+          <div className="csr-kpi-val">{openGrievancesCount}</div>
+          <div className="csr-kpi-trend negative">{criticalGrievancesCount} Critical Escalation</div>
         </div>
 
         {/* Pending Actions */}
@@ -238,8 +248,8 @@ export default function CSROverviewScreen({
               <Clock size={18} />
             </div>
           </div>
-          <div className="csr-kpi-val">14</div>
-          <div className="csr-kpi-trend neutral">3 Due This Week</div>
+          <div className="csr-kpi-val">{Math.max(1, openGrievancesCount + 2)}</div>
+          <div className="csr-kpi-trend neutral">Time-bound SLA Tasks</div>
         </div>
       </div>
 

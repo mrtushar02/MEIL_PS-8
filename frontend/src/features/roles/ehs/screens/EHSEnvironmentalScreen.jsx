@@ -17,8 +17,7 @@ export default function EHSEnvironmentalScreen({
 }) {
   const [activeSubTab, setActiveSubTab] = useState('Water');
 
-  // Environmental records matching image Panel 7
-  const envRecords = [
+  const defaultEnvRecords = [
     {
       id: 'ENV-2026-12',
       module: 'Water Usage',
@@ -69,7 +68,56 @@ export default function EHSEnvironmentalScreen({
     }
   ];
 
-  const [selectedRecord, setSelectedRecord] = useState(envRecords[0]);
+  const [envRecords, setEnvRecords] = useState(
+    records && records.length > 0 ? records : defaultEnvRecords
+  );
+  const [selectedRecord, setSelectedRecord] = useState(defaultEnvRecords[0]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newRec, setNewRec] = useState({
+    module: 'Water Usage',
+    category: 'Water Withdrawal',
+    project: 'Zojila Tunnel',
+    quantity: '5,200',
+    unit: 'KL',
+    source: 'Digital Flow Meter',
+    notes: 'Realtime digital telemetry calibrated and sealed'
+  });
+
+  const handleCreate = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `ENV-2026-${String(envRecords.length + 13).padStart(2, '0')}`,
+      ...newRec,
+      period: 'September 2026',
+      status: 'Verified'
+    };
+    const updated = [created, ...envRecords];
+    setEnvRecords(updated);
+    setSelectedRecord(created);
+    if (onCreateRecord) onCreateRecord(created);
+    setIsModalOpen(false);
+  };
+
+  const handleVerify = (id) => {
+    setEnvRecords(prev => prev.map(r => r.id === id ? { ...r, status: 'Verified' } : r));
+    if (selectedRecord?.id === id) {
+      setSelectedRecord(prev => ({ ...prev, status: 'Verified' }));
+    }
+  };
+
+  const filteredRecords = envRecords.filter(r => {
+    if (activeSubTab === 'Water') return (r.module || '').toLowerCase().includes('water') || (r.module || '').toLowerCase().includes('effluent');
+    if (activeSubTab === 'Waste') return (r.module || '').toLowerCase().includes('waste');
+    if (activeSubTab === 'Air Emissions') return (r.module || '').toLowerCase().includes('air');
+    if (activeSubTab === 'Environmental Incidents') return (r.category || '').toLowerCase().includes('incident');
+    return true;
+  });
+
+  // Dynamic KPIs
+  const verifiedCount = envRecords.filter(r => r.status === 'Verified').length;
+  const verifiedPct = envRecords.length > 0 ? Math.round((verifiedCount / envRecords.length) * 100) : 92;
+  const waterCount = envRecords.filter(r => (r.module || '').toLowerCase().includes('water')).length;
+  const wasteCount = envRecords.filter(r => (r.module || '').toLowerCase().includes('waste')).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -84,6 +132,14 @@ export default function EHSEnvironmentalScreen({
               Continuous site environmental monitoring, water consumption, and CPCB regulatory telemetry.
             </p>
           </div>
+          <button
+            type="button"
+            className="ehs-btn ehs-btn-blue"
+            onClick={() => setIsModalOpen(true)}
+            style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
+          >
+            + Log Environmental Record
+          </button>
         </div>
 
         {/* Environmental Sub-Tabs: Water | Waste | Air Emissions | Env. Incidents | Other */}
@@ -132,7 +188,7 @@ export default function EHSEnvironmentalScreen({
             <Droplet size={14} color="#0284C7" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">96%</span>
+            <span className="ehs-kpi-main-val">{waterCount > 0 ? '96%' : '100%'}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Verified telemetry</span>
@@ -145,7 +201,7 @@ export default function EHSEnvironmentalScreen({
             <Trash2 size={14} color="#D97706" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">88%</span>
+            <span className="ehs-kpi-main-val">{wasteCount > 0 ? '88%' : '100%'}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>TSDF manifest linked</span>
@@ -158,10 +214,10 @@ export default function EHSEnvironmentalScreen({
             <AlertTriangle size={14} color="#DC2626" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">2</span>
+            <span className="ehs-kpi-main-val">0</span>
           </div>
           <div className="ehs-kpi-subtext">
-            <span>Contained immediately</span>
+            <span>Zero reportable breaches</span>
           </div>
         </div>
 
@@ -171,24 +227,23 @@ export default function EHSEnvironmentalScreen({
             <FileCheck2 size={14} color="#059669" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">92%</span>
+            <span className="ehs-kpi-main-val">{verifiedPct}%</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span style={{ color: '#059669', fontWeight: 700 }}>Audit Proof Complete</span>
           </div>
         </div>
       </div>
-
       {/* ──── 3. SPLIT MAIN SECTION: TABLE (LEFT 65%) + DETAIL DRAWER (RIGHT 35%) ──── */}
       <div style={{ display: 'grid', gridTemplateColumns: selectedRecord ? '1.8fr 1.2fr' : '1fr', gap: '16px' }}>
         {/* Left: Environmental Table */}
         <div className="ehs-glass-card" style={{ padding: '16px 20px', borderRadius: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-              Environmental Records Log
+              Environmental Records Log ({activeSubTab})
             </h3>
             <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-              Showing {envRecords.length} records
+              Showing {filteredRecords.length} records
             </span>
           </div>
 
@@ -205,7 +260,7 @@ export default function EHSEnvironmentalScreen({
                 </tr>
               </thead>
               <tbody>
-                {envRecords.map((rec) => {
+                {filteredRecords.map((rec) => {
                   const isSelected = selectedRecord?.id === rec.id;
                   return (
                     <tr 
@@ -275,7 +330,7 @@ export default function EHSEnvironmentalScreen({
                 <div><span style={{ color: '#64748B' }}>Source:</span> <strong>{selectedRecord.source}</strong></div>
                 <div>
                   <span style={{ color: '#64748B' }}>Status:</span>{' '}
-                  <span style={{ color: '#059669', fontWeight: 800 }}>{selectedRecord.status}</span>
+                  <span style={{ color: selectedRecord.status === 'Verified' ? '#059669' : '#D97706', fontWeight: 800 }}>{selectedRecord.status}</span>
                 </div>
               </div>
             </div>
@@ -288,7 +343,7 @@ export default function EHSEnvironmentalScreen({
               </p>
             </div>
 
-            {/* Evidence Thumbnails (Matching Image Panel 7) */}
+            {/* Attached Evidence Proof */}
             <div>
               <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>Attached Evidence Proof</div>
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -301,20 +356,21 @@ export default function EHSEnvironmentalScreen({
                     <div style={{ fontSize: '9.5px', color: '#64748B' }}>2.4 MB • Verified</div>
                   </div>
                 </div>
-                <div style={{ border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 10px', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-                  <div style={{ width: '26px', height: '32px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <FileText size={14} color="#2563EB" />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '11px' }}>Calibration_Cert.jpg</div>
-                    <div style={{ fontSize: '9.5px', color: '#64748B' }}>1.1 MB • Stamp Hash</div>
-                  </div>
-                </div>
               </div>
             </div>
 
             {/* Footer Action */}
             <div style={{ marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              {selectedRecord.status !== 'Verified' && (
+                <button
+                  type="button"
+                  className="ehs-btn ehs-btn-blue"
+                  style={{ padding: '6px 14px', fontSize: '11.5px' }}
+                  onClick={() => handleVerify(selectedRecord.id)}
+                >
+                  Verify Record
+                </button>
+              )}
               <button 
                 type="button" 
                 className="ehs-btn ehs-btn-outline"
@@ -327,6 +383,103 @@ export default function EHSEnvironmentalScreen({
           </div>
         )}
       </div>
+
+      {/* ──── LOG ENVIRONMENTAL RECORD MODAL ──── */}
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div className="ehs-glass-card" style={{ background: '#FFFFFF', maxWidth: '480px', width: '100%', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '0 0 16px 0' }}>Log Environmental Record</h3>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Environmental Module</label>
+                <select
+                  value={newRec.module}
+                  onChange={(e) => setNewRec({ ...newRec, module: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                >
+                  <option value="Water Usage">Water Usage</option>
+                  <option value="Waste Generation">Waste Generation</option>
+                  <option value="Effluent Quality">Effluent Quality</option>
+                  <option value="Air Emission">Air Emission</option>
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Category</label>
+                  <input
+                    type="text"
+                    required
+                    value={newRec.category}
+                    onChange={(e) => setNewRec({ ...newRec, category: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Project Site</label>
+                  <select
+                    value={newRec.project}
+                    onChange={(e) => setNewRec({ ...newRec, project: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Zojila Tunnel">Zojila Tunnel</option>
+                    <option value="Main Tunnel">Main Tunnel</option>
+                    <option value="Access Road">Access Road</option>
+                    <option value="Camp Area">Camp Area</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Quantity</label>
+                  <input
+                    type="text"
+                    required
+                    value={newRec.quantity}
+                    onChange={(e) => setNewRec({ ...newRec, quantity: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Unit</label>
+                  <input
+                    type="text"
+                    required
+                    value={newRec.unit}
+                    onChange={(e) => setNewRec({ ...newRec, unit: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Notes / CPCB Standard</label>
+                <textarea
+                  rows="2"
+                  value={newRec.notes}
+                  onChange={(e) => setNewRec({ ...newRec, notes: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="ehs-btn ehs-btn-outline"
+                  style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="ehs-btn ehs-btn-blue"
+                  style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
+                >
+                  Save Record
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

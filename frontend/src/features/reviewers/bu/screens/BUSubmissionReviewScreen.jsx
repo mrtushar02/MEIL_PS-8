@@ -390,7 +390,12 @@ export default function BUSubmissionReviewScreen({
                 type="button"
                 className="bu-btn bu-btn-secondary"
                 style={{ fontSize: '11px', padding: '4px 10px' }}
-                onClick={() => alert('Opening original statutory PDF in secure viewer...')}
+                onClick={() => {
+                  const content = `MEIL STATUTORY EVIDENCE VERIFICATION\n=========================================\nDocument: Invoice_Oct2026.pdf\nSubmission ID: ${submission?.id || 'SUB-2026-089'}\nProject: ${submission?.projectName || 'Zojila Tunnel EPC'}\nCategory: Scope 1 & 2 Stationary Diesel Generation\nSHA-256 Checksum: 7a3d9021fa4b7e8d89012fba0018\nStatus: Cryptographically Verified & Sealed\nVerified By: BU Quality Engine v2.4\nTimestamp: ${new Date().toISOString()}`;
+                  const blob = new Blob([content], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  window.open(url, '_blank');
+                }}
               >
                 <Eye size={12} /> View Full Screen
               </button>

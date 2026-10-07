@@ -65,13 +65,53 @@ export default function EHSSubmissionsScreen({
     }
   ];
 
-  const [localSubmissions, setLocalSubmissions] = useState(submissions && submissions.length > 0 ? submissions : submissionList);
+  const [localSubmissions, setLocalSubmissions] = useState(
+    submissions && submissions.length > 0 ? submissions : submissionList
+  );
   const [selectedSub, setSelectedSub] = useState(submissionList[0]);
   const [drawerTab, setDrawerTab] = useState('Overview');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newSub, setNewSub] = useState({
+    module: 'Safety',
+    project: 'Zojila Tunnel',
+    period: 'Sep 2026',
+    comments: 'Routine monthly EHS filing package with complete audit affidavits'
+  });
 
   const handleResubmit = (subId) => {
     setLocalSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'Under Review', comments: 'Resubmitted with updated contractor affidavits. Awaiting re-audit.' } : s));
     setSelectedSub(prev => prev ? { ...prev, status: 'Under Review', comments: 'Resubmitted with updated contractor affidavits. Awaiting re-audit.' } : null);
+  };
+
+  const handleCreateSubmission = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `SUB-2026-${String(localSubmissions.length + 19).padStart(2, '0')}`,
+      ...newSub,
+      status: 'Under Review',
+      submittedOn: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      submittedBy: 'Rajeshwar K. (Site HSE Lead)',
+      reviewer: 'Priya Sharma (Group Director HSE)'
+    };
+    const updated = [created, ...localSubmissions];
+    setLocalSubmissions(updated);
+    setSelectedSub(created);
+    if (onCreateSubmission) onCreateSubmission(created);
+    setIsModalOpen(false);
+  };
+
+  const handleExportCsv = () => {
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      ["ID,Module,Project,Period,Status,Submitted By,Reviewer",
+       ...localSubmissions.map(s => `"${s.id}","${s.module}","${s.project}","${s.period}","${s.status}","${s.submittedBy}","${s.reviewer}"`)
+      ].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `MEIL_EHS_Submissions_${selectedRange.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleDownloadPackage = (sub) => {
@@ -84,6 +124,13 @@ export default function EHSSubmissionsScreen({
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const filteredSubmissions = localSubmissions.filter(sub => {
+    if (selectedProject !== 'All Projects / Sites' && sub.project !== selectedProject) return false;
+    if (selectedModule !== 'All Submissions' && sub.module !== selectedModule) return false;
+    if (selectedStatus !== 'All Statuses' && sub.status !== selectedStatus) return false;
+    return true;
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -103,14 +150,16 @@ export default function EHSSubmissionsScreen({
             <button 
               type="button" 
               className="ehs-btn ehs-btn-outline"
+              onClick={handleExportCsv}
               style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
             >
               <FileDown size={14} />
-              <span>Export Submission</span>
+              <span>Export CSV</span>
             </button>
             <button 
               type="button" 
               className="ehs-btn ehs-btn-blue"
+              onClick={() => setIsModalOpen(true)}
               style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
             >
               <PlusCircle size={14} />
@@ -180,7 +229,7 @@ export default function EHSSubmissionsScreen({
               Statutory Filings Register
             </h3>
             <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-              Showing {submissionList.length} filings
+              Showing {filteredSubmissions.length} filings
             </span>
           </div>
 
@@ -197,7 +246,7 @@ export default function EHSSubmissionsScreen({
                 </tr>
               </thead>
               <tbody>
-                {localSubmissions.map((sub) => {
+                {filteredSubmissions.map((sub) => {
                   const isSelected = selectedSub?.id === sub.id;
                   return (
                     <tr 
@@ -357,6 +406,81 @@ export default function EHSSubmissionsScreen({
           </div>
         )}
       </div>
+
+      {/* ──── CREATE SUBMISSION MODAL ──── */}
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div className="ehs-glass-card" style={{ background: '#FFFFFF', maxWidth: '480px', width: '100%', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '0 0 16px 0' }}>Create Statutory Submission</h3>
+            <form onSubmit={handleCreateSubmission} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Module</label>
+                  <select
+                    value={newSub.module}
+                    onChange={(e) => setNewSub({ ...newSub, module: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Safety">Safety</option>
+                    <option value="Environmental">Environmental</option>
+                    <option value="Training">Training</option>
+                    <option value="Inspection">Inspection</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Project Site</label>
+                  <select
+                    value={newSub.project}
+                    onChange={(e) => setNewSub({ ...newSub, project: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="Zojila Tunnel">Zojila Tunnel</option>
+                    <option value="Main Tunnel">Main Tunnel</option>
+                    <option value="Access Road">Access Road</option>
+                    <option value="Camp Area">Camp Area</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Reporting Period</label>
+                <input
+                  type="text"
+                  required
+                  value={newSub.period}
+                  onChange={(e) => setNewSub({ ...newSub, period: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Comments / Filing Summary</label>
+                <textarea
+                  rows="3"
+                  value={newSub.comments}
+                  onChange={(e) => setNewSub({ ...newSub, comments: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="ehs-btn ehs-btn-outline"
+                  style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="ehs-btn ehs-btn-blue"
+                  style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
+                >
+                  Submit Package
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

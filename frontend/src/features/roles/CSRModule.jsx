@@ -123,6 +123,7 @@ export default function CSRModule({
       case 'beneficiaries':
         return (
           <CSRBeneficiariesScreen
+            projects={projects}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -131,6 +132,7 @@ export default function CSRModule({
       case 'impact':
         return (
           <CSRSocialImpactScreen
+            projects={projects}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -138,6 +140,7 @@ export default function CSRModule({
       case 'stakeholders':
         return (
           <CSRStakeholdersScreen
+            projects={projects}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -145,6 +148,8 @@ export default function CSRModule({
       case 'grievances':
         return (
           <CSRGrievancesScreen
+            projects={projects}
+            grievances={grievances}
             onNavigateTab={onNavigateTab}
             onOpenRegisterGrievance={() => setIsRegisterGrievanceOpen(true)}
           />
@@ -153,6 +158,7 @@ export default function CSRModule({
       case 'evidence':
         return (
           <CSREvidenceScreen
+            projects={projects}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -160,6 +166,7 @@ export default function CSRModule({
       case 'submissions':
         return (
           <CSRSubmissionsScreen
+            projects={projects}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -167,6 +174,9 @@ export default function CSRModule({
       case 'analytics':
         return (
           <CSRAnalyticsScreen
+            projects={projects}
+            communities={communities}
+            grievances={grievances}
             onNavigateTab={onNavigateTab}
             onOpenRegisterGrievance={() => setIsRegisterGrievanceOpen(true)}
           />
@@ -176,6 +186,7 @@ export default function CSRModule({
       case 'action-center':
         return (
           <CSRActionCenterScreen
+            projects={projects}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -185,6 +196,8 @@ export default function CSRModule({
         return (
           <CSROverviewScreen
             projects={projects}
+            communities={communities}
+            grievances={grievances}
             onNavigateTab={onNavigateTab}
             onOpenCreateProject={() => setIsCreateProjectOpen(true)}
             onOpenLogActivity={() => setIsLogActivityOpen(true)}

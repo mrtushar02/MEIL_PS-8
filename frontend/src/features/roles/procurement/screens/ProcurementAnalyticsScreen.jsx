@@ -9,29 +9,47 @@ import {
 } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
 
-export default function ProcurementAnalyticsScreen({ onNavigateTab }) {
+export default function ProcurementAnalyticsScreen({ 
+  onNavigateTab,
+  suppliers = [],
+  transactions = []
+}) {
   const [selectedSupplier, setSelectedSupplier] = useState('All Suppliers');
   const [selectedBU, setSelectedBU] = useState('All Business Units');
   const [selectedPeriod, setSelectedPeriod] = useState('Sep 2026');
 
+  const totalSpendNum = transactions.length > 0 
+    ? transactions.reduce((acc, t) => acc + (parseFloat(t.amount || t.value || t.spend || 0) || 0), 0)
+    : 2486000000;
+  const totalSpendDisplay = `₹${(totalSpendNum / 10000000).toFixed(1)} Cr`;
+
+  const assessedSpendNum = Math.round(totalSpendNum * 0.78);
+  const assessedSpendDisplay = `₹${(assessedSpendNum / 10000000).toFixed(1)} Cr`;
+
+  const msmeSpendNum = Math.round(totalSpendNum * 0.29);
+  const msmeSpendDisplay = `₹${(msmeSpendNum / 10000000).toFixed(1)} Cr`;
+
+  const esgVerifiedSpendNum = Math.round(totalSpendNum * 0.64);
+  const esgVerifiedSpendDisplay = `₹${(esgVerifiedSpendNum / 10000000).toFixed(1)} Cr`;
+
   const handleExportReport = () => {
     const reportData = [
-      { Metric: 'Total Procurement Spend', Value: '₹248.6 Cr', Scope: 'Group-wide MEIL', Period: selectedPeriod },
-      { Metric: 'Assessed Spend (Scope 3 Tier 1)', Value: '₹194.2 Cr', Scope: '78% Coverage', Period: selectedPeriod },
-      { Metric: 'MSME Direct Spend', Value: '₹72.6 Cr', Scope: '29% Priority Sector', Period: selectedPeriod },
-      { Metric: 'BRSR Core Verified Spend', Value: '₹158.2 Cr', Scope: '64% Verified', Period: selectedPeriod },
+      { Metric: 'Total Procurement Spend', Value: totalSpendDisplay, Scope: 'Group-wide MEIL', Period: selectedPeriod },
+      { Metric: 'Assessed Spend (Scope 3 Tier 1)', Value: assessedSpendDisplay, Scope: '78% Coverage', Period: selectedPeriod },
+      { Metric: 'MSME Direct Spend', Value: msmeSpendDisplay, Scope: '29% Priority Sector', Period: selectedPeriod },
+      { Metric: 'BRSR Core Verified Spend', Value: esgVerifiedSpendDisplay, Scope: '64% Verified', Period: selectedPeriod },
       { Metric: 'Materials Category Spend', Value: '₹79.5 Cr', Scope: 'Cement & Steel (32%)', Period: selectedPeriod },
       { Metric: 'Services Category Spend', Value: '₹59.6 Cr', Scope: 'Logistics & Civil (24%)', Period: selectedPeriod },
-      { Metric: 'High Risk Suppliers', Value: '58 vendors (12%)', Scope: 'Mandatory Audits Issued', Period: selectedPeriod }
+      { Metric: 'High Risk Suppliers', Value: `${suppliers.filter(s => s.riskLevel === 'High' || s.risk === 'High').length || 18} vendors`, Scope: 'Mandatory Audits Issued', Period: selectedPeriod }
     ];
     exportToCsv(`MEIL_Procurement_ESG_Analytics_${selectedPeriod.replace(/\s+/g, '_')}.csv`, reportData);
   };
 
   const kpis = [
-    { label: 'Total Procurement Value', value: '₹248.6 Cr', sub: 'Group-wide total', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)', icon: TrendingUp },
-    { label: 'Assessed Spend', value: '₹194.2 Cr', sub: '78% of total spend', color: '#059669', bg: 'rgba(5, 150, 105, 0.1)', icon: ShieldCheck },
-    { label: 'MSME Spend', value: '₹72.6 Cr', sub: '29% priority sector', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)', icon: Building },
-    { label: 'ESG Assessed Spend', value: '₹158.2 Cr', sub: '64% BRSR Core verified', color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)', icon: DollarSign }
+    { label: 'Total Procurement Value', value: totalSpendDisplay, sub: 'Group-wide total', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)', icon: TrendingUp },
+    { label: 'Assessed Spend', value: assessedSpendDisplay, sub: '78% of total spend', color: '#059669', bg: 'rgba(5, 150, 105, 0.1)', icon: ShieldCheck },
+    { label: 'MSME Spend', value: msmeSpendDisplay, sub: '29% priority sector', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)', icon: Building },
+    { label: 'ESG Assessed Spend', value: esgVerifiedSpendDisplay, sub: '64% BRSR Core verified', color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)', icon: DollarSign }
   ];
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
@@ -45,10 +63,15 @@ export default function ProcurementAnalyticsScreen({ onNavigateTab }) {
     { label: 'Others', pct: 14, val: '₹34.8 Cr', color: '#94A3B8' }
   ];
 
+  const totalSup = suppliers.length > 0 ? suppliers.length : 486;
+  const highCount = suppliers.filter(s => s.riskLevel === 'High' || s.risk === 'High').length || 18;
+  const medCount = suppliers.filter(s => s.riskLevel === 'Medium' || s.risk === 'Medium').length || 136;
+  const lowCount = suppliers.filter(s => s.riskLevel === 'Low' || s.risk === 'Low').length || 175;
+
   const riskDistribution = [
-    { label: 'Low', pct: 36, count: 175, color: '#059669' },
-    { label: 'Medium', pct: 28, count: 136, color: '#D97706' },
-    { label: 'High', pct: 12, count: 58, color: '#EA580C' },
+    { label: 'Low', pct: Math.round((lowCount / totalSup) * 100), count: lowCount, color: '#059669' },
+    { label: 'Medium', pct: Math.round((medCount / totalSup) * 100), count: medCount, color: '#D97706' },
+    { label: 'High', pct: Math.round((highCount / totalSup) * 100), count: highCount, color: '#EA580C' },
     { label: 'Critical', pct: 6, count: 29, color: '#DC2626' },
     { label: 'Unassessed', pct: 18, count: 88, color: '#94A3B8' }
   ];

@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Download
 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function BUConsolidationScreen({
   consolidation = {},
@@ -29,6 +30,25 @@ export default function BUConsolidationScreen({
     { name: 'Expressway', scope1: 290, scope2: 240, energy: '1.5M', water: '51,000', waste: '89%', safety: 0.00, score: 97, status: 'Approved' },
   ];
 
+  const approvedCount = projectRows.filter(r => r.status === 'Approved').length;
+  const pendingCount = projectRows.filter(r => r.status === 'Pending').length;
+  const correctionCount = projectRows.filter(r => r.status === 'Correction').length;
+  const avgReadiness = (projectRows.reduce((acc, r) => acc + r.score, 0) / projectRows.length).toFixed(1);
+
+  const handleExportMatrix = () => {
+    exportToCsv('MEIL_BU_Consolidation_Matrix.csv', projectRows.map(p => ({
+      Project: p.name,
+      Scope1_tCO2e: p.scope1,
+      Scope2_tCO2e: p.scope2,
+      Energy_kWh: p.energy,
+      Water_kL: p.water,
+      Waste_Recycled: p.waste,
+      LTIFR_Safety: p.safety,
+      ESG_Score: p.score,
+      Approval_Status: p.status
+    })));
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* ── Top Summary Header & Metrics (Screen 6 Top) ── */}
@@ -37,7 +57,7 @@ export default function BUConsolidationScreen({
           <div>
             <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0F172A', margin: 0 }}>Business Unit Consolidation</h2>
             <p style={{ fontSize: '13px', color: '#64748B', margin: '4px 0 0' }}>
-              Consolidated ESG performance across all 6 projects in Highways & Himalayan Tunnels BU.
+              Consolidated ESG performance across all {projectRows.length} projects in Highways & Himalayan Tunnels BU.
             </p>
           </div>
 
@@ -46,7 +66,7 @@ export default function BUConsolidationScreen({
             <button
               type="button"
               className="bu-btn bu-btn-secondary"
-              onClick={() => alert('Exporting BU Consolidation Sheet (XLSX)...')}
+              onClick={handleExportMatrix}
               style={{ fontSize: '12px', padding: '6px 14px' }}
             >
               <Download size={14} /> Export Matrix
@@ -59,7 +79,7 @@ export default function BUConsolidationScreen({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px' }}>
         <div className="bu-kpi-card">
           <span className="bu-kpi-title">Projects</span>
-          <div className="bu-kpi-val">06</div>
+          <div className="bu-kpi-val">{String(projectRows.length).padStart(2, '0')}</div>
           <div className="bu-kpi-sub">Sites reporting</div>
         </div>
         <div className="bu-kpi-card">
@@ -69,22 +89,22 @@ export default function BUConsolidationScreen({
         </div>
         <div className="bu-kpi-card">
           <span className="bu-kpi-title">Approved</span>
-          <div className="bu-kpi-val" style={{ color: '#16A34A' }}>24</div>
+          <div className="bu-kpi-val" style={{ color: '#16A34A' }}>{approvedCount}</div>
           <div className="bu-kpi-sub">Statutory pass</div>
         </div>
         <div className="bu-kpi-card">
           <span className="bu-kpi-title">Pending</span>
-          <div className="bu-kpi-val" style={{ color: '#2563EB' }}>08</div>
+          <div className="bu-kpi-val" style={{ color: '#2563EB' }}>{pendingCount}</div>
           <div className="bu-kpi-sub">Under BU review</div>
         </div>
         <div className="bu-kpi-card">
           <span className="bu-kpi-title">Correction</span>
-          <div className="bu-kpi-val" style={{ color: '#DC2626' }}>03</div>
+          <div className="bu-kpi-val" style={{ color: '#DC2626' }}>{correctionCount}</div>
           <div className="bu-kpi-sub">Rework cycle</div>
         </div>
         <div className="bu-kpi-card">
           <span className="bu-kpi-title">BU Readiness</span>
-          <div className="bu-kpi-val" style={{ color: '#7C3AED' }}>91.4%</div>
+          <div className="bu-kpi-val" style={{ color: '#7C3AED' }}>{avgReadiness}%</div>
           <div className="bu-kpi-sub">SEBI BRSR Core</div>
         </div>
       </div>

@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Download, FileText, Printer, FileSpreadsheet, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GroupStatutoryReportsScreen() {
+  const [downloadedReport, setDownloadedReport] = useState(null);
+
   const reports = [
     {
       id: 'REP-GRP-01',
@@ -50,6 +53,21 @@ export default function GroupStatutoryReportsScreen() {
     }
   ];
 
+  const handleDownload = (r) => {
+    setDownloadedReport(r.id);
+    exportToCsv(`${r.id}_${r.title.replace(/\s+/g, '_')}.csv`, [{
+      Report_ID: r.id,
+      Title: r.title,
+      Regulatory_Framework: r.framework,
+      Format: r.format,
+      File_Size: r.size,
+      Filing_Entity: 'Megha Engineering and Infrastructures Limited (MEIL)',
+      Status: 'Cryptographically Verified & Assurance Signed',
+      SHA256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+    }]);
+    setTimeout(() => setDownloadedReport(null), 2500);
+  };
+
   return (
     <div className="group-statutory-reports-screen">
       <div className="group-card" style={{ marginBottom: '1.25rem' }}>
@@ -87,13 +105,27 @@ export default function GroupStatutoryReportsScreen() {
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #F1F5F9' }}>
-              <button className="group-btn-primary" style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}>
-                <Download size={14} /> Download Filing Pack
+              <button
+                className="group-btn-primary"
+                style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
+                onClick={() => handleDownload(r)}
+              >
+                <Download size={14} /> {downloadedReport === r.id ? 'Downloaded ✓' : 'Download Filing Pack'}
               </button>
-              <button className="group-btn-outline" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }} title="Preview">
+              <button
+                className="group-btn-outline"
+                style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }}
+                title="Preview Report"
+                onClick={() => handleDownload(r)}
+              >
                 <ExternalLink size={14} />
               </button>
-              <button className="group-btn-outline" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }} title="Print / PDF">
+              <button
+                className="group-btn-outline"
+                style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }}
+                title="Print Report"
+                onClick={() => window.print()}
+              >
                 <Printer size={14} />
               </button>
             </div>

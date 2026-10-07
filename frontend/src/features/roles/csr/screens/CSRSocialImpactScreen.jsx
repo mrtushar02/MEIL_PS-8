@@ -123,8 +123,10 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Projects With Impact Data</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>20</div>
-            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>83% of Active Projects</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+              {new Set(indicators.map(i => i.project)).size}
+            </div>
+            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>Active Portfolio Coverage</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Target size={18} />
@@ -135,7 +137,7 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Indicators Reported</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>48</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>{indicators.length}</div>
             <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>Quantitative & Qualitative</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(2, 132, 199, 0.1)', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -147,7 +149,9 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>On Track</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>70%</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
+              {Math.round((indicators.filter(i => i.status?.toLowerCase() === 'achieved' || i.status?.toLowerCase() === 'on track').length / (indicators.length || 1)) * 100)}%
+            </div>
             <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>Meeting Milestone Targets</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -159,7 +163,9 @@ export default function CSRSocialImpactScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Evidence Coverage</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>82%</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>
+              {Math.round((indicators.filter(i => i.evidence_ref).length / (indicators.length || 1)) * 100)}%
+            </div>
             <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>Attached & Geo-Audited</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

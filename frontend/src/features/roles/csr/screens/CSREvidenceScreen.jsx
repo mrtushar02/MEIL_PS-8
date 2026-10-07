@@ -104,7 +104,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Evidence</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>198</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{evidenceList.length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Paperclip size={18} />
@@ -114,7 +114,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Verified</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>52</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{evidenceList.filter(e => e.status?.toLowerCase() === 'verified').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CheckCircle2 size={18} />
@@ -124,7 +124,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Pending Review</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>286</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>{evidenceList.filter(e => e.status?.toLowerCase().includes('pending')).length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Clock size={18} />
@@ -134,7 +134,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Rejected</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#DC2626', marginTop: '2px' }}>14</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#DC2626', marginTop: '2px' }}>{evidenceList.filter(e => e.status?.toLowerCase() === 'rejected').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(220, 38, 38, 0.1)', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AlertTriangle size={18} />
@@ -144,7 +144,7 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Missing</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#64748B', marginTop: '2px' }}>2</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#64748B', marginTop: '2px' }}>{evidenceList.filter(e => e.status?.toLowerCase() === 'missing').length}</div>
           </div>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(100, 116, 139, 0.1)', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FileWarning size={18} />

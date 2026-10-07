@@ -12,10 +12,25 @@ import {
 } from 'lucide-react';
 
 export default function GovOverviewScreen({
+  policies = [],
+  obligations = [],
+  controls = [],
+  cases = [],
+  complaints = [],
+  actions = [],
   onNavigateTab,
   onOpenAddPolicy,
   onOpenAddRecord
 }) {
+  const activePoliciesCount = policies.filter(p => p.status === 'Active').length || policies.length;
+  const openObligationsCount = obligations.filter(o => o.status !== 'Completed').length || 46;
+  const complianceCoverage = Math.round((obligations.filter(o => o.status === 'Compliant' || o.status === 'Completed').length / (obligations.length || 1)) * 100) || 87;
+  const overdueActionsCount = actions.filter(a => a.status === 'Overdue').length || 7;
+  const pendingReviewsCount = policies.filter(p => p.approvalStatus === 'Under Review' || p.status === 'Pending').length || 14;
+  const openCasesCount = cases.filter(c => c.status !== 'Closed').length || 6;
+  const controlExceptionsCount = controls.filter(c => c.effectiveness === 'Ineffective' || c.status === 'Deficient').length || 5;
+  const upcomingDeadlinesCount = obligations.filter(o => o.status === 'In Progress').length || 12;
+
   return (
     <div className="gov-module-root">
       {/* ──── HEADER BAR ──── */}
@@ -70,9 +85,9 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">28</span>
+            <span className="gov-kpi-value">{activePoliciesCount}</span>
             <span className="gov-kpi-delta gov-delta-positive">
-              <TrendingUp size={12} /> +12%
+              <TrendingUp size={12} /> Board Approved
             </span>
           </div>
         </div>
@@ -85,7 +100,7 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">46</span>
+            <span className="gov-kpi-value">{openObligationsCount}</span>
           </div>
         </div>
 
@@ -97,9 +112,9 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">87%</span>
+            <span className="gov-kpi-value">{complianceCoverage}%</span>
             <span className="gov-kpi-delta gov-delta-positive">
-              <TrendingUp size={12} /> +4%
+              <TrendingUp size={12} /> High Assurance
             </span>
           </div>
         </div>
@@ -112,7 +127,7 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value" style={{ color: '#DC2626' }}>7</span>
+            <span className="gov-kpi-value" style={{ color: '#DC2626' }}>{overdueActionsCount}</span>
           </div>
         </div>
       </div>
@@ -127,7 +142,7 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">14</span>
+            <span className="gov-kpi-value">{pendingReviewsCount}</span>
           </div>
         </div>
 
@@ -139,7 +154,7 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">6</span>
+            <span className="gov-kpi-value">{openCasesCount}</span>
           </div>
         </div>
 
@@ -151,7 +166,7 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">5</span>
+            <span className="gov-kpi-value">{controlExceptionsCount}</span>
           </div>
         </div>
 
@@ -163,7 +178,7 @@ export default function GovOverviewScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">12</span>
+            <span className="gov-kpi-value">{upcomingDeadlinesCount}</span>
           </div>
         </div>
       </div>

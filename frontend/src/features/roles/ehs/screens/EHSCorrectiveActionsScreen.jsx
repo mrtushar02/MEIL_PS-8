@@ -21,8 +21,7 @@ export default function EHSCorrectiveActionsScreen({
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedPriority, setSelectedPriority] = useState('All Priorities');
 
-  // CAPA actions matching image Panel 5
-  const actionList = [
+  const defaultActions = [
     {
       id: 'CA-2026-22',
       source: 'Incident (INC-2026-05)',
@@ -100,8 +99,46 @@ export default function EHSCorrectiveActionsScreen({
     }
   ];
 
-  const [selectedAction, setSelectedAction] = useState(actionList[0]);
+  const incomingFormatted = Array.isArray(actions) && actions.length > 0 ? actions.map(a => ({
+    id: a.id || `CA-2026-${String(Date.now()).slice(-2)}`,
+    source: a.source || 'Audit Inspection',
+    project: a.project || a.project_name || 'Zojila Tunnel',
+    type: a.type || 'Safety',
+    priority: a.priority || 'High',
+    owner: a.owner || a.assigned_to || 'Site Lead',
+    dueDate: a.dueDate || a.target_date || '10 Oct 2026',
+    status: a.status || 'Open',
+    description: a.description || 'Remediation task logged from audit inspection.',
+    measures: a.measures || [{ text: 'Implement engineering barrier', done: false }]
+  })) : [];
+
+  const [localActions, setLocalActions] = useState([...incomingFormatted, ...defaultActions]);
+  const [selectedAction, setSelectedAction] = useState(localActions[0]);
   const [drawerTab, setDrawerTab] = useState('Overview');
+  const [isCreateActionOpen, setIsCreateActionOpen] = useState(false);
+  const [newActionForm, setNewActionForm] = useState({
+    description: '',
+    project: 'Zojila Tunnel',
+    priority: 'High',
+    type: 'Fall Protection',
+    owner: 'Site Safety Officer',
+    dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+  });
+
+  const filteredActions = localActions.filter(act => {
+    if (selectedProject !== 'All Projects / Sites' && !act.project.includes(selectedProject)) return false;
+    if (selectedStatus !== 'All Statuses' && act.status !== selectedStatus) return false;
+    if (selectedPriority !== 'All Priorities' && act.priority !== selectedPriority) return false;
+    return true;
+  });
+
+  const handleSignOff = (actId) => {
+    setLocalActions(prev => prev.map(a => a.id === actId ? { ...a, status: 'Verified' } : a));
+    if (selectedAction?.id === actId) {
+      setSelectedAction(prev => prev ? { ...prev, status: 'Verified' } : null);
+    }
+    if (onUpdateActionStatus) onUpdateActionStatus(actId, 'Verified');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -120,6 +157,7 @@ export default function EHSCorrectiveActionsScreen({
           <button 
             type="button" 
             className="ehs-btn ehs-btn-blue"
+            onClick={() => setIsCreateActionOpen(true)}
             style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px' }}
           >
             <PlusCircle size={15} />

@@ -97,7 +97,7 @@ export default function CSRStakeholdersScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Engagements</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>34</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{engagements.length}</div>
             <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>Quarterly Consultations</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -108,7 +108,9 @@ export default function CSRStakeholdersScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Participants</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>1,480</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>
+              {engagements.reduce((acc, e) => acc + (parseInt(e.participants) || 0), 0).toLocaleString()}
+            </div>
             <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>Villagers, Gram Panchayats</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(2, 132, 199, 0.1)', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -119,7 +121,9 @@ export default function CSRStakeholdersScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Open Follow-ups</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>5</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>
+              {engagements.filter(e => e.status !== 'Closed').length}
+            </div>
             <div style={{ fontSize: '11px', color: '#D97706', fontWeight: 700, marginTop: '2px' }}>Assigned to Site Leads</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -130,8 +134,12 @@ export default function CSRStakeholdersScreen({ onNavigateTab }) {
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Closed Consultations</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>29</div>
-            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>85% Action Closure Rate</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
+              {engagements.filter(e => e.status === 'Closed').length}
+            </div>
+            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>
+              {Math.round((engagements.filter(e => e.status === 'Closed').length / (engagements.length || 1)) * 100)}% Closure Rate
+            </div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CheckCircle2 size={18} />

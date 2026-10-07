@@ -1101,3 +1101,4 @@ class EsgStore {
 }
 
 export const esgStore = new EsgStore();
+export default esgStore;

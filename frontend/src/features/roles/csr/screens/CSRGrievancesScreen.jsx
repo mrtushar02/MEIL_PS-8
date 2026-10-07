@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertCircle,
   Search,
@@ -6,6 +6,7 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
+  Download,
   Eye,
   X
 } from 'lucide-react';
@@ -13,12 +14,40 @@ import { INITIAL_GRIEVANCES } from '../csrData';
 import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRGrievancesScreen({
+  grievances: propGrievances,
   onNavigateTab,
   onOpenRegisterGrievance
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [grievances, setGrievances] = useState(INITIAL_GRIEVANCES);
+  const [grievances, setGrievances] = useState(propGrievances || INITIAL_GRIEVANCES);
   const [viewGrievance, setViewGrievance] = useState(null);
+
+  useEffect(() => {
+    if (propGrievances && propGrievances.length > 0) {
+      setGrievances(propGrievances);
+    }
+  }, [propGrievances]);
+
+  const openCount = grievances.filter(g => g.status !== 'Resolved' && g.status !== 'Closed').length;
+  const criticalCount = grievances.filter(g => g.severity?.toLowerCase() === 'critical').length;
+  const resolvedCount = grievances.filter(g => g.status === 'Resolved' || g.status === 'Closed').length;
+  const resolvePct = Math.round((resolvedCount / (grievances.length || 1)) * 100);
+
+  const handleExportCsv = () => {
+    exportToCsv('MEIL_CSR_Community_Grievances.csv', grievances.map(g => ({
+      Grievance_ID: g.id,
+      Date: g.date,
+      Project: g.project,
+      Community: g.community,
+      Category: g.category,
+      Severity: g.severity,
+      Status: g.status,
+      Owner: g.owner,
+      Due_Date: g.due_date,
+      Description: g.description,
+      Resolution_Details: g.resolution || ''
+    })));
+  };
 
   const filteredGrievances = grievances.filter((g) =>
     g.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,6 +105,10 @@ export default function CSRGrievancesScreen({
           </div>
 
           <div className="csr-banner-actions">
+            <button className="csr-btn-outline" onClick={handleExportCsv} title="Export Grievances to CSV">
+              <Download size={15} />
+              Export CSV
+            </button>
             <button className="csr-btn-primary" onClick={onOpenRegisterGrievance}>
               <Plus size={16} />
               + Register Grievance
@@ -89,7 +122,7 @@ export default function CSRGrievancesScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Open Grievances</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#DC2626', marginTop: '2px' }}>6</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#DC2626', marginTop: '2px' }}>{openCount}</div>
             <div style={{ fontSize: '11px', color: '#DC2626', fontWeight: 700, marginTop: '2px' }}>Active Redressal</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(220, 38, 38, 0.1)', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -100,8 +133,8 @@ export default function CSRGrievancesScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Critical Escalations</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#EA580C', marginTop: '2px' }}>1</div>
-            <div style={{ fontSize: '11px', color: '#EA580C', fontWeight: 700, marginTop: '2px' }}>Municipal Sewage Block</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#EA580C', marginTop: '2px' }}>{criticalCount}</div>
+            <div style={{ fontSize: '11px', color: '#EA580C', fontWeight: 700, marginTop: '2px' }}>Urgent Priority</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(234, 88, 12, 0.1)', color: '#EA580C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AlertTriangle size={18} />
@@ -111,8 +144,8 @@ export default function CSRGrievancesScreen({
         <div className="csr-glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Resolved Grievances</div>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>28</div>
-            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>82% Resolved in SLA</div>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{resolvedCount}</div>
+            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>{resolvePct}% Resolved</div>
           </div>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CheckCircle2 size={18} />

@@ -77,8 +77,34 @@ export default function EHSEvidenceScreen({
     }
   ];
 
-  const [items, setItems] = useState(evidenceList);
+  const [items, setItems] = useState(
+    evidence && evidence.length > 0 ? evidence : evidenceList
+  );
   const [selectedEv, setSelectedEv] = useState(evidenceList[0]);
+  const fileInputRef = React.useRef(null);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const newDoc = {
+      id: `EV-2026-${String(items.length + 89).padStart(2, '0')}`,
+      fileName: file.name,
+      module: 'Safety & EHS',
+      project: selectedProject !== 'All Projects / Sites' ? selectedProject : 'Zojila Tunnel',
+      format: file.name.split('.').pop()?.toUpperCase() || 'PDF',
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      priority: 'High',
+      status: 'Uploaded',
+      uploadedDate: 'Just now',
+      uploadedBy: 'EHS Officer',
+      hash: `SHA256: ${Math.random().toString(36).substring(2, 12)}${Math.random().toString(36).substring(2, 12)}`
+    };
+    const updated = [newDoc, ...items];
+    setItems(updated);
+    setSelectedEv(newDoc);
+    if (onUploadEvidence) onUploadEvidence(newDoc);
+    e.target.value = '';
+  };
 
   const handleDownloadEvidence = (ev) => {
     const content = `MEIL ESG EVIDENCE VAULT\nDocument ID: ${ev.id}\nFile: ${ev.fileName}\nModule: ${ev.module || 'EHS'}\nAssurance: SEBI BRSR Core Type 2\nHash: ${ev.hash || 'SHA256-AUTHENTICATED'}\nTimestamp: ${new Date().toISOString()}`;
@@ -96,8 +122,27 @@ export default function EHSEvidenceScreen({
     setSelectedEv(prev => prev ? { ...prev, status: 'Verified' } : null);
   };
 
+  const filteredItems = items.filter(ev => {
+    if (selectedProject !== 'All Projects / Sites' && ev.project !== selectedProject) return false;
+    if (selectedModule !== 'All Modules' && ev.module !== selectedModule) return false;
+    if (selectedStatus !== 'All Statuses' && ev.status !== selectedStatus) return false;
+    return true;
+  });
+
+  const totalCount = items.length;
+  const pendingCount = items.filter(i => i.status === 'Uploaded' || i.status === 'Pending').length;
+  const verifiedCount = items.filter(i => i.status === 'Verified').length;
+  const rejectedCount = items.filter(i => i.status === 'Rejected').length;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileUpload}
+      />
+
       {/* ──── 1. PAGE HEADER & FILTERS BAR (Matching Image Panel 8) ──── */}
       <div className="ehs-glass-card" style={{ padding: '16px 20px', borderRadius: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
@@ -109,6 +154,14 @@ export default function EHSEvidenceScreen({
               Tamper-proof verifiable audit documentation linking safety incidents, audits, and environmental manifests.
             </p>
           </div>
+          <button
+            type="button"
+            className="ehs-btn ehs-btn-blue"
+            onClick={() => fileInputRef.current?.click()}
+            style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
+          >
+            + Upload Evidence
+          </button>
         </div>
 
         {/* Filter Controls Row */}
@@ -146,6 +199,7 @@ export default function EHSEvidenceScreen({
             <option value="Incident Report">Incident Report</option>
             <option value="Inspection Checklist">Inspection Checklist</option>
             <option value="Training Attendance">Training Attendance</option>
+            <option value="Safety & EHS">Safety & EHS</option>
           </select>
 
           <select 
@@ -170,7 +224,7 @@ export default function EHSEvidenceScreen({
             <Paperclip size={14} color="#2563EB" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">248</span>
+            <span className="ehs-kpi-main-val">{totalCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Cryptographic records</span>
@@ -183,7 +237,7 @@ export default function EHSEvidenceScreen({
             <Clock size={14} color="#D97706" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">18</span>
+            <span className="ehs-kpi-main-val">{pendingCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Awaiting sign-off</span>
@@ -196,7 +250,7 @@ export default function EHSEvidenceScreen({
             <CheckCircle2 size={14} color="#059669" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">210</span>
+            <span className="ehs-kpi-main-val">{verifiedCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span style={{ color: '#059669', fontWeight: 700 }}>Audit Proof Complete</span>
@@ -209,7 +263,7 @@ export default function EHSEvidenceScreen({
             <XCircle size={14} color="#DC2626" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>6</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>{rejectedCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Resubmission required</span>
@@ -239,7 +293,7 @@ export default function EHSEvidenceScreen({
               Evidence Repository
             </h3>
             <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-              Showing {evidenceList.length} documents
+              Showing {filteredItems.length} documents
             </span>
           </div>
 
@@ -258,7 +312,7 @@ export default function EHSEvidenceScreen({
                 </tr>
               </thead>
               <tbody>
-                {items.map((ev) => {
+                {filteredItems.map((ev) => {
                   const isSelected = selectedEv?.id === ev.id;
                   return (
                     <tr 

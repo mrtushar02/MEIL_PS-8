@@ -176,6 +176,8 @@ export default function ProcurementModule({
       case 'value-chain':
         return (
           <ValueChainScopeScreen
+            suppliers={suppliers}
+            transactions={transactions}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -216,6 +218,8 @@ export default function ProcurementModule({
       case 'analytics':
         return (
           <ProcurementAnalyticsScreen
+            suppliers={suppliers}
+            transactions={transactions}
             onNavigateTab={onNavigateTab}
           />
         );

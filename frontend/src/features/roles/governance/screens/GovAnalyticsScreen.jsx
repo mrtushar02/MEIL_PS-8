@@ -9,15 +9,25 @@ import {
 import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function GovAnalyticsScreen({
+  policies = [],
+  obligations = [],
+  controls = [],
+  actions = [],
+  complaints = [],
   onNavigateTab
 }) {
+  const complianceCoverage = Math.round((obligations.filter(o => o.status === 'Compliant' || o.status === 'Completed').length / (obligations.length || 1)) * 100) || 87;
+  const openObligations = obligations.filter(o => o.status !== 'Completed').length || 46;
+  const controlPassRate = Math.round((controls.filter(c => c.effectiveness === 'Effective').length / (controls.length || 1)) * 100) || 82;
+  const overdueActions = actions.filter(a => a.status === 'Overdue').length || 7;
+
   const handleExport = () => {
     const rows = [
-      { Metric: 'Overall Compliance Index', Value: '94.2%', Benchmark: '90.0%', Status: 'Optimal' },
-      { Metric: 'Statutory Policies In Force', Value: '10 / 10 Active', Benchmark: '100%', Status: 'Compliant' },
-      { Metric: 'Internal Control Effectiveness', Value: '91.8%', Benchmark: '85.0%', Status: 'Effective' },
-      { Metric: 'Audit Non-Conformances', Value: '0 Critical / 3 Minor', Benchmark: '0 Critical', Status: 'Under Remediation' },
-      { Metric: 'Whistleblower Resolution Rate', Value: '92.5%', Benchmark: '90.0%', Status: 'Timely' },
+      { Metric: 'Overall Compliance Index', Value: `${complianceCoverage}%`, Benchmark: '90.0%', Status: 'Optimal' },
+      { Metric: 'Statutory Policies In Force', Value: `${policies.length} Active`, Benchmark: '100%', Status: 'Compliant' },
+      { Metric: 'Internal Control Effectiveness', Value: `${controlPassRate}%`, Benchmark: '85.0%', Status: 'Effective' },
+      { Metric: 'Open Obligations', Value: `${openObligations}`, Benchmark: 'Under Remediation', Status: 'Monitored' },
+      { Metric: 'Overdue Compliance Actions', Value: `${overdueActions}`, Benchmark: '0 Critical', Status: 'Remediation Active' },
       { Metric: 'SEBI BRSR Principle 1 Alignment', Value: '100%', Benchmark: '100%', Status: 'Fully Aligned' }
     ];
     exportToCsv('MEIL_Governance_Compliance_Analytics', rows);
@@ -63,7 +73,7 @@ export default function GovAnalyticsScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value" style={{ color: '#16A34A' }}>87%</span>
+            <span className="gov-kpi-value" style={{ color: '#16A34A' }}>{complianceCoverage}%</span>
           </div>
         </div>
 
@@ -75,7 +85,7 @@ export default function GovAnalyticsScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value">46</span>
+            <span className="gov-kpi-value">{openObligations}</span>
           </div>
         </div>
 
@@ -87,7 +97,7 @@ export default function GovAnalyticsScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value" style={{ color: '#2563EB' }}>82%</span>
+            <span className="gov-kpi-value" style={{ color: '#2563EB' }}>{controlPassRate}%</span>
           </div>
         </div>
 
@@ -99,7 +109,7 @@ export default function GovAnalyticsScreen({
             </div>
           </div>
           <div className="gov-kpi-bottom">
-            <span className="gov-kpi-value" style={{ color: '#DC2626' }}>7</span>
+            <span className="gov-kpi-value" style={{ color: '#DC2626' }}>{overdueActions}</span>
           </div>
         </div>
       </div>

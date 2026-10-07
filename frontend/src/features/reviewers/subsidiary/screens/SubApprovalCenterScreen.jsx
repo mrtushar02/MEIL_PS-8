@@ -10,6 +10,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import api from '../../../../services/api';
+import { esgStore } from '../../../../services/esgStore';
 
 export default function SubApprovalCenterScreen({ onApproveEntirePackage }) {
   const [approving, setApproving] = useState(false);
@@ -26,11 +27,24 @@ export default function SubApprovalCenterScreen({ onApproveEntirePackage }) {
 
   const handleApproveSubsidiary = async () => {
     setApproving(true);
+    try {
+      if (esgStore && esgStore.addAuditLog) {
+        esgStore.addAuditLog({
+          action: 'SUBSIDIARY_PACKAGE_APPROVED',
+          entity: 'Subsidiary Consolidation',
+          entity_id: 'sub-meil-core',
+          user: 'Division Head (MEIL Core)',
+          details: 'Consolidated division statement attested and forwarded to Group CSO.'
+        });
+      }
+    } catch (err) {
+      console.warn('Audit log fallback:', err);
+    }
     setTimeout(() => {
       setApproving(false);
       setApprovedState(true);
       if (onApproveEntirePackage) onApproveEntirePackage();
-    }, 1000);
+    }, 800);
   };
 
   return (

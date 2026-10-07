@@ -1,5 +1,6 @@
 import React from 'react';
-import { Target, TrendingDown, CheckCircle2, Clock } from 'lucide-react';
+import { Target, TrendingDown, CheckCircle2, Clock, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function ESGTargetsTrackerScreen() {
   const targets = [
@@ -9,6 +10,17 @@ export default function ESGTargetsTrackerScreen() {
     { kpi: 'Zero Waste to Landfill Certification (%)', base: '30% (FY22)', current: '62% (FY24)', target2030: '85.0%', target2045: '100.0%', status: 'On Track' },
     { kpi: 'Permanent Women Workforce Ratio (%)', base: '6.4% (FY22)', current: '11.8% (FY24)', target2030: '20.0%', target2045: '35.0%', status: 'In Acceleration' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Corporate_ESG_Targets.csv', targets.map(t => ({
+      'Strategic KPI Indicator': t.kpi,
+      'FY22 Baseline': t.base,
+      'Current (FY24)': t.current,
+      '2030 Interim Target': t.target2030,
+      '2045 Net Zero Milestone': t.target2045,
+      'Trajectory Status': t.status
+    })));
+  };
 
   return (
     <div className="esg-mgr-targets">
@@ -20,7 +32,12 @@ export default function ESGTargetsTrackerScreen() {
               Comparison of baseline vs current achievement against 2030 Interim and 2045 Net Zero milestones
             </p>
           </div>
-          <span className="esg-mgr-badge-emerald">All 5 Core Targets On Track</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="esg-mgr-badge-emerald">All 5 Core Targets On Track</span>
+            <button className="esg-mgr-btn-outline" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Targets
+            </button>
+          </div>
         </div>
       </div>
 

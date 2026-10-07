@@ -1,7 +1,23 @@
 import React from 'react';
-import { Award, ShieldCheck, Download, FileText, CheckCircle2 } from 'lucide-react';
+import { Award, ShieldCheck, Download, FileText, CheckCircle2, Printer } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function AssuranceOpinionScreen() {
+  const handleDownloadMemo = () => {
+    exportToCsv('MEIL_PwC_Assurance_Opinion_Statement.csv', [
+      {
+        'Document': 'Independent Reasonable & Limited Assurance Report',
+        'Entity': 'Megha Engineering and Infrastructures Limited (MEIL)',
+        'Scope 1 Emissions Verified': '112,400 tCO2e',
+        'Scope 2 Emissions Verified': '71,850 tCO2e',
+        'Calculation Baseline Criteria': 'GHG Protocol & CEA Baseline v19',
+        'Auditor Practitioner': 'R. Singhania, Partner (Membership #084920), PricewaterhouseCoopers LLP',
+        'Opinion Classification': 'Unqualified Clean Assurance Opinion',
+        'Digital Signature Status': 'Signed with Digital Token DSC Class-3'
+      }
+    ]);
+  };
+
   return (
     <div className="audit-usr-opinion">
       <div className="audit-usr-card" style={{ marginBottom: '1.25rem' }}>
@@ -12,9 +28,14 @@ export default function AssuranceOpinionScreen() {
               Official engagement opinion issued in terms of ISAE 3410 and ISAE 3000 (Revised) for SEBI BRSR Core disclosures
             </p>
           </div>
-          <button className="audit-usr-btn-primary">
-            <Download size={14} /> Download Signed Opinion Memo (PDF)
-          </button>
+          <div style={{ display: 'flex', gap: '0.6rem' }}>
+            <button className="audit-usr-btn-outline" style={{ fontSize: '0.8rem' }} onClick={() => window.print()}>
+              <Printer size={14} /> Print Statement
+            </button>
+            <button className="audit-usr-btn-primary" onClick={handleDownloadMemo}>
+              <Download size={14} /> Download Signed Opinion Memo
+            </button>
+          </div>
         </div>
       </div>
 

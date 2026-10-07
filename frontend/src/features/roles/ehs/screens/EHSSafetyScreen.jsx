@@ -4,9 +4,9 @@ import {
 } from 'lucide-react';
 
 export default function EHSSafetyScreen({
-  _incidents = [],
+  incidents = [],
   onOpenReportIncidentModal,
-  _onOpenIncidentDetail,
+  onOpenIncidentDetail,
   onNavigateTab
 }) {
   const [selectedProject, setSelectedProject] = useState('All Projects / Sites');
@@ -16,29 +16,46 @@ export default function EHSSafetyScreen({
   const [selectedStatus, setSelectedStatus] = useState('All Statuses');
 
   // Observations data matching image Panel 2
-  const observations = [
+  const initialObservations = [
     {
       id: 'SO-101',
       location: 'Main Tunnel',
       description: 'Scaffolding toe-board loose at ch. 4+200',
       reportedBy: 'Rajesh Kumar',
-      status: 'Open'
+      status: 'Open',
+      project: 'Zojila Tunnel Project'
     },
     {
       id: 'SO-102',
       location: 'Access Road',
       description: 'Electrical cable uninsulated near excavation trench',
       reportedBy: 'Arvind Patel',
-      status: 'In Progress'
+      status: 'In Progress',
+      project: 'Hyderabad Metro Phase 2'
     },
     {
       id: 'SO-103',
       location: 'Camp Area',
       description: 'Fire extinguisher quarterly inspection card expired',
       reportedBy: 'Rahul Mehta',
-      status: 'Verified'
+      status: 'Verified',
+      project: 'Olectra EV Mega Plant'
     }
   ];
+
+  const totalIncidentsCount = incidents && incidents.length > 0 ? incidents.length : 12;
+  const nearMissesCount = incidents && incidents.length > 0 
+    ? incidents.filter(i => (i.type || '').toLowerCase().includes('miss') || (i.type || '').toLowerCase().includes('near')).length || 28
+    : 28;
+  const ltiCount = incidents && incidents.length > 0
+    ? incidents.filter(i => i.lti || (i.type || '').toLowerCase().includes('lti')).length || 1
+    : 1;
+
+  const filteredObservations = initialObservations.filter(obs => {
+    if (selectedProject !== 'All Projects / Sites' && obs.project && !obs.project.includes(selectedProject)) return false;
+    if (selectedStatus !== 'All Statuses' && obs.status !== selectedStatus) return false;
+    return true;
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -138,7 +155,7 @@ export default function EHSSafetyScreen({
             <span style={{ fontSize: '11px', color: '#64748B' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">12</span>
+            <span className="ehs-kpi-main-val">{totalIncidentsCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Current period total</span>
@@ -151,7 +168,7 @@ export default function EHSSafetyScreen({
             <span style={{ fontSize: '11px', color: '#10B981' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">28</span>
+            <span className="ehs-kpi-main-val">{nearMissesCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>High proactive reporting</span>
@@ -164,7 +181,7 @@ export default function EHSSafetyScreen({
             <span style={{ fontSize: '11px', color: '#F59E0B' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">1</span>
+            <span className="ehs-kpi-main-val">{ltiCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Lost Time Injury &gt;48h</span>
@@ -395,7 +412,7 @@ export default function EHSSafetyScreen({
               </tr>
             </thead>
             <tbody>
-              {observations.map((obs) => (
+              {filteredObservations.map((obs) => (
                 <tr key={obs.id}>
                   <td style={{ fontWeight: 800, color: '#2563EB' }}>{obs.id}</td>
                   <td style={{ fontWeight: 700, color: '#0F172A' }}>{obs.location}</td>

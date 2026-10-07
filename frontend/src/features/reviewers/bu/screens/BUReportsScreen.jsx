@@ -193,7 +193,16 @@ export default function BUReportsScreen() {
                     <button
                       className="bu-btn bu-btn-primary"
                       style={{ padding: '6px 14px', fontSize: '12px' }}
-                      onClick={() => alert(`Downloading ${rpt.title}.${completed.format.toLowerCase()}...`)}
+                      onClick={() => {
+                        const content = `MEIL BU STATUTORY REPORT\nTitle: ${rpt.title}\nFormat: ${completed.format}\nGenerated At: ${completed.timestamp}\nStatus: Verified & Validated\n\nMetric,Value,Unit,Compliance\nScope 1 Fuel Emissions,4820.5,tCO2e,Compliant\nScope 2 Grid Emissions,2104.3,tCO2e,Compliant\nWater Recycled Ratio,78.4,%,Exceeds Target\nLost Time Injury Frequency (LTIFR),0.12,rate,Compliant (Zero Fatalities)\n`;
+                        const blob = new Blob([content], { type: completed.format === 'CSV' ? 'text/csv' : 'text/plain' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `${rpt.title.replace(/\s+/g, '_')}_Report.${completed.format.toLowerCase()}`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
                     >
                       <Download size={13} />
                       <span>Download</span>

@@ -11,6 +11,7 @@ import {
   Eye
 } from 'lucide-react';
 import { GlassCard, GlassButton, GlassKPI } from '../../../../components/glass';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function EHSAnalyticsScreen({
   overview = {},
@@ -21,6 +22,26 @@ export default function EHSAnalyticsScreen({
   const [selectedProject, setSelectedProject] = useState('All Projects');
   const [selectedPeriod, setSelectedPeriod] = useState('Sep 2026');
   const [selectedFreq, setSelectedFreq] = useState('Monthly');
+
+  const availableProjects = useMemo(() => {
+    const set = new Set(['Zojila Tunnel', 'Main Tunnel', 'Access Road', 'Camp Area']);
+    incidents.forEach(i => {
+      if (i.project_name || i.project) set.add(i.project_name || i.project);
+    });
+    return Array.from(set);
+  }, [incidents]);
+
+  const handleExportAnalytics = () => {
+    const report = [
+      { Metric: 'Total Incidents', Value: incidents.length, Period: selectedPeriod, Project: selectedProject },
+      { Metric: 'Near Misses', Value: incidents.filter(i => i.type === 'Near Miss').length, Period: selectedPeriod, Project: selectedProject },
+      { Metric: 'Lost Time Injuries (LTI)', Value: incidents.filter(i => i.lti === true).length, Period: selectedPeriod, Project: selectedProject },
+      { Metric: 'LTIFR Rate', Value: (overview.lost_time_injury_frequency ?? 0).toFixed(2), Period: selectedPeriod, Project: selectedProject },
+      { Metric: 'Safe Man-Hours', Value: overview.safe_manhours ?? 1250000, Period: selectedPeriod, Project: selectedProject },
+      { Metric: 'Inspections Completed', Value: overview.inspections_completed ?? 24, Period: selectedPeriod, Project: selectedProject }
+    ];
+    exportToCsv(`MEIL_Safety_Analytics_${selectedPeriod.replace(/\s+/g, '_')}.csv`, report);
+  };
 
   const totalIncidents = incidents.length;
   const nearMisses = incidents.filter(i => i.type === 'Near Miss').length;
@@ -104,14 +125,20 @@ export default function EHSAnalyticsScreen({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)} className="ehs-select-control" style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}>
               <option value="All Projects">All Projects</option>
+              {availableProjects.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
             </select>
             <select value={selectedPeriod} onChange={e => setSelectedPeriod(e.target.value)} className="ehs-select-control" style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}>
               <option value="Sep 2026">Sep 2026</option>
+              <option value="Aug 2026">Aug 2026</option>
+              <option value="Jul 2026">Jul 2026</option>
             </select>
             <select value={selectedFreq} onChange={e => setSelectedFreq(e.target.value)} className="ehs-select-control" style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}>
               <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
             </select>
-            <GlassButton variant="primary" size="sm" icon={FileDown}>
+            <GlassButton variant="primary" size="sm" icon={FileDown} onClick={handleExportAnalytics}>
               Export
             </GlassButton>
           </div>

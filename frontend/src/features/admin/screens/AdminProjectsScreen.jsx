@@ -8,8 +8,10 @@ import {
   Eye, 
   Building2, 
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  X 
 } from 'lucide-react';
+import { exportToCsv } from '../../../utils/exportUtils';
 
 export default function AdminProjectsScreen({
   projects = [],
@@ -18,6 +20,7 @@ export default function AdminProjectsScreen({
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [inspectedProject, setInspectedProject] = useState(null);
   const pageSize = 8;
 
   // Real projects list combining database projects with canonical sites
@@ -53,6 +56,19 @@ export default function AdminProjectsScreen({
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  const handleExportDirectory = () => {
+    exportToCsv('MEIL_Projects_Directory.csv', displayProjects.map(p => ({
+      'Project ID': p.id,
+      'Project Name': p.name,
+      'Site Code': p.code,
+      'Parent Subsidiary': p.subsidiary,
+      'Business Unit': p.business_unit,
+      'Location': p.location,
+      'Operational Status': p.status,
+      'ESG Readiness Score': p.readiness
+    })));
+  };
+
   return (
     <div className="admin-projects-screen">
       {/* Header */}
@@ -63,7 +79,11 @@ export default function AdminProjectsScreen({
         </div>
 
         <div className="admin-actions-group">
-          <button type="button" className="admin-btn admin-btn-secondary">
+          <button 
+            type="button" 
+            className="admin-btn admin-btn-secondary"
+            onClick={handleExportDirectory}
+          >
             <Download size={14} /> Export Directory
           </button>
         </div>
@@ -144,6 +164,7 @@ export default function AdminProjectsScreen({
                     type="button" 
                     className="admin-btn admin-btn-secondary"
                     style={{ padding: '4px 8px', fontSize: '11px' }}
+                    onClick={() => setInspectedProject(p)}
                   >
                     <Eye size={12} /> View
                   </button>
@@ -170,6 +191,62 @@ export default function AdminProjectsScreen({
           </div>
         </div>
       </div>
+
+      {inspectedProject && (
+        <div className="admin-modal-overlay" onClick={() => setInspectedProject(null)}>
+          <div className="admin-modal-card" style={{ maxWidth: '540px' }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FolderKanban size={18} color="#2563EB" />
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
+                    {inspectedProject.name}
+                  </h3>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>Code: <code>{inspectedProject.code}</code></span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setInspectedProject(null)}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <X size={16} color="#64748B" />
+              </button>
+            </div>
+
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>Subsidiary</span>
+                  <div style={{ fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>{inspectedProject.subsidiary}</div>
+                </div>
+                <div style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>Business Unit</span>
+                  <div style={{ fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>{inspectedProject.business_unit}</div>
+                </div>
+                <div style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>Site Location</span>
+                  <div style={{ fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>{inspectedProject.location}</div>
+                </div>
+                <div style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>ESG Readiness Score</span>
+                  <div style={{ fontWeight: '800', fontSize: '14px', color: '#2563EB' }}>{inspectedProject.readiness}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-modal-footer">
+              <button 
+                type="button" 
+                className="admin-btn admin-btn-secondary"
+                onClick={() => setInspectedProject(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

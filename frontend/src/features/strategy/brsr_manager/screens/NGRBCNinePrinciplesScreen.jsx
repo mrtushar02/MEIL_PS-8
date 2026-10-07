@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Scale, CheckCircle2, Award } from 'lucide-react';
+import { Scale, CheckCircle2, Award, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function NGRBCNinePrinciplesScreen() {
   const [selectedP, setSelectedP] = useState('All');
@@ -16,17 +17,56 @@ export default function NGRBCNinePrinciplesScreen() {
     { code: 'P9', title: 'Consumer Responsibility, Trust & Fair Practices', essential: '6 of 6 Complete', leadership: '3 of 3 Reported', score: '98%', status: 'Filing Ready' }
   ];
 
+  const filtered = selectedP === 'All' ? principles : principles.filter(p => p.code === selectedP);
+
+  const handleExport = () => {
+    exportToCsv('MEIL_NGRBC_9_Principles_Matrix.csv', filtered.map(p => ({
+      'Principle Code': p.code,
+      'Principle Title': p.title,
+      'Essential Indicators Progress': p.essential,
+      'Leadership Indicators Progress': p.leadership,
+      'Compliance Score': p.score,
+      'Assurance Status': p.status
+    })));
+  };
+
   return (
     <div className="brsr-mgr-principles">
       <div className="brsr-mgr-card" style={{ marginBottom: '1.25rem' }}>
-        <div className="brsr-mgr-card-header">
+        <div className="esg-mgr-card-header">
           <div>
             <h2 className="brsr-mgr-card-title">National Guidelines on Responsible Business Conduct (NGRBC 9 Principles)</h2>
             <p className="brsr-mgr-card-subtitle">
               Comprehensive tracking of SEBI Essential Indicators (Mandatory) and Leadership Indicators (Voluntary)
             </p>
           </div>
-          <span className="brsr-mgr-badge-blue">All 9 Principles Assured</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="brsr-mgr-badge-blue">All 9 Principles Assured</span>
+            <button className="brsr-mgr-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Matrix
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+          {['All', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'].map(p => (
+            <button
+              key={p}
+              onClick={() => setSelectedP(p)}
+              style={{
+                background: selectedP === p ? '#2563EB' : '#F1F5F9',
+                color: selectedP === p ? '#FFFFFF' : '#475569',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0.3rem 0.75rem',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              {p === 'All' ? 'All Principles' : p}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -44,7 +84,7 @@ export default function NGRBCNinePrinciplesScreen() {
               </tr>
             </thead>
             <tbody>
-              {principles.map(p => (
+              {filtered.map(p => (
                 <tr key={p.code}>
                   <td>
                     <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#2563EB' }}>{p.code}</span>

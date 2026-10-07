@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, Download, Database, CheckCircle2 } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function AuditQueryWorkbenchScreen() {
   const [query, setQuery] = useState('');
@@ -12,6 +13,25 @@ export default function AuditQueryWorkbenchScreen() {
     { id: 'REC-ING-905', site: 'Ganga Expressway Pkg 3', fuelType: 'Lube Oil Waste', quantity: '18,400 L', calcEmission: '42.1 tCO2e (Waste)', factorApplied: '2.288 kg/L', auditPassed: 'Yes' }
   ];
 
+  const filtered = records.filter(r => 
+    r.id.toLowerCase().includes(query.toLowerCase()) ||
+    r.site.toLowerCase().includes(query.toLowerCase()) ||
+    r.fuelType.toLowerCase().includes(query.toLowerCase()) ||
+    r.factorApplied.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Auditor_Deep_Query_Records.csv', filtered.map(r => ({
+      'Record ID': r.id,
+      'Construction Site': r.site,
+      'Activity / Fuel Type': r.fuelType,
+      'Raw Ingested Quantity': r.quantity,
+      'Calculated Emission': r.calcEmission,
+      'CEA / Factor Applied': r.factorApplied,
+      'Audit Status': r.auditPassed
+    })));
+  };
+
   return (
     <div className="esg-ana-workbench">
       <div className="esg-ana-card" style={{ marginBottom: '1.25rem' }}>
@@ -22,7 +42,7 @@ export default function AuditQueryWorkbenchScreen() {
               Interactive granular query tool to inspect raw activity quantities, applied factor hashes, and calculation outputs
             </p>
           </div>
-          <button className="esg-ana-btn-primary">
+          <button className="esg-ana-btn-primary" onClick={handleExport}>
             <Download size={14} /> Export Query Results (CSV)
           </button>
         </div>
@@ -56,7 +76,7 @@ export default function AuditQueryWorkbenchScreen() {
               </tr>
             </thead>
             <tbody>
-              {records.map(r => (
+              {filtered.map(r => (
                 <tr key={r.id}>
                   <td>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0891B2' }}>{r.id}</span>

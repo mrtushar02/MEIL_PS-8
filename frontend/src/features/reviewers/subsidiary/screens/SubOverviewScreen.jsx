@@ -24,6 +24,13 @@ export default function SubOverviewScreen({ onSelectBU, onNavigate }) {
     { name: 'Expressway', projects: 2, submissions: 2, readiness: 85, evidence: 88, risk: 'Medium', status: 'Review', statusClass: 'sub-badge-warning' },
   ];
 
+  const totalProjects = buPerformanceData.reduce((acc, b) => acc + b.projects, 0);
+  const totalSubmissions = buPerformanceData.reduce((acc, b) => acc + b.submissions, 0);
+  const approvedCount = buPerformanceData.filter(b => b.status === 'Approved').length;
+  const reviewCount = buPerformanceData.filter(b => b.status === 'Review').length;
+  const correctionCount = buPerformanceData.filter(b => b.status === 'Correction').length;
+  const compositeReadiness = (buPerformanceData.reduce((acc, b) => acc + b.readiness, 0) / buPerformanceData.length).toFixed(1);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* ── 1. HERO BANNER ── */}
@@ -40,7 +47,7 @@ export default function SubOverviewScreen({ onSelectBU, onNavigate }) {
               <span style={{ color: '#64748B' }}>Reporting Period:</span> <strong>September 2026</strong>
             </div>
             <div className="sub-hero-chip">
-              <span style={{ color: '#64748B' }}>Scope:</span> <strong>6 Business Units • 38 Projects</strong>
+              <span style={{ color: '#64748B' }}>Scope:</span> <strong>{buPerformanceData.length} Business Units • {totalProjects} Projects</strong>
             </div>
             <div className="sub-hero-chip" style={{ background: '#F3E8FF', borderColor: '#E9D5FF' }}>
               <span style={{ color: '#7C3AED', fontWeight: 600 }}>Division Review Stage Active</span>
@@ -48,7 +55,7 @@ export default function SubOverviewScreen({ onSelectBU, onNavigate }) {
           </div>
         </div>
 
-        {/* Right Radial Gauge: 93.2% */}
+        {/* Right Radial Gauge */}
         <div
           style={{
             display: 'flex',
@@ -66,7 +73,7 @@ export default function SubOverviewScreen({ onSelectBU, onNavigate }) {
           }}
         >
           <span style={{ fontSize: '32px', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>
-            93.2%
+            {compositeReadiness}%
           </span>
           <span style={{ fontSize: '11px', fontWeight: 700, color: '#7C3AED', marginTop: '4px' }}>
             Subsidiary Readiness
@@ -78,37 +85,37 @@ export default function SubOverviewScreen({ onSelectBU, onNavigate }) {
       <div className="sub-kpi-grid">
         <div className="sub-kpi-card">
           <span className="sub-kpi-label">Business Units</span>
-          <div className="sub-kpi-val" style={{ color: '#7C3AED' }}>06</div>
+          <div className="sub-kpi-val" style={{ color: '#7C3AED' }}>{String(buPerformanceData.length).padStart(2, '0')}</div>
           <span className="sub-kpi-sub">Total operational units</span>
         </div>
 
         <div className="sub-kpi-card">
           <span className="sub-kpi-label">Projects</span>
-          <div className="sub-kpi-val">38</div>
+          <div className="sub-kpi-val">{totalProjects}</div>
           <span className="sub-kpi-sub">Reporting across division</span>
         </div>
 
         <div className="sub-kpi-card" onClick={() => onNavigate?.('bu-review')} style={{ cursor: 'pointer' }}>
           <span className="sub-kpi-label">Pending BU Review</span>
-          <div className="sub-kpi-val" style={{ color: '#D97706' }}>07</div>
+          <div className="sub-kpi-val" style={{ color: '#D97706' }}>{String(reviewCount).padStart(2, '0')}</div>
           <span className="sub-kpi-sub">Awaiting division signoff</span>
         </div>
 
         <div className="sub-kpi-card">
           <span className="sub-kpi-label">Approved</span>
-          <div className="sub-kpi-val" style={{ color: '#16A34A' }}>29</div>
+          <div className="sub-kpi-val" style={{ color: '#16A34A' }}>{String(approvedCount).padStart(2, '0')}</div>
           <span className="sub-kpi-sub">Approved BU packages</span>
         </div>
 
         <div className="sub-kpi-card">
           <span className="sub-kpi-label">Correction Required</span>
-          <div className="sub-kpi-val" style={{ color: '#DC2626' }}>04</div>
+          <div className="sub-kpi-val" style={{ color: '#DC2626' }}>{String(correctionCount).padStart(2, '0')}</div>
           <span className="sub-kpi-sub">Returned to BUs</span>
         </div>
 
         <div className="sub-kpi-card">
           <span className="sub-kpi-label">ESG Readiness</span>
-          <div className="sub-kpi-val" style={{ color: '#059669' }}>93.2%</div>
+          <div className="sub-kpi-val" style={{ color: '#059669' }}>{compositeReadiness}%</div>
           <span className="sub-kpi-sub">Division composite score</span>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Filter, Layers, CheckCircle2 } from 'lucide-react';
+import { Filter, Layers, CheckCircle2, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function SampleSelectionScreen() {
   const samples = [
@@ -9,6 +10,16 @@ export default function SampleSelectionScreen() {
     { site: 'Kaleshwaram Lift Irrig. Pkg 2', subsidiary: 'Hydro & Infra (SUB-01)', riskWeight: 'High (Water Withdrawal)', samplesSelected: '40 Files', method: 'Substantive Telemetry Audit' },
     { site: 'Olectra EV Manufacturing Yard', subsidiary: 'Electric Mobility (SUB-04)', riskWeight: 'Low (Clean Facility)', samplesSelected: '18 Files', method: 'Random Representative' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Auditor_Sample_Universe.csv', samples.map(s => ({
+      'Audited Project Site': s.site,
+      'Parent Subsidiary': s.subsidiary,
+      'ESG Risk Weight': s.riskWeight,
+      'Sample Count Selected': s.samplesSelected,
+      'Sampling Methodology': s.method
+    })));
+  };
 
   return (
     <div className="audit-usr-samples">
@@ -20,7 +31,12 @@ export default function SampleSelectionScreen() {
               Stratified random & risk-weighted sampling protocols across 6 subsidiaries and 258 construction sites
             </p>
           </div>
-          <span className="audit-usr-badge-amber">Stratified Sample Population: 472 Artifacts</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="audit-usr-badge-amber">Stratified Sample Population: 472 Artifacts</span>
+            <button className="audit-usr-btn-primary" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Sample Universe
+            </button>
+          </div>
         </div>
       </div>
 

@@ -15,20 +15,36 @@ import {
 } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
 
-export default function ValueChainScopeScreen({ onNavigateTab }) {
+export default function ValueChainScopeScreen({ 
+  onNavigateTab,
+  suppliers = [],
+  transactions = []
+}) {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
   const [spendThreshold, setSpendThreshold] = useState('75'); // SEBI BRSR default
   const [includeTier2, setIncludeTier2] = useState(true);
   const [msmeExemption, setMsmeExemption] = useState(false);
 
+  const totalInScope = suppliers.length > 0 ? suppliers.length : 412;
+  const assessedCount = suppliers.length > 0 ? suppliers.filter(s => s.esgScore || s.esgAssessed || s.status === 'Assessed').length : 312;
+  const coveragePct = Math.round((assessedCount / totalInScope) * 100);
+  const highRiskCount = suppliers.length > 0 ? suppliers.filter(s => s.riskLevel === 'High' || s.risk === 'High').length : 18;
+  const totalSpendNum = transactions.length > 0 
+    ? transactions.reduce((acc, t) => acc + (parseFloat(t.amount || t.value || t.spend || 0) || 0), 0)
+    : 0;
+  const spendDisplay = totalSpendNum > 0 ? `₹${(totalSpendNum / 10000000).toFixed(1)} Cr` : '₹186.4 Cr';
+  const localMsmePct = suppliers.length > 0
+    ? Math.round((suppliers.filter(s => s.isLocal || s.isMsme || s.tier === 'Tier 3').length / totalInScope) * 100)
+    : 38;
+
   const kpis = [
-    { label: 'Suppliers in Scope', value: '412', icon: Users, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)' },
-    { label: 'Suppliers Assessed', value: '312', icon: CheckCircle2, color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
-    { label: 'Coverage', value: '76%', icon: ShieldCheck, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' },
-    { label: 'High-Risk Suppliers', value: '18', icon: AlertTriangle, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.1)' },
-    { label: 'Scope Spend', value: '₹186.4 Cr', icon: TrendingUp, color: '#D97706', bg: 'rgba(217, 119, 6, 0.1)' },
-    { label: 'Local / MSME', value: '38%', icon: MapPin, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' }
+    { label: 'Suppliers in Scope', value: String(totalInScope), icon: Users, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)' },
+    { label: 'Suppliers Assessed', value: String(assessedCount), icon: CheckCircle2, color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
+    { label: 'Coverage', value: `${coveragePct}%`, icon: ShieldCheck, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' },
+    { label: 'High-Risk Suppliers', value: String(highRiskCount), icon: AlertTriangle, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.1)' },
+    { label: 'Scope Spend', value: spendDisplay, icon: TrendingUp, color: '#D97706', bg: 'rgba(217, 119, 6, 0.1)' },
+    { label: 'Local / MSME', value: `${localMsmePct}%`, icon: MapPin, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' }
   ];
 
   const categoryCoverage = [

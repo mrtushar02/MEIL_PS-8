@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Filter,
   X,
-  Lock
+  Lock,
+  Download
 } from 'lucide-react';
+import esgStore from '../../../../services/esgStore';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function EHSAuditScreen({
   onNavigateTab
@@ -13,8 +16,8 @@ export default function EHSAuditScreen({
   const [selectedAction, setSelectedAction] = useState('All Actions');
   const [selectedRecordId, setSelectedRecordId] = useState('');
 
-  // Audit trail logs matching image Panel 12
-  const auditLogs = [
+  // Default audit trail logs matching image Panel 12
+  const defaultLogs = [
     {
       id: '01',
       date: '30 Sep 2026',
@@ -92,7 +95,48 @@ export default function EHSAuditScreen({
     }
   ];
 
-  const [selectedLog, setSelectedLog] = useState(auditLogs[0]);
+  const [logs, setLogs] = useState(() => {
+    const storeLogs = (esgStore.state.auditLogs || []).map((l, i) => ({
+      id: `STR-${i + 1}`,
+      date: l.timestamp ? new Date(l.timestamp).toLocaleDateString() : 'Today',
+      time: l.timestamp ? new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now',
+      user: l.user || 'EHS Officer',
+      role: l.role || 'HSE Team',
+      action: l.action || 'Activity',
+      recordId: l.entityId || `AUD-${i + 1}`,
+      module: l.entityType || 'EHS Portal',
+      note: l.details || 'System activity logged',
+      oldValue: '-',
+      newValue: 'Recorded',
+      hash: `SHA256: ${Math.random().toString(36).substring(2, 12)}`,
+      ip: '10.14.8.10'
+    }));
+    return [...storeLogs, ...defaultLogs];
+  });
+
+  const [selectedLog, setSelectedLog] = useState(defaultLogs[0]);
+
+  const handleExportTrail = () => {
+    const data = filteredLogs.map(l => ({
+      ID: l.id,
+      Date: l.date,
+      Time: l.time,
+      User: l.user,
+      Action: l.action,
+      RecordID: l.recordId,
+      Module: l.module,
+      Note: l.note,
+      Hash: l.hash
+    }));
+    exportToCsv('MEIL_EHS_Audit_Trail.csv', data);
+  };
+
+  const filteredLogs = logs.filter(l => {
+    if (selectedUser !== 'All Users' && l.user !== selectedUser) return false;
+    if (selectedAction !== 'All Actions' && l.action !== selectedAction) return false;
+    if (selectedRecordId && !l.recordId.toLowerCase().includes(selectedRecordId.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -107,6 +151,15 @@ export default function EHSAuditScreen({
               Immutable audit log trace across records, reviewers, evidence hashes, and regulatory submissions.
             </p>
           </div>
+          <button
+            type="button"
+            className="ehs-btn ehs-btn-outline"
+            onClick={handleExportTrail}
+            style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
+          >
+            <Download size={14} />
+            <span>Export Trail</span>
+          </button>
         </div>
 
         {/* Filter Controls Row */}
@@ -169,7 +222,7 @@ export default function EHSAuditScreen({
               Immutable Audit Log Trail
             </h3>
             <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-              Showing {auditLogs.length} verified events
+              Showing {filteredLogs.length} verified events
             </span>
           </div>
 
@@ -187,7 +240,7 @@ export default function EHSAuditScreen({
                 </tr>
               </thead>
               <tbody>
-                {auditLogs.map((log) => {
+                {filteredLogs.map((log) => {
                   const isSelected = selectedLog?.id === log.id;
                   return (
                     <tr 

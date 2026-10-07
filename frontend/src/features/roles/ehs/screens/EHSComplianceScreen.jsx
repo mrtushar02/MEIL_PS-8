@@ -74,6 +74,29 @@ export default function EHSComplianceScreen({
     }
   ];
 
+  const [tasks, setTasks] = useState(complianceTasks);
+
+  const handleToggleComplete = (taskId) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? {
+      ...t,
+      status: t.status === 'Completed' ? 'Open' : 'Completed'
+    } : t));
+  };
+
+  const filteredTasks = tasks.filter(t => {
+    if (selectedProject !== 'All Projects' && t.project !== selectedProject) return false;
+    if (selectedModule !== 'All Modules' && t.module !== selectedModule) return false;
+    if (selectedPriority !== 'All Priorities' && t.priority !== selectedPriority) return false;
+    if (selectedStatus !== 'All Statuses' && t.status !== selectedStatus) return false;
+    return true;
+  });
+
+  const criticalCount = tasks.filter(t => t.priority === 'Critical' && t.status !== 'Completed').length;
+  const dueTodayCount = tasks.filter(t => t.overview === 'Due Today' && t.status !== 'Completed').length;
+  const dueThisWeekCount = tasks.filter(t => t.overview === 'Due This Week' && t.status !== 'Completed').length;
+  const overdueCount = tasks.filter(t => t.overview === 'Overdue' && t.status !== 'Completed').length;
+  const completedCount = tasks.filter(t => t.status === 'Completed').length;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* ──── 1. PAGE HEADER & FILTERS BAR (Matching Image Panel 11) ──── */}
@@ -155,7 +178,7 @@ export default function EHSComplianceScreen({
             <AlertTriangle size={14} color="#DC2626" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>2</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>{criticalCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Requires urgent sign-off</span>
@@ -168,7 +191,7 @@ export default function EHSComplianceScreen({
             <Clock size={14} color="#D97706" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#D97706' }}>3</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#D97706' }}>{dueTodayCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Shift deadline</span>
@@ -181,7 +204,7 @@ export default function EHSComplianceScreen({
             <Calendar size={14} color="#2563EB" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#2563EB' }}>6</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#2563EB' }}>{dueThisWeekCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Scheduled tasks</span>
@@ -194,7 +217,7 @@ export default function EHSComplianceScreen({
             <AlertTriangle size={14} color="#DC2626" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>7</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>{overdueCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Escalated to BU</span>
@@ -204,13 +227,13 @@ export default function EHSComplianceScreen({
         <div className="ehs-kpi-card" style={{ borderLeft: '3px solid #10B981' }}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">Completed</span>
-            <CheckCircle2 size={14} color="#059669" />
+            <CheckCircle2 size={14} color="#10B981" />
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#059669' }}>24</span>
+            <span className="ehs-kpi-main-val" style={{ color: '#10B981' }}>{completedCount}</span>
           </div>
           <div className="ehs-kpi-subtext">
-            <span style={{ color: '#059669', fontWeight: 700 }}>Resolved in Period</span>
+            <span>Resolved obligations</span>
           </div>
         </div>
       </div>
@@ -222,7 +245,7 @@ export default function EHSComplianceScreen({
             Compliance Obligations Register
           </h3>
           <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-            Showing {complianceTasks.length} statutory items
+            Showing {filteredTasks.length} statutory items
           </span>
         </div>
 
@@ -241,7 +264,7 @@ export default function EHSComplianceScreen({
               </tr>
             </thead>
             <tbody>
-              {complianceTasks.map((t) => (
+              {filteredTasks.map((t) => (
                 <tr key={t.id}>
                   <td style={{ fontWeight: 700, color: '#0F172A' }}>{t.task}</td>
                   <td style={{ color: '#475569' }}>{t.module}</td>
@@ -262,18 +285,22 @@ export default function EHSComplianceScreen({
                     </span>
                   </td>
                   <td>
-                    <span 
-                      style={{ 
+                    <button
+                      type="button"
+                      onClick={() => handleToggleComplete(t.id)}
+                      style={{
                         fontSize: '11px', 
                         fontWeight: 700, 
                         padding: '2px 8px', 
                         borderRadius: '9999px',
+                        border: 'none',
+                        cursor: 'pointer',
                         background: t.status === 'Completed' ? 'rgba(16, 185, 129, 0.12)' : t.status === 'In Progress' ? 'rgba(245, 158, 11, 0.14)' : 'rgba(37, 99, 235, 0.12)',
                         color: t.status === 'Completed' ? '#059669' : t.status === 'In Progress' ? '#D97706' : '#2563EB'
                       }}
                     >
-                      {t.status}
-                    </span>
+                      {t.status === 'Completed' ? '✓ Completed' : t.status}
+                    </button>
                   </td>
                   <td>
                     <span 

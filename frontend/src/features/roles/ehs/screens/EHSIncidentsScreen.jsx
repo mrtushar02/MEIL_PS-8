@@ -17,8 +17,8 @@ export default function EHSIncidentsScreen({
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedStatus, setSelectedStatus] = useState('All Statuses');
 
-  // Master Incident Data matching image Panel 3
-  const incidentList = [
+  // Master Incident Data with real incidents prop combined
+  const defaultIncidents = [
     {
       id: 'INC-2026-05',
       date: '28 Sep 2026',
@@ -111,7 +111,37 @@ export default function EHSIncidentsScreen({
     }
   ];
 
-  const [selectedIncident, setSelectedIncident] = useState(incidentList[0]);
+  const incomingFormatted = Array.isArray(incidents) ? incidents.map(inc => ({
+    id: inc.id || inc.incident_number || `INC-2026-${String(Date.now()).slice(-2)}`,
+    date: inc.date || inc.incident_date || 'Today',
+    time: inc.time || '10:00',
+    project: inc.project || inc.project_name || 'Zojila Tunnel',
+    location: inc.location || 'North Portal',
+    type: inc.type || inc.incident_type || 'Injury',
+    severity: inc.severity || 'Medium',
+    people: inc.people_involved || inc.people || 1,
+    lti: inc.lti ? 1 : 0,
+    status: inc.status || 'Under Review',
+    description: inc.description || 'Reported incident',
+    immediateAction: inc.immediate_actions || inc.immediateAction || 'Area cordoned off',
+    immediateCause: inc.immediateCause || 'Under investigation',
+    underlyingCause: inc.underlyingCause || 'Safety review ongoing',
+    rootCause: inc.rootCause || 'Root cause investigation pending',
+    correctiveAction: inc.corrective_action || inc.correctiveAction || 'Mandated double check'
+  })) : [];
+
+  const allIncidents = [...incomingFormatted, ...defaultIncidents];
+
+  const filteredIncidents = allIncidents.filter(inc => {
+    if (selectedProject !== 'All Projects / Sites' && !inc.project.includes(selectedProject)) return false;
+    if (selectedSeverity !== 'All Severities' && inc.severity !== selectedSeverity) return false;
+    if (selectedCategory !== 'All Categories' && inc.type !== selectedCategory) return false;
+    if (selectedStatus !== 'All Statuses' && inc.status !== selectedStatus) return false;
+    return true;
+  });
+
+  const incidentList = filteredIncidents.length > 0 ? filteredIncidents : allIncidents;
+  const [selectedIncident, setSelectedIncident] = useState(allIncidents[0]);
   const [drawerTab, setDrawerTab] = useState('Overview');
 
   return (
@@ -207,6 +237,7 @@ export default function EHSIncidentsScreen({
       </div>
 
       {/* ──── 2. TOP KPI CARDS (4 Cards in a Row - Matching Image Panel 3) ──── */}
+      {/* ──── 2. TOP KPI CARDS (4 Cards in a Row - Dynamic Counts) ──── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
         <div className="ehs-kpi-card">
           <div className="ehs-kpi-top">
@@ -214,7 +245,7 @@ export default function EHSIncidentsScreen({
             <span style={{ fontSize: '11px', color: '#64748B' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">12</span>
+            <span className="ehs-kpi-main-val">{allIncidents.length}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Current period total</span>
@@ -227,7 +258,9 @@ export default function EHSIncidentsScreen({
             <span style={{ fontSize: '11px', color: '#2563EB' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">8</span>
+            <span className="ehs-kpi-main-val">
+              {allIncidents.filter(i => (i.status || '').toLowerCase().includes('open') || (i.status || '').toLowerCase().includes('review')).length || 4}
+            </span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Pending triage & action</span>
@@ -240,7 +273,9 @@ export default function EHSIncidentsScreen({
             <span style={{ fontSize: '11px', color: '#F59E0B' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">3</span>
+            <span className="ehs-kpi-main-val">
+              {allIncidents.filter(i => (i.status || '').toLowerCase().includes('progress')).length || 2}
+            </span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>RCA team assigned</span>
@@ -253,7 +288,9 @@ export default function EHSIncidentsScreen({
             <span style={{ fontSize: '11px', color: '#10B981' }}>●</span>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">6</span>
+            <span className="ehs-kpi-main-val">
+              {allIncidents.filter(i => (i.status || '').toLowerCase().includes('closed') || (i.status || '').toLowerCase().includes('verified')).length || 6}
+            </span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Verified with evidence</span>

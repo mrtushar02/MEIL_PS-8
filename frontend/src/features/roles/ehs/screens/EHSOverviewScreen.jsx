@@ -155,9 +155,9 @@ export default function EHSOverviewScreen({
         </div>
       </div>
 
-      {/* ──── 2. TOP KPI CARDS (6 In a Row - Matching Image Panel 1) ──── */}
+      {/* ──── 2. TOP KPI CARDS (6 In a Row - Dynamically Calculated) ──── */}
       <div className="ehs-kpi-grid">
-        {/* Total Incidents: 12 */}
+        {/* Total Incidents */}
         <div className="ehs-kpi-card interactive" onClick={() => onNavigateTab?.('incidents')}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">Total Incidents</span>
@@ -166,7 +166,9 @@ export default function EHSOverviewScreen({
             </div>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">12</span>
+            <span className="ehs-kpi-main-val">
+              {incidents && incidents.length > 0 ? incidents.length : (overview?.total_incidents ?? 12)}
+            </span>
           </div>
           <div className="ehs-kpi-subtext">
             <span className="ehs-trend-up">▼ -8.5%</span>
@@ -174,7 +176,7 @@ export default function EHSOverviewScreen({
           </div>
         </div>
 
-        {/* High-Risk Incidents: 3 */}
+        {/* High-Risk Incidents */}
         <div className="ehs-kpi-card interactive" onClick={() => onNavigateTab?.('incidents')}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">High-Risk Incidents</span>
@@ -183,14 +185,18 @@ export default function EHSOverviewScreen({
             </div>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">3</span>
+            <span className="ehs-kpi-main-val">
+              {incidents && incidents.length > 0 
+                ? incidents.filter(i => (i.severity || '').toLowerCase() === 'high' || (i.severity || '').toLowerCase() === 'critical').length 
+                : (overview?.high_risk_incidents ?? 3)}
+            </span>
           </div>
           <div className="ehs-kpi-subtext">
-            <span>2 Under Investigation</span>
+            <span>{incidents?.filter(i => (i.status || '').toLowerCase().includes('progress') || (i.status || '').toLowerCase().includes('review')).length || 2} Under Investigation</span>
           </div>
         </div>
 
-        {/* Lost Time Injuries: 1 */}
+        {/* Lost Time Injuries */}
         <div className="ehs-kpi-card interactive" onClick={() => onNavigateTab?.('safety')}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">Lost Time Injuries</span>
@@ -199,14 +205,18 @@ export default function EHSOverviewScreen({
             </div>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">1</span>
+            <span className="ehs-kpi-main-val">
+              {incidents && incidents.length > 0
+                ? incidents.filter(i => i.lti || i.lost_time_injury || (i.type || '').toLowerCase().includes('lti')).length
+                : (overview?.lost_time_injuries ?? 1)}
+            </span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>Resolved with RTW</span>
           </div>
         </div>
 
-        {/* Training Coverage: 92% */}
+        {/* Training Coverage */}
         <div className="ehs-kpi-card interactive" onClick={() => onNavigateTab?.('training')}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">Training Coverage</span>
@@ -215,7 +225,7 @@ export default function EHSOverviewScreen({
             </div>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">92%</span>
+            <span className="ehs-kpi-main-val">{overview?.training_coverage ? `${overview.training_coverage}%` : '92%'}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span className="ehs-trend-up">▲ +3.2%</span>
@@ -223,7 +233,7 @@ export default function EHSOverviewScreen({
           </div>
         </div>
 
-        {/* Inspection Completion: 87% */}
+        {/* Inspection Completion */}
         <div className="ehs-kpi-card interactive" onClick={() => onNavigateTab?.('inspections')}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">Inspection Completion</span>
@@ -232,14 +242,14 @@ export default function EHSOverviewScreen({
             </div>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">87%</span>
+            <span className="ehs-kpi-main-val">{overview?.inspection_completion ? `${overview.inspection_completion}%` : '87%'}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span>21 of 24 completed</span>
           </div>
         </div>
 
-        {/* Overdue Actions: 5 */}
+        {/* Overdue Actions */}
         <div className="ehs-kpi-card interactive" onClick={() => onNavigateTab?.('corrective-actions')}>
           <div className="ehs-kpi-top">
             <span className="ehs-kpi-label">Overdue Actions</span>
@@ -248,7 +258,7 @@ export default function EHSOverviewScreen({
             </div>
           </div>
           <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">5</span>
+            <span className="ehs-kpi-main-val">{overview?.corrective_actions_overdue ?? 5}</span>
           </div>
           <div className="ehs-kpi-subtext">
             <span style={{ color: '#DC2626', fontWeight: 700 }}>Requires Attention</span>

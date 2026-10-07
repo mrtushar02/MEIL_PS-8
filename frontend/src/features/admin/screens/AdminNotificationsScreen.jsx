@@ -6,15 +6,18 @@ import {
   ShieldAlert, 
   Clock, 
   Eye, 
-  CheckCheck 
+  CheckCheck,
+  X 
 } from 'lucide-react';
+import esgStore from '../../../services/esgStore';
 
 export default function AdminNotificationsScreen({
   notifications = []
 }) {
   const [activeCategory, setActiveCategory] = useState('ALL');
+  const [selectedNotif, setSelectedNotif] = useState(null);
 
-  const allNotifs = notifications.length > 0 ? notifications : [
+  const initialNotifs = notifications.length > 0 ? notifications : [
     { id: '1', severity: 'HIGH', category: 'Security', title: 'Failed login attempts detected', time: '18 mins ago', status: 'New', detail: 'Rate limiting automatically engaged on external IP 192.168.1.45 after 5 invalid password attempts.' },
     { id: '2', severity: 'MEDIUM', category: 'System', title: 'New user created and credentials issued', time: '1 hour ago', status: 'New', detail: 'Super Administrator created a new user profile with Business Unit scope.' },
     { id: '3', severity: 'MEDIUM', category: 'Workflow', title: '3 submissions awaiting group review', time: '2 hours ago', status: 'Read', detail: 'Energy and Water BU batch submissions ready for Group CSO sign-off.' },
@@ -22,9 +25,16 @@ export default function AdminNotificationsScreen({
     { id: '5', severity: 'HIGH', category: 'Security', title: 'Suspicious login attempt blocked', time: '5 hours ago', status: 'Read', detail: 'Automated security filter prevented unauthorized token generation from blacklisted IP.' }
   ];
 
+  const [notifList, setNotifList] = useState(initialNotifs);
+
+  const handleMarkAllRead = () => {
+    setNotifList(prev => prev.map(n => ({ ...n, status: 'Read' })));
+    esgStore.addAuditLog('NOTIFICATIONS_MARKED_READ', 'All admin notifications marked as read', 'ADMIN');
+  };
+
   const filtered = activeCategory === 'ALL'
-    ? allNotifs
-    : allNotifs.filter(n => n.category.toUpperCase() === activeCategory.toUpperCase());
+    ? notifList
+    : notifList.filter(n => n.category.toUpperCase() === activeCategory.toUpperCase());
 
   return (
     <div className="admin-notifications-screen">
@@ -36,7 +46,11 @@ export default function AdminNotificationsScreen({
         </div>
 
         <div className="admin-actions-group">
-          <button type="button" className="admin-btn admin-btn-secondary">
+          <button 
+            type="button" 
+            className="admin-btn admin-btn-secondary"
+            onClick={handleMarkAllRead}
+          >
             <CheckCheck size={14} /> Mark All as Read
           </button>
         </div>
@@ -112,7 +126,12 @@ export default function AdminNotificationsScreen({
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ fontSize: '11px', color: '#94A3B8' }}>{n.time}</span>
-                <button type="button" className="admin-btn admin-btn-secondary" style={{ padding: '4px 10px', fontSize: '11px' }}>
+                <button 
+                  type="button" 
+                  className="admin-btn admin-btn-secondary" 
+                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                  onClick={() => setSelectedNotif(n)}
+                >
                   <Eye size={12} /> View
                 </button>
               </div>
@@ -120,6 +139,52 @@ export default function AdminNotificationsScreen({
           ))}
         </div>
       </div>
+
+      {selectedNotif && (
+        <div className="admin-modal-overlay" onClick={() => setSelectedNotif(null)}>
+          <div className="admin-modal-card" style={{ maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Bell size={18} color="#2563EB" />
+                <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
+                  {selectedNotif.title}
+                </h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSelectedNotif(null)}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <X size={16} color="#64748B" />
+              </button>
+            </div>
+
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span className={`admin-badge ${selectedNotif.severity === 'HIGH' ? 'admin-badge-danger' : 'admin-badge-blue'}`}>
+                  {selectedNotif.severity} PRIORITY
+                </span>
+                <span className="admin-badge admin-badge-purple">{selectedNotif.category}</span>
+                <span style={{ fontSize: '11px', color: '#64748B', marginLeft: 'auto' }}>{selectedNotif.time}</span>
+              </div>
+
+              <div style={{ padding: '14px', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '13px', color: '#334155', lineHeight: '1.5' }}>
+                {selectedNotif.detail}
+              </div>
+            </div>
+
+            <div className="admin-modal-footer">
+              <button 
+                type="button" 
+                className="admin-btn admin-btn-secondary"
+                onClick={() => setSelectedNotif(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

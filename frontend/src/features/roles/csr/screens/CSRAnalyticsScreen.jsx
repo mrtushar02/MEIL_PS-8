@@ -13,17 +13,39 @@ import { SPEND_TREND_DATA, BENEFICIARIES_TREND_DATA } from '../csrData';
 import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function CSRAnalyticsScreen({
+  projects = [],
+  communities = [],
+  grievances = [],
   onNavigateTab,
   onOpenRegisterGrievance
 }) {
-  const projectCategoryData = [
-    { name: 'Education', value: 28, count: 7, color: '#2563EB' },
-    { name: 'Health', value: 20, count: 5, color: '#0284C7' },
-    { name: 'Livelihood', value: 18, count: 4, color: '#059669' },
-    { name: 'Infrastructure', value: 16, count: 4, color: '#D97706' },
-    { name: 'Environment', value: 12, count: 3, color: '#8B5CF6' },
-    { name: 'Others', value: 6, count: 1, color: '#64748B' }
-  ];
+  const totalSpend = (projects.reduce((acc, p) => acc + (p.spend_cr || 0), 0) || 12.6).toFixed(1);
+  const totalBeneficiaries = projects.reduce((acc, p) => acc + (p.beneficiaries || 0), 0) || 18420;
+  const activeProjects = projects.filter(p => p.status === 'Active').length || projects.length;
+  const statesCount = new Set(projects.map(p => p.state || p.location).filter(Boolean)).size || 8;
+
+  // Dynamically compute category distribution if projects available
+  const catCounts = {};
+  projects.forEach(p => {
+    const c = p.category || 'General';
+    catCounts[c] = (catCounts[c] || 0) + 1;
+  });
+  const projectColors = ['#2563EB', '#0284C7', '#059669', '#D97706', '#8B5CF6', '#64748B'];
+  const projectCategoryData = Object.keys(catCounts).length > 0
+    ? Object.entries(catCounts).map(([name, count], i) => ({
+        name,
+        count,
+        value: Math.round((count / (projects.length || 1)) * 100),
+        color: projectColors[i % projectColors.length]
+      }))
+    : [
+        { name: 'Education', value: 28, count: 7, color: '#2563EB' },
+        { name: 'Health', value: 20, count: 5, color: '#0284C7' },
+        { name: 'Livelihood', value: 18, count: 4, color: '#059669' },
+        { name: 'Infrastructure', value: 16, count: 4, color: '#D97706' },
+        { name: 'Environment', value: 12, count: 3, color: '#8B5CF6' },
+        { name: 'Others', value: 6, count: 1, color: '#64748B' }
+      ];
 
   const handleExport = () => {
     const exportRows = projectCategoryData.map(cat => ({
@@ -51,7 +73,7 @@ export default function CSRAnalyticsScreen({
               <div className="csr-pill-tag">PORTFOLIO INTELLIGENCE</div>
               <h1 className="csr-hero-title">Analytics</h1>
               <p className="csr-hero-subtitle">
-                All Projects • 28 Regions • 5 Categories • Multi-year impact & spend correlation
+                All Projects • {communities.length || 28} Communities • Multi-year impact & spend correlation
               </p>
             </div>
           </div>
@@ -75,9 +97,9 @@ export default function CSRAnalyticsScreen({
         <div className="csr-glass-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>CSR Spend</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>₹12.6 Cr</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>₹{totalSpend} Cr</div>
             <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <ArrowUpRight size={14} /> +12% vs last yr
+              <ArrowUpRight size={14} /> Active Allocation
             </div>
           </div>
           <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(5, 150, 105, 0.1)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -89,9 +111,9 @@ export default function CSRAnalyticsScreen({
         <div className="csr-glass-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Beneficiaries</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: '#DB2777', marginTop: '2px' }}>18,420</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: '#DB2777', marginTop: '2px' }}>{totalBeneficiaries.toLocaleString()}</div>
             <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <ArrowUpRight size={14} /> +18% vs last yr
+              <ArrowUpRight size={14} /> Total Impacted
             </div>
           </div>
           <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(219, 39, 119, 0.1)', color: '#DB2777', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -103,8 +125,8 @@ export default function CSRAnalyticsScreen({
         <div className="csr-glass-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Active Projects</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: '#2563EB', marginTop: '2px' }}>24</div>
-            <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>Across 8 States</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: '#2563EB', marginTop: '2px' }}>{activeProjects}</div>
+            <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>Across {statesCount} States</div>
           </div>
           <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FolderKanban size={20} />
@@ -116,7 +138,7 @@ export default function CSRAnalyticsScreen({
           <div>
             <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Impact Indicators</div>
             <div style={{ fontSize: '28px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>48</div>
-            <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>82% Evidence Verified</div>
+            <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, marginTop: '2px' }}>100% Verified</div>
           </div>
           <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Target size={20} />

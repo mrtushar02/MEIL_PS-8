@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layers, TrendingDown, Flame, Zap, Truck, CheckCircle2 } from 'lucide-react';
+import { Layers, TrendingDown, Flame, Zap, Truck, CheckCircle2, Download } from 'lucide-react';
+import { exportToCsv } from '../../../../utils/exportUtils';
 
 export default function DecarbonizationRoadmapScreen() {
   const roadmapSteps = [
@@ -8,6 +9,17 @@ export default function DecarbonizationRoadmapScreen() {
     { year: '2031 - 2040', phase: 'Supply Chain Decarbonization', scope1: '-65%', scope2: '-95%', action: 'Green hydrogen tunneling equipment, zero-emission steel and low-carbon cement contracts.', status: 'Modeled' },
     { year: '2041 - 2045', phase: 'Net Zero Residual Offset', scope1: '-90%', scope2: '-100%', action: 'High-permanence certified nature-based carbon removals for residual hard-to-abate processes.', status: 'Vision' }
   ];
+
+  const handleExport = () => {
+    exportToCsv('MEIL_Decarbonization_Roadmap.csv', roadmapSteps.map(s => ({
+      'Milestone Period': s.year,
+      'Phase Focus': s.phase,
+      'Scope 1 Target': s.scope1,
+      'Scope 2 Target': s.scope2,
+      'Key Initiatives & Levers': s.action,
+      'Status': s.status
+    })));
+  };
 
   return (
     <div className="esg-mgr-roadmap">
@@ -19,7 +31,12 @@ export default function DecarbonizationRoadmapScreen() {
               Science-based targets aligned with Paris Agreement 1.5°C threshold and SEBI Net Zero reporting guidance
             </p>
           </div>
-          <span className="esg-mgr-badge-emerald">SBTi Pathway Validated</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span className="esg-mgr-badge-emerald">SBTi Pathway Validated</span>
+            <button className="esg-mgr-btn-outline" onClick={handleExport} style={{ fontSize: '0.8rem' }}>
+              <Download size={13} /> Export Roadmap
+            </button>
+          </div>
         </div>
       </div>
 
