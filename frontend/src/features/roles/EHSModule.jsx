@@ -300,6 +300,9 @@ export default function EHSModule({
       case 'analytics':
         return (
           <EHSAnalyticsScreen
+            overview={data.overview}
+            incidents={data.incidents}
+            user={user}
             onNavigateTab={onNavigateTab}
           />
         );
@@ -307,6 +310,9 @@ export default function EHSModule({
       case 'compliance':
         return (
           <EHSComplianceScreen
+            overview={data.overview}
+            correctiveActions={data.correctiveActions}
+            inspections={data.inspections}
             onNavigateTab={onNavigateTab}
           />
         );

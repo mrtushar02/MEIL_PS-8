@@ -1,480 +1,300 @@
-import React, { useState } from 'react';
-import {
-  FileCheck2,
-  Calendar,
-  CheckCircle2,
-  AlertTriangle,
-  PlusCircle,
-  X
-} from 'lucide-react';
+﻿import React, { useState, useMemo } from 'react';
+import { ShieldCheck, PlusCircle, FileCheck2, X, Calendar } from 'lucide-react';
+import { GlassCard, GlassButton, GlassBadge, GlassKPI } from '../../../../components/glass';
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const isInspectionScheduled = (status) => (status || '').toLowerCase().includes('scheduled');
+
+const isInspectionComplete = (status) => {
+  const s = (status || '').toLowerCase();
+  return s.includes('completed') || s.includes('verified');
+};
+
+const getInspectionBadgeStatus = (status) => {
+  const s = (status || '').toLowerCase();
+  if (isInspectionComplete(status)) return 'success';
+  if (isInspectionScheduled(status)) return 'info';
+  if (s.includes('overdue')) return 'error';
+  if (s.includes('finding') || s.includes('progress')) return 'warning';
+  return 'info';
+};
+
+const DetailItem = ({ label, value, mono }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+    <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+      {label}
+    </span>
+    <span style={{ fontSize: '12.5px', color: '#0F172A', fontFamily: mono ? 'ui-monospace, SFMono-Regular, monospace' : 'inherit' }}>
+      {value != null && value !== '' ? value : '—'}
+    </span>
+  </div>
+);
 
 export default function EHSInspectionsScreen({
-  _inspections = [],
-  _onCreateInspection,
+  inspections = [],
+  onCreateInspection,
   onNavigateTab
 }) {
   const [selectedProject, setSelectedProject] = useState('All Projects / Sites');
   const [selectedType, setSelectedType] = useState('All Types');
   const [selectedInspector, setSelectedInspector] = useState('All Inspectors');
-  const [selectedRange, setSelectedRange] = useState('Date Range 2026');
+  const [selectedRange, setSelectedRange] = useState('Sep 2026');
   const [selectedStatus, setSelectedStatus] = useState('All Statuses');
+  const [selectedInsp, setSelectedInsp] = useState(null);
 
-  // Inspection records matching image Panel 4
-  const inspectionList = [
-    {
-      id: 'INSP-2026-15',
-      date: '29 Sep 2026',
-      time: '10:00 AM',
-      project: 'Zojila Tunnel',
-      type: 'Safety Inspect.',
-      inspector: 'Rajesh Kumar',
-      participants: 12,
-      status: 'Completed',
-      checklist: [
-        { name: 'PPE Usage Compliance', status: 'Pass' },
-        { name: 'Scaffolding Safety & Toe-boards', status: 'Fail' },
-        { name: 'Electrical Panel Grounding', status: 'Pass' },
-        { name: 'Emergency Escape Lighting', status: 'Pass' }
-      ]
-    },
-    {
-      id: 'INSP-2026-14',
-      date: '28 Sep 2026',
-      time: '14:30 PM',
-      project: 'Access Road',
-      type: 'Environmental',
-      inspector: 'Neha Singh',
-      participants: 8,
-      status: 'Completed',
-      checklist: [
-        { name: 'Dust Suppression Sprinklers', status: 'Pass' },
-        { name: 'Fuel Storage Berm Containment', status: 'Pass' },
-        { name: 'Waste Segregation Bins', status: 'Pass' }
-      ]
-    },
-    {
-      id: 'INSP-2026-13',
-      date: '25 Sep 2026',
-      time: '11:00 AM',
-      project: 'Camp Area',
-      type: 'Equipment',
-      inspector: 'Arvind Patel',
-      participants: 6,
-      status: 'Scheduled',
-      checklist: [
-        { name: 'Tower Crane Wire Rope Rigging', status: 'Pass' },
-        { name: 'Generator Emergency Cutoff', status: 'Pass' }
-      ]
-    },
-    {
-      id: 'INSP-2026-12',
-      date: '21 Sep 2026',
-      time: '09:00 AM',
-      project: 'Main Tunnel',
-      type: 'Emergency',
-      inspector: 'Rahul Mehta',
-      participants: 15,
-      status: 'In Progress',
-      checklist: [
-        { name: 'Ventilation Fan Airflow CFM', status: 'Pass' },
-        { name: 'Underground Refuge Chamber', status: 'Fail' }
-      ]
-    },
-    {
-      id: 'INSP-2026-11',
-      date: '18 Sep 2026',
-      time: '15:15 PM',
-      project: 'Bridge Site',
-      type: 'Permit',
-      inspector: 'Vikram Rao',
-      participants: 10,
-      status: 'Completed',
-      checklist: [
-        { name: 'Confined Space Gas Test Log', status: 'Pass' },
-        { name: 'Life Jackets on Pier Pontoon', status: 'Pass' }
-      ]
-    }
-  ];
+  const inspectionList = useMemo(() => Array.isArray(inspections) ? inspections : [], [inspections]);
 
-  const [selectedInsp, setSelectedInsp] = useState(inspectionList[0]);
-  const [drawerTab, setDrawerTab] = useState('Checklist');
+  const filterOptions = useMemo(() => {
+    const projects = ['All Projects / Sites'];
+    const types = ['All Types'];
+    const inspectors = ['All Inspectors'];
+    const statuses = ['All Statuses'];
+    inspectionList.forEach((i) => {
+      if (i.project_name && !projects.includes(i.project_name)) projects.push(i.project_name);
+      if (i.type && !types.includes(i.type)) types.push(i.type);
+      if (i.inspector && !inspectors.includes(i.inspector)) inspectors.push(i.inspector);
+      if (i.status && !statuses.includes(i.status)) statuses.push(i.status);
+    });
+    return { projects, types, inspectors, statuses };
+  }, [inspectionList]);
+
+  const filteredInspections = useMemo(() => {
+    return inspectionList.filter((i) => {
+      if (selectedProject !== 'All Projects / Sites' && i.project_name !== selectedProject) return false;
+      if (selectedType !== 'All Types' && i.type !== selectedType) return false;
+      if (selectedInspector !== 'All Inspectors' && i.inspector !== selectedInspector) return false;
+      if (selectedStatus !== 'All Statuses' && i.status !== selectedStatus) return false;
+      return true;
+    });
+  }, [inspectionList, selectedProject, selectedType, selectedInspector, selectedStatus]);
+
+  const kpiCounts = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return {
+      total: inspectionList.length,
+      scheduled: inspectionList.filter((i) => isInspectionScheduled(i.status)).length,
+      completed: inspectionList.filter((i) => isInspectionComplete(i.status)).length,
+      overdue: inspectionList.filter(
+        (i) => !isInspectionComplete(i.status) && i.scheduled_date && new Date(i.scheduled_date) < today
+      ).length,
+      findings: inspectionList.filter((i) => (i.findings_count || 0) > 0).length,
+    };
+  }, [inspectionList]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* ──── 1. PAGE HEADER & FILTERS BAR (Matching Image Panel 4) ──── */}
-      <div className="ehs-glass-card" style={{ padding: '16px 20px', borderRadius: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.02em' }}>
-              Inspections & Audits
-            </h2>
-            <p style={{ fontSize: '12.5px', color: '#64748B', margin: '2px 0 0 0' }}>
-              Statutory site audits, HSE checklists, and compliance walk-throughs.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button 
-              type="button" 
-              className="ehs-btn ehs-btn-outline"
-              style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
-            >
-              + Create Inspection
-            </button>
-            <button 
-              type="button" 
-              className="ehs-btn ehs-btn-blue"
-              style={{ padding: '7px 14px', borderRadius: '8px', fontSize: '12.5px' }}
-            >
-              <PlusCircle size={14} />
-              <span>+ Schedule Inspection</span>
-            </button>
+    <div className="ehs-module-root">
+      <GlassCard level={2} style={{ padding: '20px 24px' }}>
+        <div className="ehs-hero-banner" style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none', WebkitBoxShadow: 'none' }}>
+          <div className="ehs-banner-top">
+            <div className="ehs-title-group">
+              <div className="ehs-title-icon-badge">
+                <ShieldCheck size={24} />
+              </div>
+              <div>
+                <h1 className="ehs-hero-title">Inspections & Audits</h1>
+                <p className="ehs-hero-subtitle">
+                  Statutory site audits, HSE checklists, and compliance walk-throughs across 258+ project sites.
+                </p>
+              </div>
+            </div>
+            <div className="ehs-banner-actions">
+              <GlassButton variant="primary" size="sm" icon={PlusCircle} onClick={() => onCreateInspection?.()}>
+                Create Inspection
+              </GlassButton>
+            </div>
           </div>
         </div>
+      </GlassCard>
 
-        {/* Filter Controls Row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #F1F5F9', flexWrap: 'wrap' }}>
-          <select 
-            className="ehs-select-control"
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}
-          >
-            <option value="All Projects / Sites">All Projects / Sites</option>
-            <option value="Zojila Tunnel">Zojila Tunnel</option>
-            <option value="Access Road">Access Road</option>
-            <option value="Camp Area">Camp Area</option>
-            <option value="Main Tunnel">Main Tunnel</option>
-            <option value="Bridge Site">Bridge Site</option>
+      <GlassCard level={2} style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <select className="ehs-select-control" value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
+            {filterOptions.projects.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
           </select>
-
-          <select 
-            className="ehs-select-control"
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}
-          >
-            <option value="All Types">Inspection Type: All</option>
-            <option value="Safety">Safety Inspection</option>
-            <option value="Environmental">Environmental</option>
-            <option value="Equipment">Equipment</option>
+          <select className="ehs-select-control" value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
+            {filterOptions.types.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
           </select>
-
-          <select 
-            className="ehs-select-control"
-            value={selectedInspector}
-            onChange={(e) => setSelectedInspector(e.target.value)}
-            style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}
-          >
-            <option value="All Inspectors">Inspector: All</option>
-            <option value="Rajesh Kumar">Rajesh Kumar</option>
-            <option value="Neha Singh">Neha Singh</option>
-            <option value="Arvind Patel">Arvind Patel</option>
+          <select className="ehs-select-control" value={selectedInspector} onChange={(e) => setSelectedInspector(e.target.value)}>
+            {filterOptions.inspectors.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
           </select>
-
-          <select 
-            className="ehs-select-control"
-            value={selectedRange}
-            onChange={(e) => setSelectedRange(e.target.value)}
-            style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}
-          >
-            <option value="Date Range 2026">Date Range: Sep 2026</option>
+          <select className="ehs-select-control" value={selectedRange} onChange={(e) => setSelectedRange(e.target.value)}>
+            <option value="Sep 2026">Sep 2026</option>
             <option value="Aug 2026">Aug 2026</option>
+            <option value="Jul 2026">Jul 2026</option>
           </select>
-
-          <select 
-            className="ehs-select-control"
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            style={{ fontSize: '12px', padding: '5px 10px', height: '32px' }}
-          >
-            <option value="All Statuses">Status: All</option>
-            <option value="Scheduled">Scheduled</option>
-            <option value="Completed">Completed</option>
-            <option value="In Progress">In Progress</option>
+          <select className="ehs-select-control" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+            {filterOptions.statuses.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
           </select>
         </div>
+      </GlassCard>
+
+      <div className="ehs-kpi-grid">
+        <GlassKPI title="Total Inspections" value={kpiCounts.total} subtitle="Across all sites" icon={ShieldCheck} status="info" />
+        <GlassKPI title="Scheduled" value={kpiCounts.scheduled} subtitle="Pending execution" icon={Calendar} status="info" />
+        <GlassKPI title="Completed" value={kpiCounts.completed} subtitle="Verified & closed" icon={FileCheck2} status={kpiCounts.completed > 0 ? 'success' : 'neutral'} />
+        <GlassKPI title="Overdue" value={kpiCounts.overdue} subtitle="Past scheduled date" icon={X} status={kpiCounts.overdue > 0 ? 'warning' : 'neutral'} />
+        <GlassKPI title="Findings" value={kpiCounts.findings} subtitle="With findings recorded" icon={ShieldCheck} status={kpiCounts.findings > 0 ? 'warning' : 'neutral'} />
       </div>
 
-      {/* ──── 2. TOP KPI CARDS (5 Cards in a Row - Matching Image Panel 4) ──── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px' }}>
-        <div className="ehs-kpi-card">
-          <div className="ehs-kpi-top">
-            <span className="ehs-kpi-label">Scheduled</span>
-            <Calendar size={14} color="#2563EB" />
-          </div>
-          <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">24</span>
-          </div>
-          <div className="ehs-kpi-subtext">
-            <span>Planned in cycle</span>
-          </div>
-        </div>
+      <GlassCard level={2} style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: selectedInsp ? '1.8fr 1.2fr' : '1fr', gap: '16px', transition: 'gridTemplateColumns 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+          <GlassCard level={1} style={{ padding: '16px 20px', borderRadius: '8px', transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+            <div className="ehs-card-header">
+              <div className="ehs-card-title-group">
+                <FileCheck2 size={18} color="#2563EB" />
+                <div>
+                  <h3 className="ehs-card-title">Inspections & Audits Register</h3>
+                  <span className="ehs-card-subtitle">Showing {filteredInspections.length} of {kpiCounts.total} inspections</span>
+                </div>
+              </div>
+            </div>
 
-        <div className="ehs-kpi-card">
-          <div className="ehs-kpi-top">
-            <span className="ehs-kpi-label">Completed</span>
-            <CheckCircle2 size={14} color="#059669" />
-          </div>
-          <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">21</span>
-          </div>
-          <div className="ehs-kpi-subtext">
-            <span style={{ color: '#059669', fontWeight: 700 }}>100% on schedule</span>
-          </div>
-        </div>
-
-        <div className="ehs-kpi-card">
-          <div className="ehs-kpi-top">
-            <span className="ehs-kpi-label">Overdue</span>
-            <AlertTriangle size={14} color="#DC2626" />
-          </div>
-          <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val" style={{ color: '#DC2626' }}>3</span>
-          </div>
-          <div className="ehs-kpi-subtext">
-            <span>Escalated to BU</span>
-          </div>
-        </div>
-
-        <div className="ehs-kpi-card">
-          <div className="ehs-kpi-top">
-            <span className="ehs-kpi-label">Findings</span>
-            <FileCheck2 size={14} color="#D97706" />
-          </div>
-          <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">12</span>
-          </div>
-          <div className="ehs-kpi-subtext">
-            <span>Logged to CAPA</span>
-          </div>
-        </div>
-
-        <div className="ehs-kpi-card">
-          <div className="ehs-kpi-top">
-            <span className="ehs-kpi-label">Completion</span>
-            <span style={{ fontSize: '11px', color: '#10B981' }}>●</span>
-          </div>
-          <div className="ehs-kpi-value-row">
-            <span className="ehs-kpi-main-val">87%</span>
-          </div>
-          <div className="ehs-kpi-subtext">
-            <span>Target: &gt;85%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ──── 3. SPLIT MAIN SECTION: TABLE (LEFT 65%) + DETAIL DRAWER (RIGHT 35%) ──── */}
-      <div style={{ display: 'grid', gridTemplateColumns: selectedInsp ? '1.8fr 1.2fr' : '1fr', gap: '16px' }}>
-        {/* Left: Inspections Table */}
-        <div className="ehs-glass-card" style={{ padding: '16px 20px', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-              Inspections & Audits Register
-            </h3>
-            <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-              Showing {inspectionList.length} site inspections
-            </span>
-          </div>
-
-          <div className="ehs-table-container">
-            <table className="ehs-data-table">
-              <thead>
-                <tr>
-                  <th>Incident / Inspection ID</th>
-                  <th>Date</th>
-                  <th>Project / Site</th>
-                  <th>Type</th>
-                  <th>Lead / Inspector</th>
-                  <th>Participants</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inspectionList.map((insp) => {
-                  const isSelected = selectedInsp?.id === insp.id;
-                  return (
-                    <tr 
-                      key={insp.id}
-                      onClick={() => setSelectedInsp(insp)}
-                      style={{ 
-                        background: isSelected ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <td style={{ fontWeight: 800, color: '#2563EB' }}>{insp.id}</td>
-                      <td style={{ fontSize: '12px', color: '#475569' }}>{insp.date}</td>
-                      <td style={{ fontWeight: 700, color: '#0F172A' }}>{insp.project}</td>
-                      <td style={{ color: '#475569' }}>{insp.type}</td>
-                      <td style={{ fontSize: '12px' }}>{insp.inspector}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 700 }}>{insp.participants}</td>
-                      <td>
-                        <span 
-                          style={{ 
-                            fontSize: '11px', 
-                            fontWeight: 700, 
-                            padding: '2px 8px', 
-                            borderRadius: '9999px',
-                            background: insp.status === 'Completed' ? 'rgba(16, 185, 129, 0.12)' : insp.status === 'In Progress' ? 'rgba(245, 158, 11, 0.14)' : 'rgba(37, 99, 235, 0.12)',
-                            color: insp.status === 'Completed' ? '#059669' : insp.status === 'In Progress' ? '#D97706' : '#2563EB'
+            {filteredInspections.length === 0 ? (
+              <div style={{ padding: '36px 16px', textAlign: 'center', color: '#94A3B8' }}>
+                <Calendar size={32} style={{ marginBottom: '12px', opacity: 0.45 }} />
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', fontWeight: 500 }}>No inspections scheduled for this period.</p>
+                <p style={{ margin: '4px 0 16px 0', fontSize: '11.5px', color: '#CBD5E1' }}>Adjust your filters or create a new inspection schedule.</p>
+                <GlassButton variant="primary" size="sm" icon={PlusCircle} onClick={() => onCreateInspection?.()}>
+                  Create Inspection
+                </GlassButton>
+              </div>
+            ) : (
+              <div className="ehs-table-container">
+                <table className="ehs-data-table">
+                  <thead>
+                    <tr>
+                      <th>Inspection ID</th>
+                      <th>Date</th>
+                      <th>Project / Site</th>
+                      <th>Type</th>
+                      <th>Inspector</th>
+                      <th>Findings</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredInspections.map((insp) => {
+                      const isSelected = selectedInsp ? selectedInsp.id === insp.id : false;
+                      const hasFindings = (insp.findings_count || 0) > 0;
+                      return (
+                        <tr
+                          key={insp.id}
+                          onClick={() => setSelectedInsp(insp)}
+                          style={{
+                            background: isSelected ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
+                            cursor: 'pointer',
+                            transition: 'background 0.12s ease, opacity 0.12s ease'
                           }}
                         >
-                          {insp.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Right: Inspection Details Drawer Card (Matching Image Panel 4) */}
-        {selectedInsp && (
-          <div className="ehs-glass-card" style={{ padding: '18px 20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
-              <div>
-                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  Inspection Details - {selectedInsp.id}
-                </h3>
-                <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-                  {selectedInsp.project} • {selectedInsp.type}
-                </span>
+                          <td style={{ fontWeight: 800, color: '#2563EB' }}>{insp.inspection_number || insp.id}</td>
+                          <td style={{ fontSize: '12px', color: '#475569' }}>{formatDate(insp.scheduled_date)}</td>
+                          <td style={{ fontWeight: 700, color: '#0F172A' }}>{insp.project_name || '—'}</td>
+                          <td style={{ color: '#475569' }}>{insp.type || '—'}</td>
+                          <td style={{ fontSize: '12px' }}>{insp.inspector || '—'}</td>
+                          <td style={{ textAlign: 'center', fontWeight: 700, color: hasFindings ? '#DC2626' : '#059669' }}>{insp.findings_count || 0}</td>
+                          <td>
+                            <GlassBadge status={getInspectionBadgeStatus(insp.status)} size="sm">
+                              {insp.status || '—'}
+                            </GlassBadge>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setSelectedInsp(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
-              >
-                <X size={16} />
-              </button>
-            </div>
+            )}
+          </GlassCard>
 
-            {/* Drawer Tabs */}
-            <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-              {['Overview', 'Checklist', 'Findings', 'Actions', 'Evidence'].map((tab) => (
+          {selectedInsp && (
+            <GlassCard
+              level={2}
+              style={{
+                padding: '18px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
+                borderRadius: '12px',
+                animation: 'ehsFadeIn 0.2s ease',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Inspection Details — {selectedInsp.inspection_number || selectedInsp.id}
+                  </h3>
+                  <span style={{ fontSize: '11.5px', color: '#64748B' }}>{selectedInsp.project_name || '—'}</span>
+                </div>
                 <button
-                  key={tab}
                   type="button"
-                  onClick={() => setDrawerTab(tab)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: drawerTab === tab ? '#2563EB' : 'transparent',
-                    color: drawerTab === tab ? '#FFFFFF' : '#64748B'
-                  }}
+                  onClick={() => setSelectedInsp(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px' }}
+                  aria-label="Close details"
                 >
-                  {tab}
+                  <X size={16} />
                 </button>
-              ))}
-            </div>
+              </div>
 
-            {/* Basic Information */}
-            <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Basic Information
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11.5px' }}>
-                <div><span style={{ color: '#64748B' }}>Inspection ID:</span> <strong>{selectedInsp.id}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Type:</span> <strong>{selectedInsp.type}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Project / Site:</span> <strong>{selectedInsp.project}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Inspector:</span> <strong>{selectedInsp.inspector}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Date:</span> <strong>{selectedInsp.date}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Status:</span> <strong>{selectedInsp.status}</strong></div>
-              </div>
-            </div>
-
-            {/* Checklist Section (Pass / Fail / NA buttons - Matching Image Panel 4) */}
-            <div>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                Checklist
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {selectedInsp.checklist.map((item, idx) => (
-                  <div 
-                    key={idx}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0'
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#1E293B' }}>{item.name}</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button
-                        type="button"
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
-                          border: 'none',
-                          cursor: 'pointer',
-                          background: item.status === 'Pass' ? '#10B981' : '#F1F5F9',
-                          color: item.status === 'Pass' ? '#FFFFFF' : '#64748B'
-                        }}
-                      >
-                        Pass
-                      </button>
-                      <button
-                        type="button"
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
-                          border: 'none',
-                          cursor: 'pointer',
-                          background: item.status === 'Fail' ? '#EF4444' : '#F1F5F9',
-                          color: item.status === 'Fail' ? '#FFFFFF' : '#64748B'
-                        }}
-                      >
-                        Fail
-                      </button>
-                      <button
-                        type="button"
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
-                          border: 'none',
-                          cursor: 'pointer',
-                          background: item.status === 'NA' ? '#94A3B8' : '#F1F5F9',
-                          color: item.status === 'NA' ? '#FFFFFF' : '#64748B'
-                        }}
-                      >
-                        NA
-                      </button>
-                    </div>
+              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Basic Information
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11.5px' }}>
+                  <DetailItem label="Inspection ID" value={selectedInsp.inspection_number || selectedInsp.id} mono />
+                  <DetailItem label="Project / Site" value={selectedInsp.project_name} />
+                  <DetailItem label="Type" value={selectedInsp.type} />
+                  <DetailItem label="Inspector" value={selectedInsp.inspector} />
+                  <DetailItem label="Scheduled Date" value={formatDate(selectedInsp.scheduled_date)} mono />
+                  <DetailItem label="Completed Date" value={formatDate(selectedInsp.completed_date)} mono />
+                  <DetailItem label="Score" value={selectedInsp.score != null ? selectedInsp.score + '%' : '—'} mono />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Status</span>
+                    <GlassBadge status={getInspectionBadgeStatus(selectedInsp.status)} size="sm">
+                      {selectedInsp.status || '—'}
+                    </GlassBadge>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
 
-            {/* Footer Action */}
-            <div style={{ marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button 
-                type="button" 
-                className="ehs-btn ehs-btn-blue"
-                style={{ padding: '6px 14px', fontSize: '11.5px' }}
-                onClick={() => onNavigateTab?.('corrective-actions')}
-              >
-                Log Findings to CAPA
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>Checklist Summary</div>
+                <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <p style={{ fontSize: '12px', color: '#475569', margin: 0, lineHeight: 1.4 }}>
+                    {selectedInsp.checklist_summary || 'No checklist summary available.'}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Findings Summary
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <DetailItem label="Findings Count" value={selectedInsp.findings_count || 0} mono />
+                  <DetailItem label="Compliance Score" value={selectedInsp.score != null ? selectedInsp.score + '%' : '—'} mono />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                  Status: <strong style={{ color: isInspectionComplete(selectedInsp.status) ? '#059669' : '#D97706' }}>{selectedInsp.status || '—'}</strong>
+                </span>
+                <GlassButton variant="primary" size="sm" icon={FileCheck2} onClick={() => onNavigateTab?.('corrective-actions')}>
+                  Log Findings to CAPA
+                </GlassButton>
+              </div>
+            </GlassCard>
+          )}
+        </div>
+      </GlassCard>
     </div>
   );
 }
