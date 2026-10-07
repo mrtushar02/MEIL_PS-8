@@ -37,7 +37,7 @@ export function RoleLoginPanel({ selectedRole, onChangeRole, onLoginSuccess }) {
       setTimeout(() => {
         if (onLoginSuccess) {
           onLoginSuccess({
-            user: authResponse,
+            user: { ...authResponse, email },
             role: selectedRole,
           });
         }

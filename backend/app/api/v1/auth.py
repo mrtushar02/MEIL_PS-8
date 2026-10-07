@@ -53,6 +53,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         access_token=access_token,
         token_type="bearer",
         user_id=user.id,
+        email=user.email,
         full_name=user.full_name,
         role=role_name,
         scopes=scopes

@@ -9,6 +9,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user_id: str
+    email: Optional[str] = None
     full_name: str
     role: str
     scopes: List[dict] = []
