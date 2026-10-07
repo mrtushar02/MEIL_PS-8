@@ -293,71 +293,87 @@ def seed():
                 status="ACTIVE"
             )
         ]
-        db.add_all(factors)
+        for f in factors:
+            if not db.query(EmissionFactor).filter(EmissionFactor.id == f.id).first():
+                db.add(f)
+        db.flush()
 
         print("Seeding Reporting Periods...")
-        period_sep = ReportingPeriod(
-            id="period-2025-09",
-            name="September 2025",
-            financial_year="2025-2026",
-            start_date=date(2025, 9, 1),
-            end_date=date(2025, 9, 30),
-            is_active=True,
-            is_locked=False
-        )
-        period_annual = ReportingPeriod(
-            id="period-fy2425",
-            name="FY 2024-25 (Annual Filing)",
-            financial_year="2024-2025",
-            start_date=date(2024, 4, 1),
-            end_date=date(2025, 3, 31),
-            is_active=True,
-            is_locked=True
-        )
-        db.add_all([period_sep, period_annual])
+        period_sep = db.query(ReportingPeriod).filter(ReportingPeriod.id == "period-2025-09").first()
+        if not period_sep:
+            period_sep = ReportingPeriod(
+                id="period-2025-09",
+                name="September 2025",
+                financial_year="2025-2026",
+                start_date=date(2025, 9, 1),
+                end_date=date(2025, 9, 30),
+                is_active=True,
+                is_locked=False
+            )
+            db.add(period_sep)
+
+        period_annual = db.query(ReportingPeriod).filter(ReportingPeriod.id == "period-fy2425").first()
+        if not period_annual:
+            period_annual = ReportingPeriod(
+                id="period-fy2425",
+                name="FY 2024-25 (Annual Filing)",
+                financial_year="2024-2025",
+                start_date=date(2024, 4, 1),
+                end_date=date(2025, 3, 31),
+                is_active=True,
+                is_locked=True
+            )
+            db.add(period_annual)
         db.flush()
 
         print("Seeding Roles and Scoped Users...")
-        role_super = Role(id="role-super", name="SUPER_ADMIN", description="Global administrator")
-        role_cso = Role(id="role-cso", name="GROUP_CSO", description="Group Chief Sustainability Officer")
-        role_sub = Role(id="role-sub", name="SUBSIDIARY_HEAD", description="Head of Subsidiary ESG")
-        role_bu = Role(id="role-bu", name="BU_COORDINATOR", description="Business Unit Sustainability Coordinator")
-        role_site = Role(id="role-site", name="PROJECT_OFFICER", description="Site Safety & Energy Officer")
-        role_auditor = Role(id="role-auditor", name="ASSURANCE_AUDITOR", description="Third-Party Assurance Auditor")
-        db.add_all([role_super, role_cso, role_sub, role_bu, role_site, role_auditor])
-        db.flush()
+        def get_or_create_role(role_id, name, desc):
+            r = db.query(Role).filter(Role.id == role_id).first()
+            if not r:
+                r = Role(id=role_id, name=name, description=desc)
+                db.add(r)
+                db.flush()
+            return r
+
+        role_super = get_or_create_role("role-super", "SUPER_ADMIN", "Global administrator")
+        role_cso = get_or_create_role("role-cso", "GROUP_CSO", "Group Chief Sustainability Officer")
+        role_sub = get_or_create_role("role-sub", "SUBSIDIARY_HEAD", "Head of Subsidiary ESG")
+        role_bu = get_or_create_role("role-bu", "BU_COORDINATOR", "Business Unit Sustainability Coordinator")
+        role_site = get_or_create_role("role-site", "PROJECT_OFFICER", "Site Safety & Energy Officer")
+        role_auditor = get_or_create_role("role-auditor", "ASSURANCE_AUDITOR", "Third-Party Assurance Auditor")
 
         # Users
         pwd_hash = get_password_hash("password123")
-        admin_user = User(
-            id="user-admin",
-            email="admin@meilgroup.in",
-            full_name="System Super Administrator",
-            hashed_password=pwd_hash,
-            role_id=role_super.id,
-            is_superuser=True
-        )
-        cso_user = User(
-            id="user-cso",
-            email="cso@meilgroup.in",
-            full_name="Dr. B. Prasad (Group CSO)",
-            hashed_password=pwd_hash,
-            role_id=role_cso.id
-        )
-        site_user = User(
-            id="user-site-zojila",
-            email="zojila.officer@meilgroup.in",
-            full_name="Tenzin Dorjey (Site Officer - Zojila)",
-            hashed_password=pwd_hash,
-            role_id=role_site.id
-        )
-        db.add_all([admin_user, cso_user, site_user])
-        db.flush()
+        def get_or_create_user(user_id, email, full_name, role_id, is_super=False):
+            u = db.query(User).filter(User.id == user_id).first()
+            if not u:
+                u = User(
+                    id=user_id,
+                    email=email,
+                    full_name=full_name,
+                    hashed_password=pwd_hash,
+                    role_id=role_id,
+                    is_superuser=is_super
+                )
+                db.add(u)
+                db.flush()
+            return u
+
+        admin_user = get_or_create_user("user-admin", "admin@meilgroup.in", "System Super Administrator", role_super.id, is_super=True)
+        cso_user = get_or_create_user("user-cso", "cso@meilgroup.in", "Dr. B. Prasad (Group CSO)", role_cso.id)
+        site_user = get_or_create_user("user-site-zojila", "zojila.officer@meilgroup.in", "Tenzin Dorjey (Site Officer - Zojila)", role_site.id)
 
         # Scopes
-        scope_group = UserScope(user_id=cso_user.id, scope_type="GROUP", scope_id=group.id)
-        scope_zojila = UserScope(user_id=site_user.id, scope_type="PROJECT", scope_id=site_zojila.id)
-        db.add_all([scope_group, scope_zojila])
+        def get_or_create_scope(user_id, scope_type, scope_id):
+            s = db.query(UserScope).filter(UserScope.user_id == user_id, UserScope.scope_type == scope_type, UserScope.scope_id == scope_id).first()
+            if not s:
+                s = UserScope(user_id=user_id, scope_type=scope_type, scope_id=scope_id)
+                db.add(s)
+                db.flush()
+            return s
+
+        scope_group = get_or_create_scope(cso_user.id, "GROUP", group.id)
+        scope_zojila = get_or_create_scope(site_user.id, "PROJECT", site_zojila.id)
 
         print("Seeding Sample Operational Records for Canonical Demo...")
         # Zojila Tunnel Submission (Approved)

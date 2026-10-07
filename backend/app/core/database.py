@@ -2,16 +2,32 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
 
-# Handle SQLite vs PostgreSQL connection args
+db_url = settings.DATABASE_URL
+# Normalise postgres:// to postgresql:// for SQLAlchemy compatibility (standard Supabase URI prefix)
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+engine_kwargs = {
+    "echo": False,
+    "future": True,
+}
+
+if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    # Production pool settings for Supabase PgBouncer & direct connections
+    engine_kwargs.update({
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    })
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
-    echo=False,
-    future=True
+    **engine_kwargs
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -24,3 +40,4 @@ def get_db():
         yield db
     finally:
         db.close()
+

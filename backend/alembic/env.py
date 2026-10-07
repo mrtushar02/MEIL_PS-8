@@ -18,8 +18,13 @@ import app.models  # Registers all SQLAlchemy declarative models
 # access to the values within the .ini file in use.
 config = context.config
 
+# Normalize postgres:// to postgresql:// for Supabase URI compatibility
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 # Dynamically set database URL from application settings (supports Supabase/PostgreSQL & SQLite)
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
@@ -44,7 +49,8 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = settings.DATABASE_URL
+    configuration["sqlalchemy.url"] = db_url
+
 
     # Support SQLite connect_args if running locally
     connect_args = {}
