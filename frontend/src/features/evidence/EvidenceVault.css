@@ -183,6 +183,8 @@
   box-shadow: 0 10px 34px rgba(30, 90, 160, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* Filter Bar */
@@ -190,8 +192,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
-  flex-wrap: nowrap;
+  gap: 10px;
+  flex-wrap: wrap;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
   margin-bottom: 8px;
@@ -233,8 +235,8 @@
 .ev-filters-group {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
-  flex-wrap: nowrap;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .ev-filter-select-wrap {

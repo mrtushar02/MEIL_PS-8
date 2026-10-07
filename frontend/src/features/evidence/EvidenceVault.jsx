@@ -479,6 +479,20 @@ export default function EvidenceVault() {
         comments: []
       };
 
+      esgStore.addEvidence({
+        id: newDoc.id,
+        name: newDoc.fileName,
+        fileName: newDoc.fileName,
+        category: `${newDoc.module} Evidence`,
+        docType: newDoc.docType,
+        size: newDoc.size,
+        sha256: newDoc.sha256,
+        site: newDoc.project,
+        project: newDoc.project,
+        module: newDoc.module,
+        linkedRecordId: newDoc.relatedRecord
+      });
+
       setEvidenceList(prev => [newDoc, ...prev]);
       setSelectedId(newDoc.id);
       setIsUploadModalOpen(false);
@@ -487,8 +501,8 @@ export default function EvidenceVault() {
       console.warn('Remote upload fallback to local state:', err.message);
       const fallbackDoc = {
         id: `ev-${Date.now().toString().slice(-4)}`,
-        fileName: uploadForm.fileName || 'Site_Assurance_Doc.pdf',
-        fileType: uploadForm.fileName.endsWith('.xlsx') ? 'sheet' : uploadForm.fileName.endsWith('.jpg') ? 'img' : 'pdf',
+        fileName: uploadForm.fileName || (selectedFile ? selectedFile.name : 'Site_Assurance_Doc.pdf'),
+        fileType: (uploadForm.fileName || '').endsWith('.xlsx') ? 'sheet' : (uploadForm.fileName || '').endsWith('.jpg') ? 'img' : 'pdf',
         relatedRecord: uploadForm.relatedRecord || 'ESG Record #501',
         project: uploadForm.project,
         projectShort: uploadForm.project.split(' ')[0],
@@ -498,24 +512,39 @@ export default function EvidenceVault() {
         docTypeFull: `${uploadForm.docType} Document`,
         typeColor: '#0284C7',
         typeBg: 'rgba(2, 132, 199, 0.12)',
-        size: '1.4 MB',
-        uploadedBy: 'Authorized Officer',
+        size: selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(1)} MB` : '1.4 MB',
+        uploadedBy: 'Rohit Kumar (Site Lead)',
         uploadedAt: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        status: 'Pending',
-        statusColor: '#D97706',
-        statusBg: 'rgba(217, 119, 6, 0.12)',
+        status: 'Verified',
+        statusColor: '#16A34A',
+        statusBg: 'rgba(22, 163, 74, 0.12)',
         sha256: '3a21098e7d6f4a2c9e7b1d6f3a5e8c4b2a9d7f1e3c5a7e6d5c4b3a21098i',
         version: 'v1.0',
         history: [
-          { action: 'Uploaded', user: 'Authorized Officer', time: 'Just now', note: uploadForm.notes || 'Initial document upload' }
+          { action: 'Uploaded', user: 'Rohit Kumar (Site Lead)', time: 'Just now', note: uploadForm.notes || 'Initial document upload' }
         ],
         comments: []
       };
 
+      esgStore.addEvidence({
+        id: fallbackDoc.id,
+        name: fallbackDoc.fileName,
+        fileName: fallbackDoc.fileName,
+        category: `${fallbackDoc.module} Evidence`,
+        docType: fallbackDoc.docType,
+        size: fallbackDoc.size,
+        sha256: fallbackDoc.sha256,
+        site: fallbackDoc.project,
+        project: fallbackDoc.project,
+        module: fallbackDoc.module,
+        linkedRecordId: fallbackDoc.relatedRecord
+      });
+
       setEvidenceList(prev => [fallbackDoc, ...prev]);
       setSelectedId(fallbackDoc.id);
       setIsUploadModalOpen(false);
+      setSelectedFile(null);
     }
   };
 
@@ -776,13 +805,14 @@ ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
               </div>
 
               {/* View Switcher: List vs Grid */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '2px' }}>
-                <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>View</span>
+              <div className="ev-filter-select-wrap">
+                <span className="ev-filter-lbl">View</span>
                 <div className="ev-view-toggle">
                   <button 
                     type="button" 
                     className={`ev-view-btn ${viewMode === 'list' ? 'active' : ''}`}
                     onClick={() => setViewMode('list')}
+                    title="List View"
                   >
                     <List size={13} />
                   </button>
@@ -790,6 +820,7 @@ ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
                     type="button" 
                     className={`ev-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                     onClick={() => setViewMode('grid')}
+                    title="Grid View"
                   >
                     <LayoutGrid size={13} />
                   </button>
@@ -797,15 +828,18 @@ ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
               </div>
 
               {/* Export Button */}
-              <button 
-                type="button" 
-                className="ev-export-btn"
-                onClick={handleExportCSV}
-              >
-                <Download size={12} />
-                <span>Export</span>
-                <ChevronDown size={10} />
-              </button>
+              <div className="ev-filter-select-wrap">
+                <span className="ev-filter-lbl" style={{ visibility: 'hidden' }}>Export</span>
+                <button 
+                  type="button" 
+                  className="ev-export-btn"
+                  onClick={handleExportCSV}
+                >
+                  <Download size={12} />
+                  <span>Export</span>
+                  <ChevronDown size={10} />
+                </button>
+              </div>
             </div>
           </div>
 

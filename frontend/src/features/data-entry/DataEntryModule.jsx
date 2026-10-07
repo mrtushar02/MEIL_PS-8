@@ -145,7 +145,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     energyBillAmount: '6,48,320',
     energyUnitRate: '16.89',
     energySource: 'Grid Electricity',
-    energyRemarks: '33kV Substation smart meter calibrated and verified.',
+    energyRemarks: '',
 
     // Water
     waterMeterId: 'WTR-FLOW-04',
@@ -159,7 +159,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     waterAgency: 'NABL Certified Environmental Lab',
     waterReportNo: 'LAB-WTR-2026-0941',
     waterZldStatus: 'ZLD Compliant (70% Recirculated)',
-    waterRemarks: 'STP treated effluent reused for tunnel dust suppression and batching plant.',
+    waterRemarks: '',
 
     // Waste
     wasteCategory: 'Non-Hazardous Steel & Muck',
@@ -171,7 +171,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     wasteVendor: 'SAIL & GreenRecycle Ltd',
     wasteManifestNo: 'FORM-10-TSPCB-8842',
     wasteTransporterReg: 'JK-01-AB-4921',
-    wasteRemarks: 'Steel rebar offcuts sent for induction remelting circularity.',
+    wasteRemarks: '',
 
     // Safety
     safetyShift: 'General Shift + Tunnel Night Drive',
@@ -184,7 +184,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     safetyToolboxSessions: '14',
     safetyToolboxAttendance: '186',
     safetyInspectionRef: 'HSE-AUDIT-PKG2-SEP26',
-    safetyRemarks: 'Zero lost-time injuries achieved across all shifts with 100% PPE compliance.',
+    safetyRemarks: '',
 
     // Social
     socialProgram: 'Community RO Drinking Water & Skill Camp',
@@ -196,7 +196,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     socialGrievancesReceived: '2',
     socialGrievancesResolved: '2',
     socialPartner: 'MEIL Foundation & Village Council',
-    socialRemarks: 'Free community solar water filter handed over to local panchayat.',
+    socialRemarks: '',
 
     // Governance
     govRegulation: 'Water (Prevention of Pollution) Act & Air Act',
@@ -208,7 +208,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     govFines: '0',
     govEthicsCoverage: '100',
     govLegalCounsel: 'Adv. S. K. Narang (Corporate Legal)',
-    govRemarks: 'Annual CTO renewal inspection cleared with zero environmental non-conformances.',
+    govRemarks: '',
 
     // Workforce
     workforceDepartment: 'Civil & Electromechanical Site Ops',
@@ -221,7 +221,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     workforceOvertimeHours: '12',
     workforcePoshComplaints: '0',
     workforceLaborOfficer: 'Rohit Kumar (Site Officer)',
-    workforceRemarks: 'All contractual wages disbursed on 7th with statutory PF and ESI receipts.',
+    workforceRemarks: '',
 
     // Travel & Transport
     travelFleetCategory: 'Heavy Dumpers & Transit Mixers',
@@ -231,7 +231,7 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
     travelActiveVehicles: '28',
     travelTransporter: 'MEIL Logistics Fleet Wing',
     travelLogbookRef: 'FLEET-LOG-PKG2-9912',
-    travelRemarks: 'GPS-enabled route optimization achieved 4.0 km/L heavy dumper fleet efficiency.'
+    travelRemarks: ''
   });
 
   // Dynamic calculations based on active module
@@ -771,31 +771,13 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
           </div>
         </div>
 
-        {/* Overall Module Completion Donut */}
-        <div className="de-completion-card">
-          <div className="de-donut-mini">
-            <svg width="42" height="42" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="17" fill="none" stroke="rgba(226, 232, 240, 0.8)" strokeWidth="4.5" />
-              <circle
-                cx="22"
-                cy="22"
-                r="17"
-                fill="none"
-                stroke="#0284C7"
-                strokeWidth="4.5"
-                strokeDasharray="106.8"
-                strokeDashoffset={106.8 * (1 - 0.72)}
-                strokeLinecap="round"
-                transform="rotate(-90 22 22)"
-              />
-            </svg>
-            <span className="de-donut-mini-val">72%</span>
+        {/* Realtime Telemetry Status Badge */}
+        <div className="de-telemetry-badge">
+          <span className="de-telemetry-dot" />
+          <div className="de-telemetry-info">
+            <span className="de-telemetry-title">Realtime System Active</span>
+            <span className="de-telemetry-sub">CEA Grid v19 • Immutable Trail</span>
           </div>
-          <div className="de-completion-info">
-            <span className="de-completion-lbl">Overall Module Completion</span>
-            <span className="de-completion-sub">5 of 8 modules</span>
-          </div>
-          <BarChart3 size={18} color="#0284C7" style={{ marginLeft: '4px' }} />
         </div>
       </div>
 
@@ -1708,17 +1690,64 @@ export default function DataEntryModule({ onSubmissionComplete, onNavigate }) {
             </div>
           )}
 
-          {/* Additional Information / Remarks */}
-          <div className="de-form-section">
-            <span className="de-section-heading">Remarks & Audit Notes</span>
-            <div className="de-input-group">
-              <input
-                type="text"
-                className="de-input-field"
-                placeholder="Enter field notes, calibration remarks or special inspection conditions..."
+          {/* Additional Information / Remarks & Audit Notes */}
+          <div className="de-form-section de-remarks-section">
+            <div className="de-remarks-header">
+              <span className="de-section-heading">Remarks & Audit Notes</span>
+              <span className="de-remarks-site-badge">
+                <span className="de-badge-dot" />
+                <span>Auditing: {currentProject.code} • {activeModule}</span>
+              </span>
+            </div>
+            
+            <div className="de-remarks-wrapper">
+              <textarea
+                className="de-remarks-textarea"
+                rows={3}
+                placeholder={`Enter field inspection notes, calibration observations, meter serial numbers, or statutory audit remarks for ${activeModule} at ${currentProject.name}...`}
                 value={formData[`${activeModule.toLowerCase().split(' ')[0]}Remarks`] || ''}
                 onChange={(e) => handleInputChange(`${activeModule.toLowerCase().split(' ')[0]}Remarks`, e.target.value)}
               />
+
+              {/* Quick Audit Tag Pills */}
+              <div className="de-remarks-tags-row">
+                <span className="de-remarks-tags-lbl">Quick Tags:</span>
+                {[
+                  'Calibration Verified',
+                  'Weighbridge Slip Matched',
+                  'NABL Lab Certified',
+                  'Site Lead Approved',
+                  'Zero Non-Conformance'
+                ].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className="de-tag-pill-btn"
+                    onClick={() => {
+                      const current = formData[`${activeModule.toLowerCase().split(' ')[0]}Remarks`] || '';
+                      const newRemarks = current ? `${current} [${tag}]` : `[${tag}]`;
+                      handleInputChange(`${activeModule.toLowerCase().split(' ')[0]}Remarks`, newRemarks);
+                    }}
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Live Status Footer */}
+              <div className="de-remarks-footer">
+                <div className="de-remarks-meta-left">
+                  <span className="de-remarks-author">
+                    Logged by Site Officer: <strong>{currentProject.siteOfficer || 'Rohit Kumar (Site Lead)'}</strong>
+                  </span>
+                  <span className="de-remarks-autosave">
+                    • {saveStatus === 'Saving changes...' ? 'Syncing...' : '✓ Auto-saved to live audit ledger'}
+                  </span>
+                </div>
+                <span className="de-remarks-charcount">
+                  {(formData[`${activeModule.toLowerCase().split(' ')[0]}Remarks`] || '').length} / 500 chars
+                </span>
+              </div>
             </div>
           </div>
 
