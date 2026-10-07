@@ -539,8 +539,8 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
               </div>
 
               {/* View Switcher: List vs Grid */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '2px' }}>
-                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>View</span>
+              <div className="mp-filter-select-wrap">
+                <span className="mp-filter-lbl">View</span>
                 <div className="mp-view-toggle">
                   <button 
                     type="button" 
@@ -562,16 +562,19 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
               </div>
 
               {/* Export Button */}
-              <button 
-                type="button" 
-                className="mp-export-btn"
-                onClick={handleExportCSV}
-                title="Export filtered project directory to CSV"
-              >
-                <Download size={13} />
-                <span>Export</span>
-                <ChevronDown size={11} />
-              </button>
+              <div className="mp-filter-select-wrap">
+                <span className="mp-filter-lbl" style={{ visibility: 'hidden' }}>Export</span>
+                <button 
+                  type="button" 
+                  className="mp-export-btn"
+                  onClick={handleExportCSV}
+                  title="Export filtered project directory to CSV"
+                >
+                  <Download size={13} />
+                  <span>Export</span>
+                  <ChevronDown size={11} />
+                </button>
+              </div>
             </div>
           </div>
 
