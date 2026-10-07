@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
+import { esgStore } from '../../services/esgStore';
 import {
   Briefcase,
   FileText,
@@ -198,6 +199,7 @@ const INITIAL_EVIDENCE = [
 
 export default function EvidenceVault() {
   const [evidenceList, setEvidenceList] = useState(INITIAL_EVIDENCE);
+  const [storeDocs, setStoreDocs] = useState(() => esgStore.state.evidenceDocuments || []);
   const [selectedId, setSelectedId] = useState('ev-01');
   const [activeTab, setActiveTab] = useState('Details');
   const [searchQuery, setSearchQuery] = useState('');
@@ -209,6 +211,16 @@ export default function EvidenceVault() {
   const [newComment, setNewComment] = useState('');
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  // Subscribe to esgStore so newly uploaded evidence appears in real time
+  useEffect(() => {
+    const unsub = esgStore.subscribe((state) => {
+      if (state && Array.isArray(state.evidenceDocuments)) {
+        setStoreDocs([...state.evidenceDocuments]);
+      }
+    });
+    return unsub;
+  }, []);
 
   // Form State for Upload Modal
   const [uploadForm, setUploadForm] = useState({
@@ -264,13 +276,80 @@ export default function EvidenceVault() {
       });
   }, []);
 
+  // Combined Evidence List (Store + Backend/Initial)
+  const mergedEvidenceList = useMemo(() => {
+    const fromStore = (storeDocs || []).map((doc, idx) => {
+      const ext = (doc.name || doc.fileName || '').split('.').pop().toLowerCase();
+      const fileType = (ext === 'xlsx' || ext === 'csv') ? 'sheet' : (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'webp') ? 'img' : 'pdf';
+      const docType = doc.category || doc.docType || 'Audit Proof';
+      const pName = doc.project || doc.site || 'Zojila Tunnel (PKG-2)';
+
+      return {
+        id: doc.id || `ev-store-${idx}`,
+        fileName: doc.name || doc.fileName || 'Compliance_Attachment.pdf',
+        fileType: fileType,
+        relatedRecord: doc.linkedRecordId || `${doc.module || 'ESG'} Telemetry`,
+        project: pName,
+        projectShort: pName.split(' ')[0],
+        module: doc.module || 'Energy',
+        moduleDetail: `${doc.module || 'Energy'} Verification Proof`,
+        docType: docType,
+        docTypeFull: `${docType} Verification`,
+        typeColor: '#0284C7',
+        typeBg: 'rgba(2, 132, 199, 0.12)',
+        size: doc.size || '1.8 MB',
+        uploadedBy: doc.uploader || doc.uploadedBy || 'Rohit Kumar (Site Lead)',
+        uploadedAt: doc.uploadedAt || 'Today, Just now',
+        date: doc.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        status: doc.status || 'Verified',
+        statusColor: '#16A34A',
+        statusBg: 'rgba(22, 163, 74, 0.12)',
+        sha256: doc.sha256 || '9f8e7d6c5b4a312019e8d7c6b5a43210fe8b2c1a09d3e4f5a6b7c8d9e0f1a2b3',
+        version: 'v1.0',
+        blobUrl: doc.blobUrl || null,
+        history: [
+          { action: 'Uploaded', user: doc.uploader || 'Rohit Kumar', time: doc.uploadedAt || 'Today', note: 'Uploaded with SHA-256 seal via Data Entry Portal' }
+        ],
+        comments: []
+      };
+    });
+
+    const seen = new Set();
+    const result = [];
+
+    // Prioritize newest uploaded docs from store
+    for (const d of fromStore) {
+      if (!seen.has(d.id)) {
+        seen.add(d.id);
+        result.push(d);
+      }
+    }
+
+    // Then initial/backend docs
+    for (const d of evidenceList) {
+      if (!seen.has(d.id)) {
+        seen.add(d.id);
+        result.push(d);
+      }
+    }
+
+    return result;
+  }, [storeDocs, evidenceList]);
+
+  // Keep selectedId valid
+  useEffect(() => {
+    if (mergedEvidenceList.length > 0 && !mergedEvidenceList.some(e => e.id === selectedId)) {
+      setSelectedId(mergedEvidenceList[0].id);
+    }
+  }, [mergedEvidenceList, selectedId]);
+
   const activeDoc = useMemo(() => {
-    return evidenceList.find((e) => e.id === selectedId) || evidenceList[0];
-  }, [evidenceList, selectedId]);
+    return mergedEvidenceList.find((e) => e.id === selectedId) || mergedEvidenceList[0] || INITIAL_EVIDENCE[0];
+  }, [mergedEvidenceList, selectedId]);
 
   // Filtered List
   const filteredList = useMemo(() => {
-    return evidenceList.filter((e) => {
+    return mergedEvidenceList.filter((e) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = 
         !searchQuery ||
@@ -285,7 +364,7 @@ export default function EvidenceVault() {
 
       return matchesSearch && matchesProject && matchesModule && matchesStatus;
     });
-  }, [evidenceList, searchQuery, selectedProject, selectedModule, selectedStatus]);
+  }, [mergedEvidenceList, searchQuery, selectedProject, selectedModule, selectedStatus]);
 
   // Verification Handlers
   const handleVerify = async (id) => {

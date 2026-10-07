@@ -20,8 +20,19 @@ import {
   Cpu
 } from 'lucide-react';
 import api from '../../services/api';
+import { esgStore } from '../../services/esgStore';
 import { exportToCsv } from '../../utils/exportUtils';
 import './SubmissionsManager.css';
+
+// Dynamic Date Formatter based on today's local date
+const getRelativeDateStr = (daysAgo = 0) => {
+  const d = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const getRelativeDateTimeStr = (daysAgo = 0, timeStr = '11:20 AM') => {
+  return `${getRelativeDateStr(daysAgo)} ${timeStr}`;
+};
 
 const INITIAL_SUBMISSIONS = [
   {
@@ -31,20 +42,20 @@ const INITIAL_SUBMISSIONS = [
     module: 'Energy',
     period: 'FY 2026-27',
     submittedBy: 'Rohit Kumar',
-    submittedOn: '01 Oct 2026',
-    submittedOnFull: '01 Oct 2026 11:20 AM',
+    submittedOn: getRelativeDateStr(2),
+    submittedOnFull: getRelativeDateTimeStr(2, '11:20 AM'),
     status: 'Approved',
     statusColor: '#16A34A',
     statusBg: 'rgba(22, 163, 74, 0.12)',
     reviewer: 'K. Venkat (BU Reviewer)',
-    reviewDue: '03 Oct 2026',
+    reviewDue: getRelativeDateStr(-2),
     recordsCount: 14,
     evidenceCount: 6,
     notes: 'DG Genset diesel logs & 33kV substation grid power telemetry complete with weighbridge slips.',
     timeline: [
-      { title: 'Submitted by Rohit Kumar', time: '01 Oct 2026, 11:20 AM', desc: 'Batch package with 14 Scope 1 & 2 energy records' },
-      { title: 'Under Review • K. Venkat', time: '02 Oct 2026, 09:30 AM', desc: 'Cross-checked against fuel challans & smart meter' },
-      { title: 'Approved by K. Venkat', time: '02 Oct 2026, 04:15 PM', desc: 'Approved for Q2 BRSR aggregation' }
+      { title: 'Submitted by Rohit Kumar', time: getRelativeDateTimeStr(2, '11:20 AM'), desc: 'Batch package with 14 Scope 1 & 2 energy records' },
+      { title: 'Under Review • K. Venkat', time: getRelativeDateTimeStr(1, '09:30 AM'), desc: 'Cross-checked against fuel challans & smart meter' },
+      { title: 'Approved by K. Venkat', time: getRelativeDateTimeStr(1, '04:15 PM'), desc: 'Approved for Q2 BRSR aggregation' }
     ]
   },
   {
@@ -54,20 +65,20 @@ const INITIAL_SUBMISSIONS = [
     module: 'Water',
     period: 'FY 2026-27',
     submittedBy: 'Priyanka S.',
-    submittedOn: '30 Sep 2026',
-    submittedOnFull: '30 Sep 2026 02:15 PM',
+    submittedOn: getRelativeDateStr(3),
+    submittedOnFull: getRelativeDateTimeStr(3, '02:15 PM'),
     status: 'Under Review',
     statusColor: '#D97706',
     statusBg: 'rgba(217, 119, 6, 0.12)',
     reviewer: 'K. Venkat (BU Reviewer)',
-    reviewDue: '05 Oct 2026',
+    reviewDue: getRelativeDateStr(-1),
     recordsCount: 12,
     evidenceCount: 5,
     notes: 'Pumphouse intake meter readings, water testing laboratory report, and zero liquid discharge logs.',
     timeline: [
-      { title: 'Submitted by Priyanka S.', time: '30 Sep 2026, 02:15 PM', desc: 'Monthly pumphouse discharge and water testing logs' },
-      { title: 'Under Review • K. Venkat', time: '01 Oct 2026, 10:32 AM', desc: 'Reviewing laboratory compliance against CPCB norms' },
-      { title: 'Field verification in progress', time: '03 Oct 2026, 09:12 AM', desc: 'Site visit for flowmeter sensor synchronization' }
+      { title: 'Submitted by Priyanka S.', time: getRelativeDateTimeStr(3, '02:15 PM'), desc: 'Monthly pumphouse discharge and water testing logs' },
+      { title: 'Under Review • K. Venkat', time: getRelativeDateTimeStr(2, '10:32 AM'), desc: 'Reviewing laboratory compliance against CPCB norms' },
+      { title: 'Field verification in progress', time: getRelativeDateTimeStr(1, '09:12 AM'), desc: 'Site visit for flowmeter sensor synchronization' }
     ]
   },
   {
@@ -77,19 +88,19 @@ const INITIAL_SUBMISSIONS = [
     module: 'Waste',
     period: 'FY 2026-27',
     submittedBy: 'K. Venkat',
-    submittedOn: '28 Sep 2026',
-    submittedOnFull: '28 Sep 2026 04:40 PM',
+    submittedOn: getRelativeDateStr(5),
+    submittedOnFull: getRelativeDateTimeStr(5, '04:40 PM'),
     status: 'Correction',
     statusColor: '#DC2626',
     statusBg: 'rgba(220, 38, 38, 0.12)',
     reviewer: 'Rohit Kumar (Site Lead)',
-    reviewDue: '02 Oct 2026',
+    reviewDue: getRelativeDateStr(1),
     recordsCount: 8,
     evidenceCount: 3,
     notes: 'Tunnel muck disposal manifest Form 10 missing authorized signature from registered recycler.',
     timeline: [
-      { title: 'Submitted by K. Venkat', time: '28 Sep 2026, 04:40 PM', desc: 'Hazardous waste Form 10 manifests' },
-      { title: 'Correction Requested • Rohit Kumar', time: '29 Sep 2026, 11:15 AM', desc: 'Recycler authorization stamp missing on copy 2' }
+      { title: 'Submitted by K. Venkat', time: getRelativeDateTimeStr(5, '04:40 PM'), desc: 'Hazardous waste Form 10 manifests' },
+      { title: 'Correction Requested • Rohit Kumar', time: getRelativeDateTimeStr(4, '11:15 AM'), desc: 'Recycler authorization stamp missing on copy 2' }
     ]
   },
   {
@@ -99,19 +110,19 @@ const INITIAL_SUBMISSIONS = [
     module: 'Safety',
     period: 'FY 2026-27',
     submittedBy: 'Jitendra Roy',
-    submittedOn: '25 Sep 2026',
-    submittedOnFull: '25 Sep 2026 05:00 PM',
+    submittedOn: getRelativeDateStr(7),
+    submittedOnFull: getRelativeDateTimeStr(7, '05:00 PM'),
     status: 'Approved',
     statusColor: '#16A34A',
     statusBg: 'rgba(22, 163, 74, 0.12)',
     reviewer: 'Rohit Kumar (Site Lead)',
-    reviewDue: '27 Sep 2026',
+    reviewDue: getRelativeDateStr(4),
     recordsCount: 6,
     evidenceCount: 4,
     notes: 'Zero-Harm toolbox induction sheets and safe man-hours certification for 45 technicians.',
     timeline: [
-      { title: 'Submitted by Jitendra Roy', time: '25 Sep 2026, 05:00 PM', desc: 'HSE induction and safety checklist' },
-      { title: 'Approved by Rohit Kumar', time: '26 Sep 2026, 02:20 PM', desc: 'LTIFR confirmed at 0.00 across 45,000 man-hours' }
+      { title: 'Submitted by Jitendra Roy', time: getRelativeDateTimeStr(7, '05:00 PM'), desc: 'HSE induction and safety checklist' },
+      { title: 'Approved by Rohit Kumar', time: getRelativeDateTimeStr(6, '02:20 PM'), desc: 'LTIFR confirmed at 0.00 across 45,000 man-hours' }
     ]
   },
   {
@@ -121,24 +132,25 @@ const INITIAL_SUBMISSIONS = [
     module: 'Social',
     period: 'FY 2026-27',
     submittedBy: 'Rohit Kumar',
-    submittedOn: '20 Sep 2026',
-    submittedOnFull: '20 Sep 2026 01:10 PM',
+    submittedOn: getRelativeDateStr(10),
+    submittedOnFull: getRelativeDateTimeStr(10, '01:10 PM'),
     status: 'Submitted',
     statusColor: '#7C3AED',
     statusBg: 'rgba(124, 58, 237, 0.12)',
     reviewer: 'P. Venkat Reddy',
-    reviewDue: '04 Oct 2026',
+    reviewDue: getRelativeDateStr(3),
     recordsCount: 5,
     evidenceCount: 3,
     notes: 'Local community skill development program and wage compliance registers.',
     timeline: [
-      { title: 'Submitted by Rohit Kumar', time: '20 Sep 2026, 01:10 PM', desc: 'Skill workshop logs and MSME compliance sheets' }
+      { title: 'Submitted by Rohit Kumar', time: getRelativeDateTimeStr(10, '01:10 PM'), desc: 'Skill workshop logs and MSME compliance sheets' }
     ]
   }
 ];
 
 export default function SubmissionsManager() {
   const [submissions, setSubmissions] = useState(INITIAL_SUBMISSIONS);
+  const [storeSubmissions, setStoreSubmissions] = useState(() => esgStore.state.submissions || []);
   const [selectedId, setSelectedId] = useState('SUB-2026-002');
   const [activeTab, setActiveTab] = useState('Details');
   const [searchQuery, setSearchQuery] = useState('');
@@ -149,6 +161,16 @@ export default function SubmissionsManager() {
   const [viewMode, setViewMode] = useState('list');
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isDossierModalOpen, setIsDossierModalOpen] = useState(false);
+
+  // Subscribe to esgStore updates so submissions submitted from Data Entry appear instantly
+  useEffect(() => {
+    const unsub = esgStore.subscribe((state) => {
+      if (state && Array.isArray(state.submissions)) {
+        setStoreSubmissions([...state.submissions]);
+      }
+    });
+    return unsub;
+  }, []);
 
   // Live Backend Submissions Fetch
   const fetchBackendSubmissions = useCallback(async () => {
@@ -167,6 +189,11 @@ export default function SubmissionsManager() {
           const meta = statusMap[sub.status] || { label: sub.status, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)' };
           const recCount = (sub.fuel_records?.length || 0) + (sub.energy_records?.length || 0) + (sub.water_records?.length || 0) + (sub.waste_records?.length || 0) + (sub.safety_records?.length || 0);
           const prjName = sub.project_id === 'site-101' ? 'Gayatri Pumphouse (Kaleshwaram Lift Irrigation)' : (sub.project_id === 'site-102' ? 'Zojila Tunnel (PKG-2)' : (sub.project_id || 'MEIL Project Site'));
+          
+          const dt = sub.created_at ? new Date(sub.created_at) : new Date();
+          const fmtDate = sub.created_at ? dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : getRelativeDateStr(1);
+          const fmtFull = sub.created_at ? `${fmtDate} ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : `${fmtDate} 11:20 AM`;
+
           return {
             id: sub.id,
             project: prjName,
@@ -174,19 +201,19 @@ export default function SubmissionsManager() {
             module: 'Comprehensive ESG',
             period: sub.reporting_period_id || 'FY 2026-27',
             submittedBy: sub.submitted_by || 'Site Officer',
-            submittedOn: sub.created_at ? new Date(sub.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '01 Oct 2026',
-            submittedOnFull: sub.created_at ? new Date(sub.created_at).toLocaleString('en-GB') : '01 Oct 2026 11:20 AM',
+            submittedOn: fmtDate,
+            submittedOnFull: fmtFull,
             status: meta.label,
             rawStatus: sub.status,
             statusColor: meta.color,
             statusBg: meta.bg,
             reviewer: sub.status === 'BU_APPROVED' ? 'BU Coordinator (Approved)' : (sub.status === 'SUBSIDIARY_APPROVED' ? 'Subsidiary Head (Approved)' : (sub.status === 'LOCKED' ? 'Group CSO (Locked)' : 'K. Venkat (BU Reviewer)')),
-            reviewDue: '05 Oct 2026',
+            reviewDue: getRelativeDateStr(-2),
             recordsCount: recCount > 0 ? recCount : 12,
             evidenceCount: 4,
             notes: `Official statutory ESG data submission (Version ${sub.version || 1}) for SEBI BRSR consolidation.`,
             timeline: [
-              { title: `Submitted by ${sub.submitted_by || 'Site Officer'}`, time: sub.created_at ? new Date(sub.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '11:20 AM', desc: `Batch package with ${recCount > 0 ? recCount : 12} records` },
+              { title: `Submitted by ${sub.submitted_by || 'Site Officer'}`, time: dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), desc: `Batch package with ${recCount > 0 ? recCount : 12} records` },
               ...(sub.status === 'BU_APPROVED' || sub.status === 'SUBSIDIARY_APPROVED' || sub.status === 'LOCKED' ? [{ title: 'BU Coordinator Approved', time: 'Approved', desc: 'Telemetry & invoice hashes certified' }] : []),
               ...(sub.status === 'SUBSIDIARY_APPROVED' || sub.status === 'LOCKED' ? [{ title: 'Subsidiary Review Approved', time: 'Approved', desc: 'Certified for Group consolidation' }] : []),
               ...(sub.status === 'LOCKED' ? [{ title: 'Group CSO Locked', time: 'Locked', desc: 'Reporting period permanently sealed' }] : [])
@@ -205,6 +232,73 @@ export default function SubmissionsManager() {
     fetchBackendSubmissions();
   }, [fetchBackendSubmissions]);
 
+  // Combine store submissions with backend/initial submissions
+  const mergedSubmissions = useMemo(() => {
+    const fromStore = (storeSubmissions || []).map((sub) => {
+      const now = new Date();
+      const dateObj = sub.submittedAt ? new Date(sub.submittedAt) : (sub.submittedOn ? new Date(sub.submittedOn) : now);
+      const isValid = !isNaN(dateObj.getTime());
+      const formattedDate = sub.submittedOn || (isValid ? dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : getRelativeDateStr(0));
+      const formattedTime = isValid ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const fullDate = sub.submittedOnFull || `${formattedDate} ${formattedTime}`;
+      const projectName = sub.siteName || sub.project || 'Zojila Tunnel (PKG-2)';
+
+      return {
+        id: sub.id,
+        project: projectName,
+        projectShort: projectName.split(' ')[0],
+        module: sub.module || 'Energy',
+        period: sub.period || 'September 2026',
+        submittedBy: sub.submittedBy || 'Rohit Kumar (Site Lead)',
+        submittedOn: formattedDate,
+        submittedOnFull: fullDate,
+        status: sub.status === 'UNDER_REVIEW' ? 'Under Review' : (sub.status || 'Under Review'),
+        rawStatus: sub.rawStatus || 'SUBMITTED',
+        statusColor: sub.statusColor || (sub.status === 'DRAFT' ? '#64748B' : '#D97706'),
+        statusBg: sub.statusBg || (sub.status === 'DRAFT' ? 'rgba(100, 116, 139, 0.12)' : 'rgba(217, 119, 6, 0.12)'),
+        reviewer: sub.reviewer || 'K. Venkat (BU Reviewer)',
+        reviewDue: sub.reviewDue || getRelativeDateStr(-3),
+        recordsCount: sub.recordsCount || 12,
+        evidenceCount: sub.evidenceCount || (sub.evidenceFiles?.length || 1),
+        notes: sub.notes || `Official statutory ${sub.module || 'ESG'} data submission for SEBI BRSR consolidation.`,
+        formData: sub.formData || null,
+        evidenceFiles: sub.evidenceFiles || [],
+        timeline: sub.timeline || [
+          { title: `Submitted by ${sub.submittedBy || 'Rohit Kumar'}`, time: fullDate, desc: `Batch package with ${sub.recordsCount || 12} records` },
+          { title: 'Under Review • K. Venkat', time: 'In Progress', desc: 'Verification against weighbridge slips & calibrated meter logs' }
+        ]
+      };
+    });
+
+    const seen = new Set();
+    const result = [];
+
+    // Most recent items from store first
+    for (const s of fromStore) {
+      if (!seen.has(s.id)) {
+        seen.add(s.id);
+        result.push(s);
+      }
+    }
+
+    // Then backend / state submissions
+    for (const s of submissions) {
+      if (!seen.has(s.id)) {
+        seen.add(s.id);
+        result.push(s);
+      }
+    }
+
+    return result;
+  }, [storeSubmissions, submissions]);
+
+  // Keep selectedId valid
+  useEffect(() => {
+    if (mergedSubmissions.length > 0 && !mergedSubmissions.some(s => s.id === selectedId)) {
+      setSelectedId(mergedSubmissions[0].id);
+    }
+  }, [mergedSubmissions, selectedId]);
+
   // New Submission Form State
   const [newForm, setNewForm] = useState({
     project: 'Zojila Tunnel (PKG-2)',
@@ -216,16 +310,16 @@ export default function SubmissionsManager() {
   });
 
   const activeSub = useMemo(() => {
-    return submissions.find((s) => s.id === selectedId) || submissions[0];
-  }, [submissions, selectedId]);
+    return mergedSubmissions.find((s) => s.id === selectedId) || mergedSubmissions[0] || INITIAL_SUBMISSIONS[0];
+  }, [mergedSubmissions, selectedId]);
 
   // Summary counts computed dynamically
   const summaryCounts = useMemo(() => {
-    const total = submissions.length;
-    const submitted = submissions.filter(s => s.status === 'Submitted' || s.rawStatus === 'SUBMITTED').length;
-    const underReview = submissions.filter(s => s.status === 'Under Review' || s.rawStatus === 'BU_APPROVED' || s.rawStatus === 'SUBSIDIARY_APPROVED').length;
-    const approved = submissions.filter(s => s.status === 'Approved' || s.status === 'Locked' || s.rawStatus === 'LOCKED').length;
-    const correction = submissions.filter(s => s.status === 'Correction' || s.rawStatus === 'CORRECTION_REQUIRED').length;
+    const total = mergedSubmissions.length;
+    const submitted = mergedSubmissions.filter(s => s.status === 'Submitted' || s.rawStatus === 'SUBMITTED').length;
+    const underReview = mergedSubmissions.filter(s => s.status === 'Under Review' || s.rawStatus === 'BU_APPROVED' || s.rawStatus === 'SUBSIDIARY_APPROVED').length;
+    const approved = mergedSubmissions.filter(s => s.status === 'Approved' || s.status === 'Locked' || s.rawStatus === 'LOCKED').length;
+    const correction = mergedSubmissions.filter(s => s.status === 'Correction' || s.rawStatus === 'CORRECTION_REQUIRED').length;
     return {
       total: total > 0 ? total : 56,
       submitted: submitted > 0 ? submitted : 28,
@@ -237,11 +331,11 @@ export default function SubmissionsManager() {
       correction: correction > 0 ? correction : 4,
       correctionPct: total > 0 ? Math.round((correction / total) * 100) : 7
     };
-  }, [submissions]);
+  }, [mergedSubmissions]);
 
   // Filtered List
   const filteredSubmissions = useMemo(() => {
-    return submissions.filter((s) => {
+    return mergedSubmissions.filter((s) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = 
         !searchQuery ||
@@ -256,10 +350,11 @@ export default function SubmissionsManager() {
 
       return matchesSearch && matchesProject && matchesModule && matchesStatus && matchesPeriod;
     });
-  }, [submissions, searchQuery, selectedProject, selectedModule, selectedStatus, selectedPeriod]);
+  }, [mergedSubmissions, searchQuery, selectedProject, selectedModule, selectedStatus, selectedPeriod]);
 
-  // Status Action Handlers with real API integration
+  // Status Action Handlers with real API & store integration
   const handleApprove = async (id) => {
+    esgStore.updateSubmissionStatus(id, 'Approved');
     try {
       await api.approveSubmission(id, 'Approved for statutory consolidation');
       await fetchBackendSubmissions();
@@ -283,6 +378,7 @@ export default function SubmissionsManager() {
   };
 
   const handleRequestCorrection = async (id) => {
+    esgStore.updateSubmissionStatus(id, 'Correction');
     try {
       await api.rejectSubmission(id, 'Missing supporting laboratory seal. Please re-submit.');
       await fetchBackendSubmissions();
@@ -307,9 +403,19 @@ export default function SubmissionsManager() {
 
   const handleCreateSubmission = async (e) => {
     e.preventDefault();
+    const createdInStore = esgStore.createSubmission({
+      project: newForm.project,
+      siteName: newForm.project,
+      module: newForm.module,
+      period: newForm.period,
+      recordsCount: Number(newForm.recordsCount) || 8,
+      evidenceCount: Number(newForm.evidenceCount) || 2,
+      notes: newForm.notes || 'Monthly statutory disclosure package.'
+    });
+
     try {
       await api.submitMonthlyEsgData({
-        project_id: 'site-102',
+        project_id: newForm.project.toLowerCase().includes('zojila') ? 'site-102' : 'site-101',
         reporting_period_id: 'period-2025-09',
         fuel_records: [{ fuel_type: 'Diesel', quantity: 12000.0, unit: 'Litres' }],
         energy_records: [{ energy_source: 'Grid Electricity', quantity_kwh: 85000.0, renewable_kwh: 15000.0 }],
@@ -318,35 +424,12 @@ export default function SubmissionsManager() {
         safety_records: [{ safe_man_hours: 180000.0, lost_time_injuries: 0, fatalities: 0, near_misses: 2 }]
       });
       await fetchBackendSubmissions();
-      setIsNewModalOpen(false);
     } catch {
-      const newSubId = `SUB-2026-00${submissions.length + 1}`;
-      const newSubmission = {
-        id: newSubId,
-        project: newForm.project,
-        projectShort: newForm.project.split(' ')[0],
-        module: newForm.module,
-        period: newForm.period,
-        submittedBy: 'Rohit Kumar',
-        submittedOn: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        submittedOnFull: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: 'Submitted',
-        statusColor: '#7C3AED',
-        statusBg: 'rgba(124, 58, 237, 0.12)',
-        reviewer: 'K. Venkat (BU Reviewer)',
-        reviewDue: '10 Oct 2026',
-        recordsCount: Number(newForm.recordsCount) || 8,
-        evidenceCount: Number(newForm.evidenceCount) || 3,
-        notes: newForm.notes || 'Monthly site disclosure package.',
-        timeline: [
-          { title: 'Submitted by Rohit Kumar', time: 'Just now', desc: `Batch package with ${newForm.recordsCount} records` }
-        ]
-      };
-
-      setSubmissions(prev => [newSubmission, ...prev]);
-      setSelectedId(newSubmission.id);
-      setIsNewModalOpen(false);
+      // Handled via esgStore
     }
+
+    setSelectedId(createdInStore.id);
+    setIsNewModalOpen(false);
   };
 
   const handleExportCSV = () => {
@@ -841,23 +924,116 @@ export default function SubmissionsManager() {
           {activeTab.startsWith('Data') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ fontSize: '11px', color: '#64748B' }}>
-                Batch records included in this submission:
+                Operational records included in this submission ({activeSub.module}):
               </div>
-              {[
-                { title: 'Telemetry Meter Flow #1', qty: '12,450 units', verified: true },
-                { title: 'Daily Site Logbook Signoff', qty: 'Batch #28-40', verified: true },
-                { title: 'Contractor Secondary Meter', qty: '3,800 units', verified: activeSub.status === 'Approved' }
-              ].map((rec, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#0F172A' }}>{rec.title}</div>
-                    <div style={{ fontSize: '10px', color: '#64748B' }}>{rec.qty}</div>
+              {activeSub.formData ? (
+                <>
+                  {activeSub.module === 'Energy' && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Energy Source & Meter</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.energySource || 'Grid Electricity'} • {activeSub.formData.energyMeterId || 'MTR-SUB-01'}</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A' }}>✓ Validated</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Net Consumption</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.energyNetKwh || '384,000'} kWh</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#0284C7' }}>Scope 2 CEA</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Calculated GHG Emissions</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{((parseFloat((activeSub.formData.energyNetKwh || '384000').toString().replace(/,/g, '')) || 384000) * 0.716 / 1000).toFixed(2)} tCO2e</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A' }}>✓ CEA v19</span>
+                      </div>
+                    </>
+                  )}
+                  {activeSub.module === 'Water' && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Water Withdrawal & Source</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.waterWithdrawal || '48,200'} kL ({activeSub.formData.waterSource || 'Groundwater Borewell'})</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A' }}>✓ Metered</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Recycled & Reused (ZLD)</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.waterRecycled || '14,500'} kL ({activeSub.formData.waterZldEfficiency || '88%'} efficiency)</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#0284C7' }}>ZLD Verified</span>
+                      </div>
+                    </>
+                  )}
+                  {activeSub.module === 'Waste' && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Waste Generated</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.wasteGenerated || '142.5'} MT ({activeSub.formData.wasteCategory || 'Construction & Demolition'})</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A' }}>✓ Manifested</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Recycled / Diverted</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.wasteRecycled || '118.0'} MT ({activeSub.formData.wasteVendor || 'SPCB Authorized'})</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#0284C7' }}>Diverted</span>
+                      </div>
+                    </>
+                  )}
+                  {activeSub.module === 'Safety' && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Safe Man-Hours Worked</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.safetyManHours || '184,200'} hrs (LTIFR = 0.00)</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A' }}>✓ Zero Harm</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>Toolbox Attendance & Audits</div>
+                          <div style={{ fontSize: '10px', color: '#64748B' }}>{activeSub.formData.safetyToolboxAttendance || '1,420'} attendees ({activeSub.formData.safetyAudits || '14'} audits)</div>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#0284C7' }}>Audited</span>
+                      </div>
+                    </>
+                  )}
+                  {activeSub.module !== 'Energy' && activeSub.module !== 'Water' && activeSub.module !== 'Waste' && activeSub.module !== 'Safety' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#0F172A' }}>{activeSub.module} Disclosure Record</div>
+                        <div style={{ fontSize: '10px', color: '#64748B' }}>Verified operational data points logged by Site Officer</div>
+                      </div>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A' }}>✓ Validated</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                [
+                  { title: `${activeSub.module} Telemetry Primary Log`, qty: 'Validated data stream', verified: true },
+                  { title: 'Daily Engineering Signoff', qty: 'Batch certification', verified: true },
+                  { title: 'Substation / Weighbridge Log', qty: 'Calibrated records', verified: activeSub.status === 'Approved' }
+                ].map((rec, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#0F172A' }}>{rec.title}</div>
+                      <div style={{ fontSize: '10px', color: '#64748B' }}>{rec.qty}</div>
+                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: rec.verified ? '#16A34A' : '#D97706' }}>
+                      {rec.verified ? '✓ Validated' : 'Pending'}
+                    </span>
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: 700, color: rec.verified ? '#16A34A' : '#D97706' }}>
-                    {rec.verified ? '✓ Validated' : 'Pending'}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 
@@ -865,18 +1041,29 @@ export default function SubmissionsManager() {
           {activeTab.startsWith('Evidence') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ fontSize: '11px', color: '#64748B' }}>
-                Supporting verification documents:
+                Supporting verification documents ({activeSub.evidenceFiles?.length || activeSub.evidenceCount || 1}):
               </div>
-              {[
-                { name: 'Primary_Meter_Invoice.pdf', size: '1.8 MB' },
-                { name: 'NABL_Water_Lab_Report.pdf', size: '2.4 MB' },
-                { name: 'Calibration_Certificate_2026.pdf', size: '0.9 MB' }
-              ].map((doc, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
-                  <span style={{ fontWeight: 600, color: '#0284C7' }}>{doc.name}</span>
-                  <span style={{ fontSize: '10px', color: '#64748B' }}>{doc.size}</span>
-                </div>
-              ))}
+              {Array.isArray(activeSub.evidenceFiles) && activeSub.evidenceFiles.length > 0 ? (
+                activeSub.evidenceFiles.map((doc, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.85)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontWeight: 600, color: '#0284C7' }}>{doc.name}</span>
+                      <span style={{ fontSize: '9px', fontFamily: 'monospace', color: '#64748B' }}>{doc.hash ? `${doc.hash.slice(0, 18)}...` : 'SHA-256 Sealed'}</span>
+                    </div>
+                    <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>{doc.size || '1.2 MB'}</span>
+                  </div>
+                ))
+              ) : (
+                [
+                  { name: `${activeSub.module}_Site_Telemetry_Challan.pdf`, size: '1.8 MB' },
+                  { name: `${activeSub.module}_Calibration_Certificate.pdf`, size: '2.4 MB' }
+                ].map((doc, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.7)', border: '1px solid #E2E8F0', fontSize: '11px' }}>
+                    <span style={{ fontWeight: 600, color: '#0284C7' }}>{doc.name}</span>
+                    <span style={{ fontSize: '10px', color: '#64748B' }}>{doc.size}</span>
+                  </div>
+                ))
+              )}
             </div>
           )}
 

@@ -163,9 +163,15 @@
 /* Main 2-Column Master Grid */
 .rp-main-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2.1fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1.9fr) minmax(320px, 360px);
   gap: 16px;
   align-items: stretch;
+}
+
+@media (max-width: 1200px) {
+  .rp-main-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Left Master Card (Table Container) */
@@ -179,15 +185,17 @@
   box-shadow: 0 10px 34px rgba(30, 90, 160, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* Filter Bar */
 .rp-filter-bar {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  flex-wrap: nowrap;
+  gap: 10px;
+  flex-wrap: wrap;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
   margin-bottom: 8px;
@@ -195,8 +203,9 @@
 
 .rp-search-box {
   position: relative;
-  width: 175px;
-  flex-shrink: 0;
+  min-width: 150px;
+  flex: 1 1 180px;
+  max-width: 240px;
 }
 
 .rp-search-icon {
@@ -228,9 +237,11 @@
 
 .rp-filters-group {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 6px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 2 1 auto;
 }
 
 .rp-filter-select-wrap {
@@ -397,14 +408,97 @@
   margin: 0;
 }
 
-/* Document Hero Image Banner */
-.rp-preview-hero {
+/* Document Executive Cover Card */
+.rp-preview-cover-card {
   width: 100%;
+  min-height: 120px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 55%, #0284C7 100%);
+  color: #FFFFFF;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.rp-preview-cover-card::after {
+  content: '';
+  position: absolute;
+  right: -25px;
+  bottom: -25px;
+  width: 110px;
   height: 110px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.rp-cover-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rp-cover-brand {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #93C5FD;
+}
+
+.rp-cover-format {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+}
+
+.rp-cover-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.25;
+  margin-top: 4px;
+}
+
+.rp-cover-scope {
+  font-size: 10px;
+  color: #BAE6FD;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.rp-cover-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 6px;
+}
+
+.rp-cover-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #86EFAC;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.rp-cover-hash {
+  font-size: 8.5px;
+  font-family: monospace;
+  color: #94A3B8;
 }
 
 .rp-preview-info {

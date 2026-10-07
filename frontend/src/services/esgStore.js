@@ -859,18 +859,33 @@ class EsgStore {
 
   addEvidence(doc, user = 'Rohit Kumar') {
     const hash = 'a' + Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2) + '9f8e7d';
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const fullDateTime = `${formattedDate} ${formattedTime}`;
+
     const newDoc = {
-      id: `doc-${String(Date.now()).slice(-4)}`,
-      name: doc.name || 'Site_Compliance_Document.pdf',
-      category: doc.category || 'Environmental Evidence',
+      id: doc.id || `doc-${String(Date.now()).slice(-4)}`,
+      name: doc.name || doc.fileName || 'Site_Compliance_Document.pdf',
+      fileName: doc.name || doc.fileName || 'Site_Compliance_Document.pdf',
+      category: doc.category || doc.docType || 'Environmental Evidence',
+      docType: doc.docType || 'Compliance Log',
       size: doc.size || '1.8 MB',
-      sha256: doc.sha256 || hash,
+      sha256: doc.sha256 || doc.hash || hash,
       uploader: user,
-      uploadedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      period: 'September 2026',
+      uploadedBy: user,
+      uploadedAt: fullDateTime,
+      date: formattedDate,
+      period: doc.period || 'September 2026',
       status: 'VERIFIED',
-      site: 'Zojila Road Tunnel (PKG-2)',
-      linkedRecordId: doc.linkedRecordId || 'FR-001'
+      statusColor: '#16A34A',
+      statusBg: 'rgba(22, 163, 74, 0.12)',
+      site: doc.site || doc.project || 'Zojila Tunnel (PKG-2)',
+      project: doc.site || doc.project || 'Zojila Tunnel (PKG-2)',
+      projectShort: (doc.site || doc.project || 'Zojila Tunnel').split(' ')[0],
+      module: doc.module || 'Energy',
+      linkedRecordId: doc.linkedRecordId || 'FR-001',
+      blobUrl: doc.blobUrl || null
     };
 
     this.state.evidenceDocuments.unshift(newDoc);
@@ -892,23 +907,43 @@ class EsgStore {
 
   saveDraft(data, user = 'Rohit Kumar') {
     const kpis = this.getCalculatedKPIs();
-    const existingIndex = this.state.submissions.findIndex(s => s.status === 'DRAFT' && s.module === (data.module || 'Energy'));
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const fullDateTime = `${formattedDate} ${formattedTime}`;
+
+    const siteName = data.siteName || data.project || 'Zojila Tunnel (PKG-2)';
+    const siteCode = data.siteCode || data.projectCode || 'PKG-2';
+    const activeModule = data.module || 'Energy';
+
+    const existingIndex = this.state.submissions.findIndex(s => s.status === 'DRAFT' && s.module === activeModule && (s.siteName === siteName || s.project === siteName));
     const draftSub = {
-      id: existingIndex >= 0 ? this.state.submissions[existingIndex].id : `DRAFT-${Date.now().toString().slice(-4)}`,
-      siteCode: data.siteCode || 'SITE-ZOJILA-01',
-      siteName: data.siteName || 'Zojila Road Tunnel (PKG-2)',
-      module: data.module || 'Energy',
+      id: existingIndex >= 0 ? this.state.submissions[existingIndex].id : `DRAFT-${siteCode.replace(/[^A-Za-z0-9]/g, '')}-${Date.now().toString().slice(-4)}`,
+      siteCode: siteCode,
+      siteName: siteName,
+      project: siteName,
+      projectShort: siteName.split(' ')[0],
+      module: activeModule,
       period: data.period || 'September 2026',
       status: 'DRAFT',
+      rawStatus: 'DRAFT',
+      statusColor: '#64748B',
+      statusBg: 'rgba(100, 116, 139, 0.12)',
       version: 1,
       submittedBy: user,
-      submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      submittedOn: formattedDate,
+      submittedOnFull: fullDateTime,
+      submittedAt: now.toISOString(),
       reviewer: 'Pending Submission',
+      reviewDue: 'Not submitted',
+      recordsCount: data.recordsCount || 8,
+      evidenceCount: data.evidenceCount || 1,
       scope1: `${kpis.scope1_t} tCO2e`,
       scope2: `${kpis.scope2_t} tCO2e`,
       totalGhg: `${kpis.totalGhg_t} tCO2e`,
       evidenceAttached: this.state.evidenceDocuments.length,
-      notes: data.notes || 'Draft saved by Site Officer.'
+      notes: data.notes || `Draft saved for ${activeModule} (${siteName}).`,
+      formData: data.formData || null
     };
 
     if (existingIndex >= 0) {
@@ -923,23 +958,75 @@ class EsgStore {
 
   createSubmission(data, user = 'Rohit Kumar') {
     const kpis = this.getCalculatedKPIs();
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const fullDateTime = `${formattedDate} ${formattedTime}`;
+
+    const siteName = data.siteName || data.project || 'Zojila Tunnel (PKG-2)';
+    const siteCode = data.siteCode || data.projectCode || 'PKG-2';
+    const activeModule = data.module || 'Energy';
+    const subSeq = String(this.state.submissions.length + 1).padStart(3, '0');
+    const cleanCode = siteCode.replace(/[^A-Za-z0-9]/g, '').slice(0, 8);
+    const subId = data.id || `SUB-2026-${subSeq}`;
+
     const newSub = {
-      id: `SUB-ZOJILA-${Date.now().toString().slice(-4)}`,
-      siteCode: 'SITE-ZOJILA-01',
-      siteName: 'Zojila Road Tunnel (PKG-2)',
-      module: data.module || 'Monthly ESG Data Stream Package',
+      id: subId,
+      siteCode: siteCode,
+      siteName: siteName,
+      project: siteName,
+      projectShort: siteName.split(' ')[0],
+      module: activeModule,
       period: data.period || 'September 2026',
-      status: 'UNDER_REVIEW',
+      status: 'Under Review',
+      rawStatus: 'SUBMITTED',
+      statusColor: '#D97706',
+      statusBg: 'rgba(217, 119, 6, 0.12)',
       version: (this.state.submissions.length + 1),
-      submittedBy: user,
-      submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      reviewer: 'R. K. Sharma (BU Coordinator - Himalayan Tunnels)',
+      submittedBy: user || data.submittedBy || 'Rohit Kumar',
+      submittedOn: formattedDate,
+      submittedOnFull: fullDateTime,
+      submittedAt: now.toISOString(),
+      reviewer: data.reviewer || 'K. Venkat (BU Reviewer)',
+      reviewDue: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      recordsCount: data.recordsCount || (activeModule === 'Energy' ? 14 : 8),
+      evidenceCount: data.evidenceCount || (data.evidenceFiles?.length || 1),
       scope1: `${kpis.scope1_t} tCO2e`,
       scope2: `${kpis.scope2_t} tCO2e`,
       totalGhg: `${kpis.totalGhg_t} tCO2e`,
-      evidenceAttached: this.state.evidenceDocuments.length,
-      notes: data.notes || 'Full operational disclosure submitted for review.'
+      evidenceAttached: data.evidenceCount || this.state.evidenceDocuments.length,
+      notes: data.notes || `Official statutory ${activeModule} disclosure logged for ${siteName}.`,
+      formData: data.formData || null,
+      evidenceFiles: data.evidenceFiles || [],
+      timeline: [
+        { 
+          title: `Submitted by ${user || data.submittedBy || 'Rohit Kumar'}`, 
+          time: `${formattedDate}, ${formattedTime}`, 
+          desc: `Batch package with ${data.recordsCount || 12} ${activeModule} records & ${data.evidenceCount || 1} evidence files` 
+        },
+        { 
+          title: `Under Review • ${data.reviewer || 'K. Venkat (BU Reviewer)'}`, 
+          time: 'Due in 3 days', 
+          desc: 'Primary engineering validation and SHA-256 seal verification' 
+        }
+      ]
     };
+
+    // If any evidence files were provided, register them in evidenceDocuments
+    if (Array.isArray(data.evidenceFiles) && data.evidenceFiles.length > 0) {
+      data.evidenceFiles.forEach((f) => {
+        this.addEvidence({
+          name: f.name,
+          size: f.size,
+          sha256: f.hash,
+          site: siteName,
+          project: siteName,
+          module: activeModule,
+          period: data.period || 'September 2026',
+          blobUrl: f.blobUrl || null
+        }, user);
+      });
+    }
 
     this.state.submissions.unshift(newSub);
 
@@ -951,7 +1038,7 @@ class EsgStore {
       fieldChanged: 'status',
       oldValue: 'DRAFT',
       newValue: 'UNDER_REVIEW',
-      reason: `Created submission ${newSub.id} for ${newSub.period}`
+      reason: `Created submission ${newSub.id} for ${siteName} (${newSub.period})`
     });
 
     this.saveState();

@@ -30,7 +30,7 @@ export default function ReportsModule({ _onNavigate }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [selectedProject, setSelectedProject] = useState('All');
-  const [selectedPeriod, setSelectedPeriod] = useState('FY 2026-27');
+  const [selectedPeriod, setSelectedPeriod] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [viewMode, setViewMode] = useState('list');
   const [selectedReportId, setSelectedReportId] = useState(1);
@@ -44,6 +44,35 @@ export default function ReportsModule({ _onNavigate }) {
     api.getBrsrReport('period-2025-09').then(data => {
       if (data) setLiveBrsr(data);
     }).catch(e => console.warn('Live BRSR fetch failed:', e));
+
+    const unsub = esgStore.subscribe((state) => {
+      if (state && Array.isArray(state.submissions) && state.submissions.length > 0) {
+        const latestSub = state.submissions[0];
+        if (latestSub && latestSub.status !== 'DRAFT') {
+          const repId = `rep-${latestSub.id}`;
+          setReports(prev => {
+            if (prev.some(r => r.id === repId)) return prev;
+            return [{
+              id: repId,
+              name: `${latestSub.module} Disclosure Report`,
+              type: latestSub.module,
+              category: 'ESG Summary',
+              project: latestSub.siteName || latestSub.project || 'Zojila Tunnel (PKG-2)',
+              period: latestSub.period || 'Sep 2026',
+              generatedOn: latestSub.submittedOn || 'Today',
+              generatedTime: 'Just now',
+              generatedBy: latestSub.submittedBy || 'Rohit Kumar (Site Lead)',
+              status: 'Completed',
+              format: 'PDF',
+              fileSize: '3.6 MB',
+              hash: `sha256:${Math.random().toString(16).slice(2, 18)}`,
+              summary: `Consolidated ${latestSub.module} report for ${latestSub.siteName || latestSub.project} covering ${latestSub.period} adhering to SEBI BRSR guidelines.`
+            }, ...prev];
+          });
+        }
+      }
+    });
+    return unsub;
   }, []);
 
   // New report form state
@@ -595,12 +624,21 @@ Generated from live database records at ${new Date().toISOString()}.
             </span>
           </div>
 
-          {/* Preview Hero Cover Image */}
-          <img 
-            src={selectedReport.coverImage} 
-            alt="Report Cover" 
-            className="rp-preview-hero"
-          />
+          {/* Executive Report Cover Canvas */}
+          <div className="rp-preview-cover-card">
+            <div className="rp-cover-top-row">
+              <span className="rp-cover-brand">MEIL ESG ASSURANCE</span>
+              <span className="rp-cover-format">{selectedReport.format}</span>
+            </div>
+            <div>
+              <div className="rp-cover-title">{selectedReport.name}</div>
+              <div className="rp-cover-scope">{selectedReport.project} • {selectedReport.period}</div>
+            </div>
+            <div className="rp-cover-footer-row">
+              <span className="rp-cover-pill">✓ BRSR Core Aligned</span>
+              <span className="rp-cover-hash">{selectedReport.hash?.slice(0, 16)}</span>
+            </div>
+          </div>
 
           {/* Title & Info */}
           <div className="rp-preview-info">

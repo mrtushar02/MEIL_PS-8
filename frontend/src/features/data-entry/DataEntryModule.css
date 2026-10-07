@@ -62,17 +62,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 16px;
-  overflow-x: auto;
+  position: relative;
+  z-index: 50;
+  overflow: visible;
 }
 
 .de-context-left {
   display: flex;
   align-items: center;
   gap: 18px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   flex-shrink: 0;
+  position: relative;
 }
 
 .de-select-group {
@@ -1407,21 +1410,22 @@
    ==================================================================== */
 .de-relative-anchor {
   position: relative;
+  z-index: 60;
 }
 
 .de-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  min-width: 290px;
+  min-width: 320px;
   background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(203, 213, 225, 0.9);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(191, 219, 254, 0.95);
   border-radius: 14px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
-  z-index: 100;
-  padding: 6px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+  z-index: 1000;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;

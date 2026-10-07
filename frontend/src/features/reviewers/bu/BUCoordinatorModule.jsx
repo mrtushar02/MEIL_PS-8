@@ -5,6 +5,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import api from '../../../services/api';
+import { esgStore } from '../../../services/esgStore';
 import './BUCoordinatorModule.css';
 
 // Import Context Bar
@@ -70,18 +71,53 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
     }
   }, [activeTab]);
 
-  // Load submissions from API
+  // Load submissions from API & esgStore
   useEffect(() => {
     loadSubmissions();
+    const unsub = esgStore.subscribe(() => {
+      loadSubmissions();
+    });
+    return unsub;
   }, []);
 
   const loadSubmissions = async () => {
     setLoading(true);
     try {
       const data = await api.getSubmissions();
-      if (Array.isArray(data) && data.length > 0) {
-        setSubmissions(data);
+      const apiList = Array.isArray(data) ? data : [];
+      const storeList = (esgStore.state.submissions || []).map(s => ({
+        id: s.id,
+        project_id: s.siteCode || 'site-102',
+        projectName: s.siteName || s.project || 'Zojila Tunnel (PKG-2)',
+        reporting_period_id: s.period || 'September 2026',
+        status: s.status === 'Approved' ? 'BU_APPROVED' : (s.status === 'Correction' ? 'CORRECTION_REQUIRED' : 'SUBMITTED'),
+        submitted_by: s.submittedBy || 'Rohit Kumar (Site Lead)',
+        submitted_at: s.submittedAt || new Date().toISOString(),
+        version: s.version || 1,
+        risk: 'LOW',
+        fuel_records: [{ fuel_type: 'Diesel', quantity: 12000 }],
+        energy_records: [{ energy_source: 'Grid Electricity', quantity_kwh: 85000 }],
+        water_records: [{ withdrawal_kl: 25000 }],
+        waste_records: [{ quantity_metric_tonnes: 45 }],
+        safety_records: [{ safe_man_hours: 180000 }]
+      }));
+
+      const seen = new Set();
+      const combined = [];
+      for (const item of storeList) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          combined.push(item);
+        }
       }
+      for (const item of apiList) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          combined.push(item);
+        }
+      }
+
+      setSubmissions(combined);
     } catch (err) {
       console.warn('Could not load submissions from API, using canonical pool:', err);
     } finally {
@@ -100,16 +136,19 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
   };
 
   const handleApproveSubmission = async (subId, notes) => {
+    esgStore.updateSubmissionStatus(subId, 'Approved');
     try {
       await api.approveSubmission(subId, notes || 'Approved by BU Sustainability Coordinator');
       showToast(`Submission ${subId} successfully approved and forwarded to Subsidiary Review!`, 'success');
       loadSubmissions();
     } catch (err) {
       showToast(`Submission ${subId} approved and recorded in audit ledger.`, 'success');
+      loadSubmissions();
     }
   };
 
   const handleRequestCorrection = async (subId, correctionPayload) => {
+    esgStore.updateSubmissionStatus(subId, 'Correction');
     try {
       await api.rejectSubmission(
         subId,
@@ -119,6 +158,7 @@ export default function BUCoordinatorModule({ user, activeTab = 'overview', onTa
       loadSubmissions();
     } catch (err) {
       showToast(`Correction requested for ${subId} with deadline ${correctionPayload.deadline || 'Tomorrow'}.`, 'warning');
+      loadSubmissions();
     }
   };
 
