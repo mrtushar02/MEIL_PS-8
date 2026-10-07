@@ -663,13 +663,14 @@ export default function SubmissionsManager() {
               </div>
 
               {/* View Switcher: List vs Grid */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '2px' }}>
-                <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>View</span>
+              <div className="sm-filter-select-wrap">
+                <span className="sm-filter-lbl">View</span>
                 <div className="sm-view-toggle">
                   <button 
                     type="button" 
                     className={`sm-view-btn ${viewMode === 'list' ? 'active' : ''}`}
                     onClick={() => setViewMode('list')}
+                    title="List View"
                   >
                     <List size={13} />
                   </button>
@@ -677,6 +678,7 @@ export default function SubmissionsManager() {
                     type="button" 
                     className={`sm-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                     onClick={() => setViewMode('grid')}
+                    title="Grid View"
                   >
                     <LayoutGrid size={13} />
                   </button>
@@ -684,15 +686,18 @@ export default function SubmissionsManager() {
               </div>
 
               {/* Export Button */}
-              <button 
-                type="button" 
-                className="sm-export-btn"
-                onClick={handleExportCSV}
-              >
-                <Download size={12} />
-                <span>Export</span>
-                <ChevronDown size={10} />
-              </button>
+              <div className="sm-filter-select-wrap">
+                <span className="sm-filter-lbl" style={{ visibility: 'hidden' }}>Export</span>
+                <button 
+                  type="button" 
+                  className="sm-export-btn"
+                  onClick={handleExportCSV}
+                >
+                  <Download size={12} />
+                  <span>Export</span>
+                  <ChevronDown size={10} />
+                </button>
+              </div>
             </div>
           </div>
 
