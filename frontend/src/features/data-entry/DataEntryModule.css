@@ -1299,3 +1299,205 @@
     display: none;
   }
 }
+
+/* ====================================================================
+   Top 4-Step Stepper Bar (iOS Liquid Glass Workflow)
+   ==================================================================== */
+.de-top-stepper-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 16px 36px;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.de-top-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  border: none;
+  padding: 0;
+  outline: none;
+}
+
+.de-top-step:hover .de-top-step-circle {
+  border-color: #0284C7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(2, 132, 199, 0.2);
+}
+
+.de-top-step-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.de-top-step.active .de-top-step-circle {
+  border-color: #2563EB;
+  color: #2563EB;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14), 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.de-top-step.completed .de-top-step-circle {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+}
+
+.de-top-step-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  letter-spacing: -0.01em;
+  transition: color 0.15s ease;
+}
+
+.de-top-step.active .de-top-step-title {
+  color: #2563EB;
+  font-weight: 800;
+}
+
+.de-top-step-sub {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-top: -2px;
+}
+
+.de-top-step-connector {
+  flex: 1;
+  height: 2px;
+  background: #E2E8F0;
+  margin: 0 18px;
+  margin-top: -24px;
+  position: relative;
+  z-index: 1;
+  transition: background 0.2s ease;
+}
+
+.de-top-step-connector.completed {
+  background: #2563EB;
+}
+
+/* ====================================================================
+   Dropdown Menus for Project & Reporting Period
+   ==================================================================== */
+.de-relative-anchor {
+  position: relative;
+}
+
+.de-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 290px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+  z-index: 100;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 380px;
+  overflow-y: auto;
+  animation: deDropdownFade 0.15s ease-out;
+}
+
+@keyframes deDropdownFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.de-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.de-dropdown-item:hover {
+  background: rgba(240, 249, 255, 0.9);
+}
+
+.de-dropdown-item.active {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.de-dropdown-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.de-dropdown-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.de-dropdown-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.de-dropdown-sub {
+  font-size: 10.5px;
+  color: #64748B;
+}
+
+/* Toast Message */
+.de-toast-banner {
+  position: fixed;
+  bottom: 80px;
+  right: 32px;
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 999;
+  animation: deDropdownFade 0.2s ease-out;
+}
+

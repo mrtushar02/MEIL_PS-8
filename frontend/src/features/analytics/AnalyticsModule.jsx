@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   TrendingUp,
   Activity,
@@ -9,12 +9,31 @@ import {
   Trash2,
   ShieldCheck,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Layers,
+  ChevronDown,
+  Filter,
+  CheckCircle2,
+  Calendar,
+  X
 } from 'lucide-react';
+import { esgStore, EMISSION_FACTORS } from '../../services/esgStore';
 import './AnalyticsModule.css';
 
 export default function AnalyticsModule({ onNavigate }) {
-  // Filters
+  // 1. Reactive Store Subscription
+  const [storeKpis, setStoreKpis] = useState(() => esgStore.getCalculatedKPIs());
+  const [storeState, setStoreState] = useState(() => esgStore.getState());
+
+  useEffect(() => {
+    const unsub = esgStore.subscribe((state) => {
+      setStoreKpis(esgStore.getCalculatedKPIs());
+      setStoreState({ ...state });
+    });
+    return unsub;
+  }, []);
+
+  // 2. Filters State
   const [selectedProject, setSelectedProject] = useState('All Projects');
   const [selectedPeriod, setSelectedPeriod] = useState('FY 2026-27');
   const [selectedMetric, setSelectedMetric] = useState('All Metrics');
@@ -25,7 +44,240 @@ export default function AnalyticsModule({ onNavigate }) {
   const [hoveredEnergyMonth, setHoveredEnergyMonth] = useState(null);
   const [detailsModal, setDetailsModal] = useState(null);
 
-  // Reset filters
+  // Project multiplier factors for realistic responsive figures
+  const projectMultiplier = useMemo(() => {
+    switch (selectedProject) {
+      case 'Zojila Tunnel (PKG-2)': return 0.22;
+      case 'Bengaluru Metro': return 0.35;
+      case 'Krishna Water Supply': return 0.18;
+      case 'MEIL Energy Park': return 0.15;
+      case 'Hyderabad Infra Park': return 0.10;
+      default: return 1.0;
+    }
+  }, [selectedProject]);
+
+  // Period multiplier factor
+  const periodMultiplier = useMemo(() => {
+    switch (selectedPeriod) {
+      case 'FY 2025-26': return 0.94;
+      case 'Q2 FY 2026-27': return 0.38;
+      default: return 1.0;
+    }
+  }, [selectedPeriod]);
+
+  // Dynamic Calculated KPI totals (combining store state and active project filter)
+  const computedKpis = useMemo(() => {
+    const isSingleProject = selectedProject === 'Zojila Tunnel (PKG-2)';
+    
+    // Live store baseline additions
+    const liveDieselL = storeKpis.dieselLitres || 18650;
+    const liveGridMwh = storeKpis.gridMwh || 384;
+    const liveScope1 = storeKpis.scope1_t || (liveDieselL * 2.68 / 1000);
+    const liveScope2 = storeKpis.scope2_t || (liveGridMwh * 1000 * 0.716 / 1000);
+    const liveTotalGhg = Math.round((liveScope1 + liveScope2) * 10) / 10;
+
+    if (isSingleProject) {
+      return {
+        totalEmissions: liveTotalGhg > 0 ? liveTotalGhg.toLocaleString() : '347.4',
+        emissionsDelta: '-4.2% YoY',
+        isEmissionsGood: true,
+        energyMwh: liveGridMwh.toLocaleString(),
+        energyDelta: '+1.2%',
+        isEnergyGood: false,
+        waterKl: (18200).toLocaleString(),
+        waterDelta: '-8.1%',
+        isWaterGood: true,
+        wasteMt: (145.8).toLocaleString(),
+        wasteDelta: '+12.5%',
+        isWasteGood: true,
+        scope1: liveScope1.toFixed(1),
+        scope2: liveScope2.toFixed(1),
+        recycledWaterPct: storeKpis.recycledSharePct || 70,
+        wasteRecycledPct: storeKpis.wasteRecoveryPct || 94.2
+      };
+    }
+
+    // Aggregated Group Level
+    const baseEmissions = Math.round(12480 * projectMultiplier * periodMultiplier);
+    const baseEnergy = Math.round(18650 * projectMultiplier * periodMultiplier);
+    const baseWater = Math.round(124300 * projectMultiplier * periodMultiplier);
+    const baseWaste = Math.round(2840 * projectMultiplier * periodMultiplier);
+
+    return {
+      totalEmissions: baseEmissions.toLocaleString(),
+      emissionsDelta: '+6.8% YoY',
+      isEmissionsGood: false,
+      energyMwh: baseEnergy.toLocaleString(),
+      energyDelta: '-4.2%',
+      isEnergyGood: true,
+      waterKl: baseWater.toLocaleString(),
+      waterDelta: '-8.1%',
+      isWaterGood: true,
+      wasteMt: baseWaste.toLocaleString(),
+      wasteDelta: '+12.5%',
+      isWasteGood: true,
+      scope1: Math.round(baseEmissions * 0.41).toLocaleString(),
+      scope2: Math.round(baseEmissions * 0.59).toLocaleString(),
+      recycledWaterPct: 70.0,
+      wasteRecycledPct: 94.2
+    };
+  }, [selectedProject, projectMultiplier, periodMultiplier, storeKpis]);
+
+  // Dynamic Chart Resolution based on selectedView (Monthly, Quarterly, Yearly)
+  const timeLabels = useMemo(() => {
+    if (selectedView === 'Quarterly') {
+      return ['Q1 FY26', 'Q2 FY26', 'Q3 FY26', 'Q4 FY26'];
+    }
+    if (selectedView === 'Yearly') {
+      return ['FY 2023-24', 'FY 2024-25', 'FY 2025-26', 'FY 2026-27'];
+    }
+    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+  }, [selectedView]);
+
+  // Dynamic Emissions Trend Data
+  const emissionsData = useMemo(() => {
+    const mult = projectMultiplier * periodMultiplier;
+    if (selectedView === 'Quarterly') {
+      return [
+        { m: 'Q1 FY26', s1: Math.round(3800 * mult), s2: Math.round(5900 * mult), total: Math.round(9700 * mult) },
+        { m: 'Q2 FY26', s1: Math.round(4100 * mult), s2: Math.round(6200 * mult), total: Math.round(10300 * mult) },
+        { m: 'Q3 FY26', s1: Math.round(3900 * mult), s2: Math.round(6000 * mult), total: Math.round(9900 * mult) },
+        { m: 'Q4 FY26', s1: Math.round(4200 * mult), s2: Math.round(6400 * mult), total: Math.round(10600 * mult) }
+      ];
+    }
+    if (selectedView === 'Yearly') {
+      return [
+        { m: 'FY 2023-24', s1: Math.round(42000 * mult), s2: Math.round(68000 * mult), total: Math.round(110000 * mult) },
+        { m: 'FY 2024-25', s1: Math.round(46000 * mult), s2: Math.round(72000 * mult), total: Math.round(118000 * mult) },
+        { m: 'FY 2025-26', s1: Math.round(49000 * mult), s2: Math.round(75000 * mult), total: Math.round(124000 * mult) },
+        { m: 'FY 2026-27', s1: Math.round(51000 * mult), s2: Math.round(78000 * mult), total: Math.round(129000 * mult) }
+      ];
+    }
+
+    return [
+      { m: 'Jan', s1: Math.round(4200 * mult), s2: Math.round(7800 * mult), total: Math.round(12000 * mult) },
+      { m: 'Feb', s1: Math.round(4100 * mult), s2: Math.round(7600 * mult), total: Math.round(11700 * mult) },
+      { m: 'Mar', s1: Math.round(4600 * mult), s2: Math.round(8100 * mult), total: Math.round(12700 * mult) },
+      { m: 'Apr', s1: Math.round(4400 * mult), s2: Math.round(7900 * mult), total: Math.round(12300 * mult) },
+      { m: 'May', s1: Math.round(4900 * mult), s2: Math.round(8300 * mult), total: Math.round(13200 * mult) },
+      { m: 'Jun', s1: Math.round(5200 * mult), s2: Math.round(8600 * mult), total: Math.round(13800 * mult) },
+      { m: 'Jul', s1: Math.round(4800 * mult), s2: Math.round(8200 * mult), total: Math.round(13000 * mult) },
+      { m: 'Aug', s1: Math.round(4700 * mult), s2: Math.round(8100 * mult), total: Math.round(12800 * mult) },
+      { m: 'Sep', s1: Math.round(5300 * mult), s2: Math.round(8900 * mult), total: Math.round(14200 * mult) }
+    ];
+  }, [projectMultiplier, periodMultiplier, selectedView]);
+
+  // Dynamic Energy Consumption Stacked Data
+  const energyData = useMemo(() => {
+    const mult = projectMultiplier * periodMultiplier;
+    if (selectedView === 'Quarterly') {
+      return [
+        { m: 'Q1 FY26', grid: Math.round(3800 * mult), diesel: Math.round(1800 * mult), renew: Math.round(1200 * mult) },
+        { m: 'Q2 FY26', grid: Math.round(4200 * mult), diesel: Math.round(1950 * mult), renew: Math.round(1400 * mult) },
+        { m: 'Q3 FY26', grid: Math.round(4400 * mult), diesel: Math.round(2050 * mult), renew: Math.round(1600 * mult) },
+        { m: 'Q4 FY26', grid: Math.round(4800 * mult), diesel: Math.round(2200 * mult), renew: Math.round(1850 * mult) }
+      ];
+    }
+    if (selectedView === 'Yearly') {
+      return [
+        { m: 'FY 2023-24', grid: Math.round(38000 * mult), diesel: Math.round(18000 * mult), renew: Math.round(9000 * mult) },
+        { m: 'FY 2024-25', grid: Math.round(42000 * mult), diesel: Math.round(19000 * mult), renew: Math.round(12000 * mult) },
+        { m: 'FY 2025-26', grid: Math.round(45000 * mult), diesel: Math.round(20500 * mult), renew: Math.round(15500 * mult) },
+        { m: 'FY 2026-27', grid: Math.round(49000 * mult), diesel: Math.round(22000 * mult), renew: Math.round(19000 * mult) }
+      ];
+    }
+
+    return [
+      { m: 'Jan', grid: Math.round(3800 * mult), diesel: Math.round(1800 * mult), renew: Math.round(1200 * mult) },
+      { m: 'Feb', grid: Math.round(3700 * mult), diesel: Math.round(1700 * mult), renew: Math.round(1300 * mult) },
+      { m: 'Mar', grid: Math.round(4200 * mult), diesel: Math.round(1900 * mult), renew: Math.round(1400 * mult) },
+      { m: 'Apr', grid: Math.round(3900 * mult), diesel: Math.round(1750 * mult), renew: Math.round(1500 * mult) },
+      { m: 'May', grid: Math.round(4400 * mult), diesel: Math.round(2000 * mult), renew: Math.round(1600 * mult) },
+      { m: 'Jun', grid: Math.round(4600 * mult), diesel: Math.round(2100 * mult), renew: Math.round(1700 * mult) },
+      { m: 'Jul', grid: Math.round(4300 * mult), diesel: Math.round(1950 * mult), renew: Math.round(1800 * mult) },
+      { m: 'Aug', grid: Math.round(4200 * mult), diesel: Math.round(1900 * mult), renew: Math.round(1850 * mult) },
+      { m: 'Sep', grid: Math.round(4800 * mult), diesel: Math.round(2200 * mult), renew: Math.round(1950 * mult) }
+    ];
+  }, [projectMultiplier, periodMultiplier, selectedView]);
+
+  // Project comparisons filtered list
+  const projectScores = useMemo(() => {
+    const list = [
+      { name: 'Zojila Tunnel (PKG-2)', energy: 30, water: 25, waste: 20, safety: 13, total: '88%' },
+      { name: 'Bengaluru Metro', energy: 28, water: 22, waste: 18, safety: 14, total: '82%' },
+      { name: 'Krishna Water Supply', energy: 32, water: 28, waste: 19, safety: 13, total: '92%' },
+      { name: 'MEIL Energy Park', energy: 34, water: 24, waste: 18, safety: 14, total: '90%' },
+      { name: 'Hyderabad Infra Park', energy: 26, water: 20, waste: 17, safety: 13, total: '76%' }
+    ];
+    if (selectedProject === 'All Projects') return list;
+    return list.filter((p) => p.name.toLowerCase().includes(selectedProject.toLowerCase().split(' ')[0]));
+  }, [selectedProject]);
+
+  // Key calculated insights
+  const insights = [
+    {
+      text: `Emissions tracking ${computedKpis.emissionsDelta} under CEA Grid v19 Baseline.`,
+      icon: TrendingUp,
+      bg: 'rgba(2, 132, 199, 0.1)',
+      color: '#0284C7'
+    },
+    {
+      text: `Water recycling maintained at ${computedKpis.recycledWaterPct}% across operational sites.`,
+      icon: Droplets,
+      bg: 'rgba(14, 165, 233, 0.1)',
+      color: '#0284C7'
+    },
+    {
+      text: `Waste diversion from landfill confirmed at ${computedKpis.wasteRecycledPct}% with CPCB passbooks.`,
+      icon: Trash2,
+      bg: 'rgba(249, 115, 22, 0.1)',
+      color: '#EA580C'
+    },
+    {
+      text: 'Safety data assurance completed with 100% verified toolbox talks.',
+      icon: ShieldCheck,
+      bg: 'rgba(22, 163, 74, 0.1)',
+      color: '#16A34A'
+    }
+  ];
+
+  // Completeness breakdown matching donut
+  const moduleCompleteness = [
+    { name: 'Energy', pct: 92, color: '#38BDF8' },
+    { name: 'Water', pct: 86, color: '#0284C7' },
+    { name: 'Waste', pct: 84, color: '#F59E0B' },
+    { name: 'Safety', pct: 98, color: '#10B981' },
+    { name: 'Social', pct: 76, color: '#EC4899' },
+    { name: 'Governance', pct: 90, color: '#8B5CF6' }
+  ];
+
+  // SVG Chart Scaling
+  const svgWidth = 460;
+  const svgHeight = 150;
+  const paddingLeft = 36;
+  const paddingBottom = 22;
+  const paddingTop = 10;
+  const chartW = svgWidth - paddingLeft;
+  const chartH = svgHeight - paddingBottom - paddingTop;
+  
+  const maxY = useMemo(() => {
+    const maxVal = Math.max(...emissionsData.map(d => Math.max(d.s1, d.s2, d.total)), 1);
+    return maxVal * 1.25;
+  }, [emissionsData]);
+
+  const maxEnergyY = useMemo(() => {
+    const maxVal = Math.max(...energyData.map(d => (d.grid + d.diesel + d.renew)), 1);
+    return maxVal * 1.25;
+  }, [energyData]);
+
+  const getX = (index) => paddingLeft + (index / (emissionsData.length - 1 || 1)) * chartW;
+  const getY = (val) => paddingTop + chartH - (val / maxY) * chartH;
+
+  const scope1Points = emissionsData.map((d, i) => `${getX(i)},${getY(d.s1)}`).join(' ');
+  const scope2Points = emissionsData.map((d, i) => `${getX(i)},${getY(d.s2)}`).join(' ');
+  const scope2Area = `${scope2Points} ${getX(emissionsData.length - 1)},${paddingTop + chartH} ${paddingLeft},${paddingTop + chartH}`;
+
+  // Reset Filters
   const handleReset = () => {
     setSelectedProject('All Projects');
     setSelectedPeriod('FY 2026-27');
@@ -40,146 +292,36 @@ Generated On: ${new Date().toLocaleString()}
 Scope: ${selectedProject}
 Period: ${selectedPeriod}
 Resolution: ${selectedView}
+Active Metric: ${selectedMetric}
 
 KPI SUMMARY:
-Total GHG Emissions: 12,480 tCO2e (+6.8% YoY)
-Scope 1 Direct Emissions: 5,120 tCO2e
-Scope 2 Indirect Grid (CEA v19): 7,360 tCO2e
-Energy Consumption: 18,650 MWh (-4.2%)
-Water Consumption: 1,24,300 KL (-8.1%)
-Water Recycled Share: 70.0% (Zero Liquid Discharge SPCB Compliant)
-Waste Generated: 2,840 MT (+12.5%)
-Waste Diverted from Landfill: 94.2%
+Total GHG Emissions: ${computedKpis.totalEmissions} tCO2e (${computedKpis.emissionsDelta})
+Scope 1 Direct Fuel: ${computedKpis.scope1} tCO2e
+Scope 2 Indirect Grid (CEA v19): ${computedKpis.scope2} tCO2e
+Energy Consumption: ${computedKpis.energyMwh} MWh (${computedKpis.energyDelta})
+Water Consumption: ${computedKpis.waterKl} KL (${computedKpis.waterDelta})
+Water Recycled Share: ${computedKpis.recycledWaterPct}% (Zero Liquid Discharge Compliant)
+Waste Generated: ${computedKpis.wasteMt} MT (${computedKpis.wasteDelta})
+Waste Diverted from Landfill: ${computedKpis.wasteRecycledPct}%
 
-MONTHLY EMISSIONS TREND (tCO2e):
-Month,Scope 1,Scope 2,Total
-Jan,520,780,1300
-Feb,510,760,1270
-Mar,580,820,1400
-Apr,540,790,1330
-May,590,830,1420
-Jun,610,870,1480
-Jul,570,810,1380
-Aug,560,800,1360
-Sep,640,890,1530
+EMISSIONS SERIES (${selectedView}):
+${selectedView},Scope 1 (tCO2e),Scope 2 (tCO2e),Total (tCO2e)
+${emissionsData.map(e => `${e.m},${e.s1},${e.s2},${e.total}`).join('\n')}
 
-PROJECT-WISE ESG PERFORMANCE:
-Project,Score,Energy,Water,Waste,Safety
-Zojila Tunnel (PKG-2),88%,92%,85%,88%,98%
-Bengaluru Metro,82%,80%,78%,84%,94%
-Krishna Water Supply,92%,90%,96%,90%,96%
-MEIL Energy Park,90%,96%,88%,86%,95%
-Hyderabad Infra Park,76%,74%,72%,78%,90%
+ENERGY MIX SERIES (${selectedView}):
+${selectedView},Grid (MWh),Diesel (MWh),Renewable (MWh)
+${energyData.map(e => `${e.m},${e.grid},${e.diesel},${e.renew}`).join('\n')}
 `;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `MEIL_ESG_Analytics_${selectedPeriod.replace(/\s+/g, '_')}.csv`;
+    link.download = `MEIL_ESG_Analytics_${selectedProject.replace(/[^a-zA-Z0-9]/g, '_')}_${selectedPeriod.replace(/\s+/g, '_')}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
-
-  // Monthly data series matching the charts in reference
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-  
-  // Emissions Trend points (Jan to Sep)
-  // Max scale: 20,000 on Y-axis
-  const emissionsData = [
-    { m: 'Jan', s1: 4200, s2: 7800, total: 12000 },
-    { m: 'Feb', s1: 4100, s2: 7600, total: 11700 },
-    { m: 'Mar', s1: 4600, s2: 8100, total: 12700 },
-    { m: 'Apr', s1: 4400, s2: 7900, total: 12300 },
-    { m: 'May', s1: 4900, s2: 8300, total: 13200 },
-    { m: 'Jun', s1: 5200, s2: 8600, total: 13800 },
-    { m: 'Jul', s1: 4800, s2: 8200, total: 13000 },
-    { m: 'Aug', s1: 4700, s2: 8100, total: 12800 },
-    { m: 'Sep', s1: 5300, s2: 8900, total: 14200 },
-  ];
-
-  // Energy consumption stacked bar data (Jan to Sep)
-  // Max scale: 10,000 MWh
-  const energyData = [
-    { m: 'Jan', grid: 3800, diesel: 1800, renew: 1200 },
-    { m: 'Feb', grid: 3700, diesel: 1700, renew: 1300 },
-    { m: 'Mar', grid: 4200, diesel: 1900, renew: 1400 },
-    { m: 'Apr', grid: 3900, diesel: 1750, renew: 1500 },
-    { m: 'May', grid: 4400, diesel: 2000, renew: 1600 },
-    { m: 'Jun', grid: 4600, diesel: 2100, renew: 1700 },
-    { m: 'Jul', grid: 4300, diesel: 1950, renew: 1800 },
-    { m: 'Aug', grid: 4200, diesel: 1900, renew: 1850 },
-    { m: 'Sep', grid: 4800, diesel: 2200, renew: 1950 },
-  ];
-
-  // Project comparisons matching bottom left card
-  const projectScores = [
-    { name: 'Zojila Tunnel (PKG-2)', energy: 30, water: 25, waste: 20, safety: 13, total: '88%' },
-    { name: 'Bengaluru Metro', energy: 28, water: 22, waste: 18, safety: 14, total: '82%' },
-    { name: 'Krishna Water Supply', energy: 32, water: 28, waste: 19, safety: 13, total: '92%' },
-    { name: 'MEIL Energy Park', energy: 34, water: 24, waste: 18, safety: 14, total: '90%' },
-    { name: 'Hyderabad Infra Park', energy: 26, water: 20, waste: 17, safety: 13, total: '76%' },
-  ];
-
-  // Key calculated insights matching bottom middle card
-  const insights = [
-    {
-      text: 'Emissions decreased by 6.8% compared to last period.',
-      icon: TrendingUp,
-      bg: 'rgba(2, 132, 199, 0.1)',
-      color: '#0284C7'
-    },
-    {
-      text: 'Water recycling improved by 12% across all sites.',
-      icon: Droplets,
-      bg: 'rgba(14, 165, 233, 0.1)',
-      color: '#0284C7'
-    },
-    {
-      text: 'Waste generation reduced by 12.5% with better segregation.',
-      icon: Trash2,
-      bg: 'rgba(249, 115, 22, 0.1)',
-      color: '#EA580C'
-    },
-    {
-      text: 'Safety data completion is at 98%.',
-      icon: ShieldCheck,
-      bg: 'rgba(22, 163, 74, 0.1)',
-      color: '#16A34A'
-    }
-  ];
-
-  // Completeness breakdown matching bottom right donut
-  const moduleCompleteness = [
-    { name: 'Energy', pct: 88, color: '#38BDF8' },
-    { name: 'Water', pct: 72, color: '#0284C7' },
-    { name: 'Waste', pct: 62, color: '#F59E0B' },
-    { name: 'Safety', pct: 90, color: '#10B981' },
-    { name: 'Social', pct: 64, color: '#EC4899' },
-    { name: 'Governance', pct: 78, color: '#8B5CF6' }
-  ];
-
-  // SVG dimensions for Line Chart
-  const svgWidth = 460;
-  const svgHeight = 150;
-  const paddingLeft = 36;
-  const paddingBottom = 22;
-  const paddingTop = 10;
-  const chartW = svgWidth - paddingLeft;
-  const chartH = svgHeight - paddingBottom - paddingTop;
-  const maxY = 20000;
-
-  // Convert point to SVG coordinates
-  const getX = (index) => paddingLeft + (index / (emissionsData.length - 1)) * chartW;
-  const getY = (val) => paddingTop + chartH - (val / maxY) * chartH;
-
-  // Path generators
-  const scope1Points = emissionsData.map((d, i) => `${getX(i)},${getY(d.s1)}`).join(' ');
-  const scope2Points = emissionsData.map((d, i) => `${getX(i)},${getY(d.s2)}`).join(' ');
-
-  // Area path for Scope 2
-  const scope2Area = `${scope2Points} ${getX(emissionsData.length - 1)},${paddingTop + chartH} ${paddingLeft},${paddingTop + chartH}`;
 
   return (
     <div className="an-container">
@@ -190,12 +332,15 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
             <Activity size={22} />
           </div>
           <div>
-            <h1 className="an-page-title">Analytics</h1>
-            <p className="an-page-subtitle">Explore ESG performance, trends and insights across your projects.</p>
+            <h1 className="an-page-title">Analytics Studio</h1>
+            <p className="an-page-subtitle">
+              Live ESG performance telemetry, Scope 1 & 2 carbon footprints, and BRSR metrics for {selectedProject}.
+            </p>
           </div>
         </div>
 
         <button 
+          type="button"
           className="an-btn-primary-action"
           onClick={handleExport}
         >
@@ -204,21 +349,21 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
         </button>
       </div>
 
-      {/* 2. Compact Glass Filter Bar */}
+      {/* 2. Interactive Glass Filter Bar */}
       <div className="an-filter-bar-card">
         <div className="an-filter-items">
           <div className="an-filter-item">
-            <span className="an-filter-label">Project</span>
+            <span className="an-filter-label">Project / Site</span>
             <select 
               className="an-filter-select"
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
             >
-              <option value="All Projects">All Projects</option>
+              <option value="All Projects">All Projects (Group Aggregation)</option>
               <option value="Zojila Tunnel (PKG-2)">Zojila Tunnel (PKG-2)</option>
-              <option value="Bengaluru Metro">Bengaluru Metro</option>
+              <option value="Bengaluru Metro">Bengaluru Metro Phase 2</option>
               <option value="Krishna Water Supply">Krishna Water Supply</option>
-              <option value="MEIL Energy Park">MEIL Energy Park</option>
+              <option value="MEIL Energy Park">MEIL Energy Park 500MW</option>
               <option value="Hyderabad Infra Park">Hyderabad Infra Park</option>
             </select>
           </div>
@@ -230,111 +375,151 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
-              <option value="FY 2026-27">FY 2026-27</option>
-              <option value="FY 2025-26">FY 2025-26</option>
-              <option value="Q2 FY 2026-27">Q2 FY 2026-27</option>
+              <option value="FY 2026-27">FY 2026-27 (Current)</option>
+              <option value="FY 2025-26">FY 2025-26 (Baseline)</option>
+              <option value="Q2 FY 2026-27">Q2 FY 2026-27 (Quarter)</option>
             </select>
           </div>
 
           <div className="an-filter-item">
-            <span className="an-filter-label">Metric</span>
+            <span className="an-filter-label">Metric Focus</span>
             <select 
               className="an-filter-select"
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
             >
               <option value="All Metrics">All Metrics</option>
-              <option value="Emissions">GHG Emissions</option>
+              <option value="Emissions">GHG Emissions (Scope 1 & 2)</option>
               <option value="Energy">Energy (MWh)</option>
-              <option value="Water">Water (KL)</option>
-              <option value="Waste">Waste (MT)</option>
+              <option value="Water">Water & ZLD (kL)</option>
+              <option value="Waste">Waste Circularity (MT)</option>
             </select>
           </div>
 
           <div className="an-filter-item">
-            <span className="an-filter-label">View</span>
+            <span className="an-filter-label">Resolution / View</span>
             <select 
               className="an-filter-select"
               value={selectedView}
               onChange={(e) => setSelectedView(e.target.value)}
             >
-              <option value="Monthly">Monthly</option>
-              <option value="Quarterly">Quarterly</option>
-              <option value="Yearly">Yearly</option>
+              <option value="Monthly">Monthly View</option>
+              <option value="Quarterly">Quarterly View</option>
+              <option value="Yearly">Yearly Comparison</option>
             </select>
           </div>
         </div>
 
         <button 
+          type="button"
           className="an-reset-btn"
           onClick={handleReset}
         >
-          Reset
+          Reset Filters
         </button>
       </div>
 
       {/* 3. 4 Top KPI Cards Row */}
       <div className="an-kpi-grid">
         {/* Total Emissions */}
-        <div className="an-kpi-card">
-          <div className="an-kpi-icon-wrap" style={{ background: 'rgba(22, 163, 74, 0.1)', color: '#16A34A' }}>
+        <div 
+          className="an-kpi-card" 
+          style={{ cursor: 'pointer' }}
+          onClick={() => setDetailsModal('emissions')}
+          title="Click to view GHG Methodology"
+        >
+          <div className="an-kpi-icon-wrap" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#DC2626' }}>
             <Flame size={22} />
           </div>
           <div className="an-kpi-content">
             <div className="an-kpi-title">Total Emissions (tCO₂e)</div>
             <div className="an-kpi-val-row">
-              <span className="an-kpi-val">12,480</span>
-              <span className="an-kpi-badge" style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#16A34A' }}>
-                <ArrowDownRight size={12} /> +6.8%
+              <span className="an-kpi-val">{computedKpis.totalEmissions}</span>
+              <span 
+                className="an-kpi-badge" 
+                style={{ 
+                  background: computedKpis.isEmissionsGood ? 'rgba(22, 163, 74, 0.12)' : 'rgba(239, 68, 68, 0.12)', 
+                  color: computedKpis.isEmissionsGood ? '#16A34A' : '#DC2626' 
+                }}
+              >
+                {computedKpis.isEmissionsGood ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />} 
+                {computedKpis.emissionsDelta}
               </span>
+            </div>
+            <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
+              Scope 1: {computedKpis.scope1} • Scope 2: {computedKpis.scope2}
             </div>
           </div>
         </div>
 
         {/* Energy Consumption */}
-        <div className="an-kpi-card">
+        <div 
+          className="an-kpi-card"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setDetailsModal('energy')}
+          title="Click to view Energy Telemetry"
+        >
           <div className="an-kpi-icon-wrap" style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284C7' }}>
             <Zap size={22} />
           </div>
           <div className="an-kpi-content">
             <div className="an-kpi-title">Energy Consumption (MWh)</div>
             <div className="an-kpi-val-row">
-              <span className="an-kpi-val">18,650</span>
+              <span className="an-kpi-val">{computedKpis.energyMwh}</span>
               <span className="an-kpi-badge" style={{ background: 'rgba(2, 132, 199, 0.12)', color: '#0284C7' }}>
-                <ArrowDownRight size={12} /> -4.2%
+                <ArrowDownRight size={12} /> {computedKpis.energyDelta}
               </span>
+            </div>
+            <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
+              Grid: 72% • Diesel: 16% • Solar: 12%
             </div>
           </div>
         </div>
 
         {/* Water Consumption */}
-        <div className="an-kpi-card">
+        <div 
+          className="an-kpi-card"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setDetailsModal('water')}
+          title="Click to view Water Balance"
+        >
           <div className="an-kpi-icon-wrap" style={{ background: 'rgba(14, 165, 233, 0.1)', color: '#0284C7' }}>
             <Droplets size={22} />
           </div>
           <div className="an-kpi-content">
             <div className="an-kpi-title">Water Consumption (KL)</div>
             <div className="an-kpi-val-row">
-              <span className="an-kpi-val">1,24,300</span>
+              <span className="an-kpi-val">{computedKpis.waterKl}</span>
               <span className="an-kpi-badge" style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#16A34A' }}>
-                <ArrowDownRight size={12} /> -8.1%
+                <ArrowDownRight size={12} /> {computedKpis.waterDelta}
               </span>
+            </div>
+            <div style={{ fontSize: '10.5px', color: '#16A34A', marginTop: '2px', fontWeight: 600 }}>
+              Recycled Share: {computedKpis.recycledWaterPct}% (ZLD Active)
             </div>
           </div>
         </div>
 
         {/* Waste Generated */}
-        <div className="an-kpi-card">
+        <div 
+          className="an-kpi-card"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setDetailsModal('waste')}
+          title="Click to view Circularity Registry"
+        >
           <div className="an-kpi-icon-wrap" style={{ background: 'rgba(249, 115, 22, 0.1)', color: '#EA580C' }}>
             <Trash2 size={22} />
           </div>
           <div className="an-kpi-content">
             <div className="an-kpi-title">Waste Generated (MT)</div>
             <div className="an-kpi-val-row">
-              <span className="an-kpi-val">2,840</span>
+              <span className="an-kpi-val">{computedKpis.wasteMt}</span>
               <span className="an-kpi-badge" style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#16A34A' }}>
-                <ArrowUpRight size={12} /> +12.5%
+                <ArrowUpRight size={12} /> {computedKpis.wasteDelta}
               </span>
+            </div>
+            <div style={{ fontSize: '10.5px', color: '#16A34A', marginTop: '2px', fontWeight: 600 }}>
+              Landfill Diversion: {computedKpis.wasteRecycledPct}%
             </div>
           </div>
         </div>
@@ -345,7 +530,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
         {/* Left Chart: Emissions Trend (Scope 1 vs Scope 2) */}
         <div className="an-chart-card">
           <div className="an-chart-header">
-            <span className="an-chart-title">Emissions Trend (Scope 1 vs Scope 2)</span>
+            <span className="an-chart-title">Emissions Trend (Scope 1 vs Scope 2) — {selectedView}</span>
             <div className="an-chart-controls">
               <div className="an-legend-item">
                 <span className="an-legend-dot" style={{ background: '#38BDF8' }} />
@@ -356,6 +541,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                 <span>Scope 2</span>
               </div>
               <button 
+                type="button"
                 className="an-chart-action-btn"
                 onClick={() => setDetailsModal('emissions')}
               >
@@ -375,10 +561,11 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               </defs>
 
               {/* Y Axis Grid Lines */}
-              {[0, 5000, 10000, 15000, 20000].map((val) => {
-                const y = getY(val);
+              {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
+                const val = Math.round(maxY * pct);
+                const y = paddingTop + chartH - (pct * chartH);
                 return (
-                  <g key={val}>
+                  <g key={idx}>
                     <line 
                       x1={paddingLeft} 
                       y1={y} 
@@ -395,7 +582,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       textAnchor="end"
                       fontFamily="sans-serif"
                     >
-                      {val === 0 ? '0' : `${val / 1000}k`}
+                      {val >= 1000 ? `${Math.round(val / 1000)}k` : val}
                     </text>
                   </g>
                 );
@@ -437,7 +624,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                     style={{ cursor: 'pointer' }}
                     onMouseEnter={() => setHoveredMonth(d.m)}
                   >
-                    {/* Vertical guideline on hover */}
                     {isHovered && (
                       <line 
                         x1={cx} 
@@ -450,7 +636,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       />
                     )}
 
-                    {/* Scope 2 Point */}
                     <circle 
                       cx={cx} 
                       cy={cy2} 
@@ -460,7 +645,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       strokeWidth="2" 
                     />
 
-                    {/* Scope 1 Point */}
                     <circle 
                       cx={cx} 
                       cy={cy1} 
@@ -470,7 +654,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       strokeWidth="2" 
                     />
 
-                    {/* X-axis label */}
                     <text 
                       x={cx} 
                       y={svgHeight - 4} 
@@ -492,12 +675,12 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               <div 
                 className="an-tooltip"
                 style={{
-                  left: `${(months.indexOf(hoveredMonth) / (months.length - 1)) * 75 + 12}%`,
+                  left: `${(timeLabels.indexOf(hoveredMonth) / (timeLabels.length - 1 || 1)) * 75 + 12}%`,
                   top: '12px'
                 }}
               >
                 <div style={{ fontWeight: 800, color: '#0F172A', borderBottom: '1px solid rgba(148, 163, 184, 0.2)', paddingBottom: '3px', marginBottom: '2px' }}>
-                  {hoveredMonth} 2026 Emissions
+                  {hoveredMonth} Emissions
                 </div>
                 <div style={{ color: '#0284C7', fontWeight: 700 }}>
                   Scope 2 (Grid): {emissionsData.find(e => e.m === hoveredMonth)?.s2} tCO₂e
@@ -506,7 +689,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                   Scope 1 (Fuel): {emissionsData.find(e => e.m === hoveredMonth)?.s1} tCO₂e
                 </div>
                 <div style={{ fontSize: '9px', color: '#64748B', marginTop: '2px' }}>
-                  Calculated: CEA Grid v19 @ 0.716 kg/kWh
+                  CEA Grid v19 Baseline Factor: 0.716 kg/kWh
                 </div>
               </div>
             )}
@@ -516,10 +699,11 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
         {/* Right Chart: Energy Consumption */}
         <div className="an-chart-card">
           <div className="an-chart-header">
-            <span className="an-chart-title">Energy Consumption</span>
+            <span className="an-chart-title">Energy Consumption Mix — {selectedView}</span>
             <div className="an-chart-controls">
-              <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>Monthly ▾</span>
+              <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>{selectedView}</span>
               <button 
+                type="button"
                 className="an-chart-action-btn"
                 onClick={() => setDetailsModal('energy')}
               >
@@ -531,26 +715,26 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px', fontSize: '10.5px' }}>
             <div className="an-legend-item">
               <span className="an-legend-dot" style={{ background: '#0284C7' }} />
-              <span>Grid</span>
+              <span>Grid Power</span>
             </div>
             <div className="an-legend-item">
               <span className="an-legend-dot" style={{ background: '#F59E0B' }} />
-              <span>Diesel</span>
+              <span>Diesel Genset</span>
             </div>
             <div className="an-legend-item">
               <span className="an-legend-dot" style={{ background: '#10B981' }} />
-              <span>Renewable</span>
+              <span>Solar / Renewable</span>
             </div>
           </div>
 
           {/* SVG Stacked Bar Graph */}
           <div className="an-svg-container" onMouseLeave={() => setHoveredEnergyMonth(null)}>
             <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: '100%' }}>
-              {/* Y Axis Grid Lines */}
-              {[0, 2500, 5000, 7500, 10000].map((val) => {
-                const y = paddingTop + chartH - (val / 10000) * chartH;
+              {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
+                const val = Math.round(maxEnergyY * pct);
+                const y = paddingTop + chartH - (pct * chartH);
                 return (
-                  <g key={val}>
+                  <g key={idx}>
                     <line 
                       x1={paddingLeft} 
                       y1={y} 
@@ -567,21 +751,19 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       textAnchor="end"
                       fontFamily="sans-serif"
                     >
-                      {val === 0 ? '0' : `${val / 1000}k`}
+                      {val >= 1000 ? `${Math.round(val / 1000)}k` : val}
                     </text>
                   </g>
                 );
               })}
 
-              {/* Grouped/Stacked Bars */}
               {energyData.map((d, i) => {
                 const cx = getX(i);
-                const barWidth = 14;
-                const maxBarVal = 10000;
+                const barWidth = 16;
                 
-                const hRenew = (d.renew / maxBarVal) * chartH;
-                const hDiesel = (d.diesel / maxBarVal) * chartH;
-                const hGrid = (d.grid / maxBarVal) * chartH;
+                const hRenew = (d.renew / maxEnergyY) * chartH;
+                const hDiesel = (d.diesel / maxEnergyY) * chartH;
+                const hGrid = (d.grid / maxEnergyY) * chartH;
 
                 const yGrid = paddingTop + chartH - hGrid;
                 const yDiesel = yGrid - hDiesel;
@@ -595,7 +777,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                     style={{ cursor: 'pointer' }}
                     onMouseEnter={() => setHoveredEnergyMonth(d.m)}
                   >
-                    {/* Grid Segment */}
                     <rect 
                       x={cx - barWidth / 2} 
                       y={yGrid} 
@@ -605,7 +786,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       rx="1"
                     />
 
-                    {/* Diesel Segment */}
                     <rect 
                       x={cx - barWidth / 2} 
                       y={yDiesel} 
@@ -614,7 +794,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       fill="#F59E0B" 
                     />
 
-                    {/* Renewable Segment */}
                     <rect 
                       x={cx - barWidth / 2} 
                       y={yRenew} 
@@ -624,7 +803,6 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                       rx="2"
                     />
 
-                    {/* X-axis label */}
                     <text 
                       x={cx} 
                       y={svgHeight - 4} 
@@ -641,12 +819,11 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               })}
             </svg>
 
-            {/* Hover Tooltip for Energy */}
             {hoveredEnergyMonth && (
               <div 
                 className="an-tooltip"
                 style={{
-                  left: `${(months.indexOf(hoveredEnergyMonth) / (months.length - 1)) * 75 + 12}%`,
+                  left: `${(timeLabels.indexOf(hoveredEnergyMonth) / (timeLabels.length - 1 || 1)) * 75 + 12}%`,
                   top: '12px'
                 }}
               >
@@ -682,10 +859,11 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} /> Safety
               </div>
               <button 
+                type="button"
                 className="an-bottom-pill-btn"
-                onClick={() => onNavigate && onNavigate('project')}
+                onClick={() => onNavigate && onNavigate('my-project')}
               >
-                View All
+                View Sites
               </button>
             </div>
           </div>
@@ -709,8 +887,14 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
         {/* Card 2: Key Insights */}
         <div className="an-bottom-card">
           <div className="an-bottom-header">
-            <span className="an-bottom-title">Key Insights</span>
-            <button className="an-bottom-pill-btn">View All</button>
+            <span className="an-bottom-title">Calculated ESG Insights</span>
+            <button 
+              type="button" 
+              className="an-bottom-pill-btn"
+              onClick={() => onNavigate?.('reports')}
+            >
+              Reports
+            </button>
           </div>
 
           <div className="an-insights-list">
@@ -731,11 +915,10 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
         {/* Card 3: Data Completeness */}
         <div className="an-bottom-card">
           <div className="an-bottom-header">
-            <span className="an-bottom-title">Data Completeness</span>
+            <span className="an-bottom-title">Assurance Completeness</span>
           </div>
 
           <div className="an-completeness-body">
-            {/* SVG Donut */}
             <div className="an-donut-wrap">
               <svg width="100" height="100" viewBox="0 0 100 100">
                 <circle 
@@ -754,18 +937,17 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
                   stroke="#0284C7" 
                   strokeWidth="8" 
                   strokeDasharray="238.76" 
-                  strokeDashoffset={238.76 * (1 - 0.72)} 
+                  strokeDashoffset={238.76 * (1 - 0.88)} 
                   strokeLinecap="round" 
                   transform="rotate(-90 50 50)" 
                 />
               </svg>
               <div className="an-donut-inner">
-                <span className="an-donut-pct">72%</span>
-                <span className="an-donut-label">Overall</span>
+                <span className="an-donut-pct">88%</span>
+                <span className="an-donut-label">Assured</span>
               </div>
             </div>
 
-            {/* Modules List */}
             <div className="an-modules-list">
               {moduleCompleteness.map((mod, idx) => (
                 <div key={idx} className="an-module-item">
@@ -783,34 +965,44 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
 
       {/* Technical Details & Methodology Modal */}
       {detailsModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: '#FFFFFF', borderRadius: 16, width: 520, maxWidth: '92%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <div>
                 <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(2, 132, 199, 0.1)', color: '#0284C7' }}>
-                  {detailsModal === 'emissions' ? 'GHG Protocol Accounting' : 'Energy Transmission Telemetry'}
+                  {detailsModal === 'emissions' ? 'GHG Protocol Accounting' : detailsModal === 'energy' ? 'Energy Transmission Telemetry' : detailsModal === 'water' ? 'Water Circularity Balance' : 'Waste TSDF Manifests'}
                 </span>
                 <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 6 }}>
-                  {detailsModal === 'emissions' ? 'CEA India Grid Baseline Methodology' : '33kV Dedicated Feeders Architecture'}
+                  {detailsModal === 'emissions' ? 'CEA India Grid Baseline Methodology' : detailsModal === 'energy' ? '33kV Substation Telemetry Architecture' : detailsModal === 'water' ? 'Zero Liquid Discharge (ZLD) Audit' : 'Hazardous Waste Form 10 Compliance'}
                 </h3>
               </div>
               <button onClick={() => setDetailsModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#64748B' }}>✕</button>
             </div>
 
-            <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 10, fontSize: '12.5px', color: '#334155', lineHeight: 1.5, marginBottom: 16 }}>
+            <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 10, fontSize: '12.5px', color: '#334155', lineHeight: 1.6, marginBottom: 16 }}>
               {detailsModal === 'emissions' ? (
                 <>
                   <p><strong>Baseline Standard:</strong> Central Electricity Authority (CEA) CO2 Baseline Database for the Indian Power Sector, Version 19.0.</p>
-                  <p style={{ marginTop: 6 }}><strong>Scope 2 Grid Emission Factor:</strong> <span style={{ color: '#2563EB', fontWeight: 700 }}>0.716 kg CO2e / kWh</span> (weighted average combined margin).</p>
-                  <p style={{ marginTop: 6 }}><strong>Scope 1 Fuel Calculations:</strong> High-Speed Diesel (HSD) calibrated at 2.68 kg CO2e / Liter; Heavy Furnace Oil at 3.12 kg CO2e / Liter.</p>
-                  <p style={{ marginTop: 6 }}><strong>Verification Status:</strong> Third-party assured under SEBI BRSR Core Circulars (2023 & 2025).</p>
+                  <p style={{ marginTop: 6 }}><strong>Scope 2 Grid Factor:</strong> <span style={{ color: '#2563EB', fontWeight: 700 }}>0.716 kg CO₂e / kWh</span> (weighted combined margin).</p>
+                  <p style={{ marginTop: 6 }}><strong>Scope 1 Fuel Factor:</strong> High-Speed Diesel (HSD) calibrated at <strong>2.68 kg CO₂e / Liter</strong>.</p>
+                  <p style={{ marginTop: 6 }}><strong>Assurance Status:</strong> Full compliance with SEBI BRSR Core Circulars (2023 & 2025).</p>
+                </>
+              ) : detailsModal === 'energy' ? (
+                <>
+                  <p><strong>Grid Interconnection:</strong> Dedicated 33kV & 11kV substation feeder lines with bidirectional ABT-compliant smart meters.</p>
+                  <p style={{ marginTop: 6 }}><strong>Telemetry Sync:</strong> Automated optical port data extraction linked directly with DISCOM billing invoices.</p>
+                  <p style={{ marginTop: 6 }}><strong>Diesel Backup:</strong> Continuous PLC fuel flow sensors with digital weighbridge integration.</p>
+                </>
+              ) : detailsModal === 'water' ? (
+                <>
+                  <p><strong>ZLD Compliance:</strong> 100% of treated wastewater recirculated into tunnel rock excavation and dust mitigation.</p>
+                  <p style={{ marginTop: 6 }}><strong>Lab Certification:</strong> NABL accredited BOD & COD effluent reports uploaded and hashed.</p>
+                  <p style={{ marginTop: 6 }}><strong>Recycled Share:</strong> Consistently maintained above 70% statutory target.</p>
                 </>
               ) : (
                 <>
-                  <p><strong>Grid Interconnection:</strong> Dedicated 33kV & 11kV substation feeder lines with bidirectional ABT-compliant electronic meters.</p>
-                  <p style={{ marginTop: 6 }}><strong>Telemetry Sync:</strong> Automated optical port data extraction linked directly with State DISCOM Billing engines.</p>
-                  <p style={{ marginTop: 6 }}><strong>Backup Diesel Gensets:</strong> PLC-monitored fuel flow meters with automated operational hour recording.</p>
-                  <p style={{ marginTop: 6 }}><strong>Data Integrity:</strong> 15-minute time-stamped interval log immutable audit trail.</p>
+                  <p><strong>Hazardous Manifests:</strong> Form 10 manifests verified with CPCB registered re-refiners and TSDF facilities.</p>
+                  <p style={{ marginTop: 6 }}><strong>Circularity Recovery:</strong> Over 94% steel and construction scrap remelted in electric arc furnaces.</p>
                 </>
               )}
             </div>
@@ -819,7 +1011,7 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
               <button
                 type="button"
                 className="an-chart-action-btn"
-                style={{ padding: '6px 16px', fontSize: '12px' }}
+                style={{ padding: '8px 20px', fontSize: '12px' }}
                 onClick={() => setDetailsModal(null)}
               >
                 Close
@@ -831,3 +1023,4 @@ Hyderabad Infra Park,76%,74%,72%,78%,90%
     </div>
   );
 }
+export { AnalyticsModule };

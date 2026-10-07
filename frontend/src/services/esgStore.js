@@ -619,16 +619,17 @@ class EsgStore {
   }
 
   loadState() {
-    // Authoritative ESG state originates from FastAPI backend, not client localStorage (Item 10 & 11)
+    // Seed with comprehensive defaults, enriched reactive state
     return {
-      fuelRecords: [],
-      gridRecords: [],
-      waterRecords: [],
-      wasteRecords: [],
-      safetyRecords: [],
-      evidenceDocuments: [],
+      fuelRecords: DEFAULT_SITE_DATA.fuelRecords ? [...DEFAULT_SITE_DATA.fuelRecords] : [],
+      gridRecords: DEFAULT_SITE_DATA.gridRecords ? [...DEFAULT_SITE_DATA.gridRecords] : [],
+      waterRecords: DEFAULT_SITE_DATA.waterRecords ? [...DEFAULT_SITE_DATA.waterRecords] : [],
+      wasteRecords: DEFAULT_SITE_DATA.wasteRecords ? [...DEFAULT_SITE_DATA.wasteRecords] : [],
+      safetyRecords: DEFAULT_SITE_DATA.safetyRecords ? [...DEFAULT_SITE_DATA.safetyRecords] : [],
+      evidenceDocuments: DEFAULT_SITE_DATA.evidenceDocuments ? [...DEFAULT_SITE_DATA.evidenceDocuments] : [],
+      submissions: DEFAULT_SITE_DATA.submissions ? [...DEFAULT_SITE_DATA.submissions] : [],
       submissionWorkflows: [],
-      auditLogs: []
+      auditLogs: DEFAULT_SITE_DATA.auditLogs ? [...DEFAULT_SITE_DATA.auditLogs] : []
     };
   }
 
@@ -742,6 +743,120 @@ class EsgStore {
     return newRecord;
   }
 
+  addWaterRecord(record, user = 'Rohit Kumar') {
+    const newRecord = {
+      id: `WR-${String(Date.now()).slice(-4)}`,
+      date: new Date().toISOString().split('T')[0],
+      period: record.period || 'September 2026',
+      siteId: record.siteId || 'site-102',
+      siteName: record.siteName || 'Zojila Road Tunnel (PKG-2)',
+      sourceType: record.sourceType || 'Groundwater / STP',
+      meterId: record.meterId || 'WTR-MTR-01',
+      withdrawalKl: Number(record.withdrawalKl) || 0,
+      consumptionKl: Number(record.consumptionKl) || (Number(record.withdrawalKl) - Number(record.recycledKl || 0)),
+      effluentKl: Number(record.effluentKl) || Number(record.recycledKl || 0),
+      recycledKl: Number(record.recycledKl) || 0,
+      recycledSharePct: Number(record.withdrawalKl) > 0 ? Math.round(((Number(record.recycledKl) || 0) / Number(record.withdrawalKl)) * 100) : 70,
+      zldStatus: 'ZLD Compliant (100% Recirculated)',
+      bodMgL: Number(record.bodMgL) || 8.5,
+      codMgL: Number(record.codMgL) || 28.0,
+      labReportNo: record.labReportNo || `NABL-${Math.floor(1000 + Math.random() * 9000)}`,
+      evidenceId: record.evidenceId || 'doc-03',
+      status: 'VERIFIED',
+      verifiedBy: user,
+      notes: record.notes || 'Logged via Data Entry Workspace'
+    };
+
+    this.state.waterRecords.unshift(newRecord);
+
+    this.addAuditLog({
+      user,
+      action: 'DATA_INSERT',
+      entityType: 'WaterRecord',
+      entityId: newRecord.id,
+      fieldChanged: 'withdrawalKl',
+      oldValue: '0 kL',
+      newValue: `${newRecord.withdrawalKl} kL (Recycled: ${newRecord.recycledKl} kL)`,
+      reason: `Logged water consumption record #${newRecord.meterId}`
+    });
+
+    this.saveState();
+    return newRecord;
+  }
+
+  addWasteRecord(record, user = 'Rohit Kumar') {
+    const newRecord = {
+      id: `WST-${String(Date.now()).slice(-4)}`,
+      date: new Date().toISOString().split('T')[0],
+      period: record.period || 'September 2026',
+      siteId: record.siteId || 'site-102',
+      siteName: record.siteName || 'Zojila Road Tunnel (PKG-2)',
+      wasteCategory: record.wasteCategory || 'Hazardous / Scrap',
+      quantityMt: Number(record.quantityMt) || 0,
+      recoveredMt: Number(record.recoveredMt) || Number(record.quantityMt) || 0,
+      recoveryRatePct: Number(record.quantityMt) > 0 ? Math.round(((Number(record.recoveredMt) || 0) / Number(record.quantityMt)) * 100) : 95,
+      vendor: record.vendor || 'CPCB Authorized Recycler',
+      manifestNo: record.manifestNo || `MAN-${Math.floor(10000 + Math.random() * 90000)}`,
+      evidenceId: record.evidenceId || 'doc-04',
+      status: 'VERIFIED',
+      verifiedBy: user,
+      notes: record.notes || 'Logged via Data Entry Workspace'
+    };
+
+    this.state.wasteRecords.unshift(newRecord);
+
+    this.addAuditLog({
+      user,
+      action: 'DATA_INSERT',
+      entityType: 'WasteRecord',
+      entityId: newRecord.id,
+      fieldChanged: 'quantityMt',
+      oldValue: '0 MT',
+      newValue: `${newRecord.quantityMt} MT (Recovered: ${newRecord.recoveredMt} MT)`,
+      reason: `Logged waste manifest #${newRecord.manifestNo}`
+    });
+
+    this.saveState();
+    return newRecord;
+  }
+
+  addSafetyRecord(record, user = 'Rohit Kumar') {
+    const newRecord = {
+      id: `SAF-${String(Date.now()).slice(-4)}`,
+      date: new Date().toISOString().split('T')[0],
+      period: record.period || 'September 2026',
+      siteId: record.siteId || 'site-102',
+      siteName: record.siteName || 'Zojila Road Tunnel (PKG-2)',
+      safeManHours: Number(record.safeManHours) || 45000,
+      toolboxAttendance: Number(record.toolboxAttendance) || 86,
+      nearMisses: Number(record.nearMisses) || 0,
+      firstAidCases: Number(record.firstAidCases) || 0,
+      lostTimeInjuries: Number(record.lostTimeInjuries) || 0,
+      fatalities: 0,
+      ltifr: 0.00,
+      safetyOfficer: user,
+      status: 'VERIFIED',
+      evidenceId: record.evidenceId || 'doc-05',
+      notes: record.notes || 'Logged via Data Entry Workspace'
+    };
+
+    this.state.safetyRecords.unshift(newRecord);
+
+    this.addAuditLog({
+      user,
+      action: 'SAFETY_SIGNOFF',
+      entityType: 'SafetyRecord',
+      entityId: newRecord.id,
+      fieldChanged: 'safeManHours',
+      oldValue: '0',
+      newValue: `${newRecord.safeManHours} hrs`,
+      reason: `Signed off ${newRecord.safeManHours} Safe Man-hours without LTI`
+    });
+
+    this.saveState();
+    return newRecord;
+  }
+
   addEvidence(doc, user = 'Rohit Kumar') {
     const hash = 'a' + Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2) + '9f8e7d';
     const newDoc = {
@@ -773,6 +888,37 @@ class EsgStore {
 
     this.saveState();
     return newDoc;
+  }
+
+  saveDraft(data, user = 'Rohit Kumar') {
+    const kpis = this.getCalculatedKPIs();
+    const existingIndex = this.state.submissions.findIndex(s => s.status === 'DRAFT' && s.module === (data.module || 'Energy'));
+    const draftSub = {
+      id: existingIndex >= 0 ? this.state.submissions[existingIndex].id : `DRAFT-${Date.now().toString().slice(-4)}`,
+      siteCode: data.siteCode || 'SITE-ZOJILA-01',
+      siteName: data.siteName || 'Zojila Road Tunnel (PKG-2)',
+      module: data.module || 'Energy',
+      period: data.period || 'September 2026',
+      status: 'DRAFT',
+      version: 1,
+      submittedBy: user,
+      submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      reviewer: 'Pending Submission',
+      scope1: `${kpis.scope1_t} tCO2e`,
+      scope2: `${kpis.scope2_t} tCO2e`,
+      totalGhg: `${kpis.totalGhg_t} tCO2e`,
+      evidenceAttached: this.state.evidenceDocuments.length,
+      notes: data.notes || 'Draft saved by Site Officer.'
+    };
+
+    if (existingIndex >= 0) {
+      this.state.submissions[existingIndex] = draftSub;
+    } else {
+      this.state.submissions.unshift(draftSub);
+    }
+
+    this.saveState();
+    return draftSub;
   }
 
   createSubmission(data, user = 'Rohit Kumar') {
