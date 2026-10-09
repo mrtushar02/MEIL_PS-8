@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DashboardHeader from './DashboardHeader';
 import HorizontalNav from './HorizontalNav';
 import DataStreamDashboard from './DataStreamDashboard';
-import { MEIL_MEDIA } from '../../config/projectMedia';
 import './MainDashboard.css';
-
-const DASHBOARD_PROJECTS = Object.values(MEIL_MEDIA);
 
 import DataEntryModule from '../data-entry/DataEntryModule';
 import EvidenceVault from '../evidence/EvidenceVault';
@@ -39,31 +36,11 @@ export default function MainDashboard({
   onPeriodChange
 }) {
   const isOverview = activeTab === 'overview' || activeTab === 'data-inbox';
-  const [bgIndex, setBgIndex] = useState(0);
-
-  // Subtle background cycling of authentic MEIL operational sites in dashboard
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % DASHBOARD_PROJECTS.length);
-    }, 6500);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <div className="dashboard-viewport">
-      {/* 1. Atmospheric Ambient Background with Real Operational Sites */}
-      <div className="dashboard-atmosphere">
-        <div className="dashboard-bg-slideshow" aria-hidden="true">
-          {DASHBOARD_PROJECTS.map((proj, idx) => (
-            <div
-              key={proj.id}
-              className={`dashboard-bg-slide ${idx === bgIndex ? 'is-active' : ''}`}
-              style={{ backgroundImage: `url(${proj.src})` }}
-            />
-          ))}
-          <div className="dashboard-bg-scrim" />
-        </div>
-      </div>
+      {/* Clean Solid Background */}
+      <div className="dashboard-atmosphere" />
 
       {/* 2. Top Header & Horizontal Navigation (Always visible) */}
       <DashboardHeader 
