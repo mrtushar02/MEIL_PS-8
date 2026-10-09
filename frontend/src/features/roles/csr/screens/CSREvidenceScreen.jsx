@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { INITIAL_EVIDENCE_ITEMS } from '../csrData';
 import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
+import { downloadEvidencePDF } from '../../../../utils/pdfGenerator';
 
 export default function CSREvidenceScreen({ onNavigateTab }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,17 +38,27 @@ export default function CSREvidenceScreen({ onNavigateTab }) {
   };
 
   const handleDownloadCertificate = (e) => {
-    exportToCsv(`CSR_Evidence_${e.id}.csv`, [{
-      Evidence_ID: e.id,
-      Document_Name: e.title,
-      Project: e.project,
-      Category: e.category,
-      Upload_Date: e.upload_date,
-      File_Size: e.size,
-      Status: e.status,
-      SHA256_Checksum: e.sha256 || '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
-      Assurance_Pillar: 'BRSR Principle 8 / Social Impact'
-    }]);
+    downloadEvidencePDF({
+      fileName: e.title,
+      id: e.id,
+      relatedRecord: e.project,
+      project: e.project || 'MEIL CSR Initiative',
+      module: e.category || 'CSR & Community Engagement',
+      status: e.status || 'Verified',
+      uploadedBy: 'MEIL CSR Lead',
+      uploadedAt: e.upload_date,
+      size: e.size || '1.2 MB',
+      sha256: e.sha256 || '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
+    }, {
+      voucherNo: e.id,
+      quantity: 'Schedule VII CSR Compliance Beneficiaries',
+      scope: 'BRSR Principle 8 · Inclusive Growth & Community Wellbeing',
+      issuer: 'MEIL Corporate Social Responsibility Foundation',
+      certifiedBy: 'CSR Project Director',
+      verifiedBy: 'Independent Social Impact Auditor',
+      substation: e.project || 'Community Development Field Unit',
+      assuranceStandard: 'ICAI SAE 3410 & Companies Act 2013 (Section 135)'
+    });
   };
 
   const filteredEvidence = evidenceList.filter((e) => {

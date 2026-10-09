@@ -1,21 +1,36 @@
 import React from 'react';
 import { Award, ShieldCheck, Download, FileText, CheckCircle2, Printer } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
+import { downloadGenericPDF } from '../../../../utils/pdfGenerator';
 
 export default function AssuranceOpinionScreen() {
   const handleDownloadMemo = () => {
-    exportToCsv('MEIL_PwC_Assurance_Opinion_Statement.csv', [
-      {
-        'Document': 'Independent Reasonable & Limited Assurance Report',
-        'Entity': 'Megha Engineering and Infrastructures Limited (MEIL)',
-        'Scope 1 Emissions Verified': '112,400 tCO2e',
-        'Scope 2 Emissions Verified': '71,850 tCO2e',
-        'Calculation Baseline Criteria': 'GHG Protocol & CEA Baseline v19',
-        'Auditor Practitioner': 'R. Singhania, Partner (Membership #084920), PricewaterhouseCoopers LLP',
-        'Opinion Classification': 'Unqualified Clean Assurance Opinion',
-        'Digital Signature Status': 'Signed with Digital Token DSC Class-3'
-      }
-    ]);
+    downloadGenericPDF({
+      title: 'INDEPENDENT AUDITOR ASSURANCE OPINION STATEMENT',
+      filename: 'MEIL_PwC_Assurance_Opinion_Statement.pdf',
+      lines: [
+        'INDEPENDENT REASONABLE & LIMITED ASSURANCE REPORT',
+        'To the Board of Directors & Shareholders of Megha Engineering & Infrastructures Ltd (MEIL)',
+        '---------------------------------------------------------------------------------',
+        '1. SCOPE OF ASSURANCE ENGAGEMENT',
+        'We have conducted our assurance engagement in accordance with the International Standard on Assurance',
+        'Engagements (ISAE) 3000 (Revised) and the ICAI Standard on Assurance Engagements (SAE) 3410,',
+        'Assurance Engagements on Greenhouse Gas Statements, issued by the Institute of Chartered Accountants of India.',
+        '---------------------------------------------------------------------------------',
+        '2. VERIFIED STATUTORY GREENHOUSE GAS EMISSIONS (BRSR CORE)',
+        '• Scope 1 Direct Emissions Verified: 112,400 tCO2e (Reasonable Assurance)',
+        '• Scope 2 Indirect Grid Emissions Verified: 71,850 tCO2e (Reasonable Assurance)',
+        '• Calculation Baseline Criteria: GHG Protocol Corporate Standard & CEA CO2 Baseline Database v19',
+        '---------------------------------------------------------------------------------',
+        '3. UNQUALIFIED CLEAN ASSURANCE CONCLUSION',
+        'In our opinion, in all material respects, the Subject Matter Information for FY 2025-26 Q2 has been',
+        'prepared in accordance with SEBI BRSR Core criteria and NGRBC guidelines.',
+        '---------------------------------------------------------------------------------',
+        'Auditor Practitioner: R. Singhania, Senior Partner (Membership #084920), PricewaterhouseCoopers LLP',
+        'Digital Signature: Authenticated with DSC Class-3 · ICAI UDIN: 26084920AAAAAB9821'
+      ],
+      details: { sha256: 'sha256:8891bf2e45a0b3c7d6e5f4a3b2c1d0e9f8a7b6c5' }
+    });
   };
 
   return (

@@ -10,6 +10,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { exportToCsv, triggerFileInput } from '../../../../utils/exportUtils';
+import { downloadEvidencePDF } from '../../../../utils/pdfGenerator';
 
 export default function GovEvidenceScreen({
   evidenceItems = [],
@@ -46,18 +47,27 @@ export default function GovEvidenceScreen({
   };
 
   const handleDownloadCertificate = (item) => {
-    const rows = [{
-      Evidence_ID: item.id,
-      Document_Title: item.title,
-      Linked_Requirement: item.linkedTo,
-      Format: item.type,
-      Verification_Status: item.status,
-      Uploaded_By: item.uploadedBy,
-      Upload_Date: item.uploadedDate,
-      Cryptographic_SHA256: `sha256_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`,
-      Statutory_Seal: 'MEIL Governance Secretariat Validated'
-    }];
-    exportToCsv(`MEIL_Evidence_Seal_${item.id}`, rows);
+    downloadEvidencePDF({
+      fileName: item.title,
+      id: item.id,
+      relatedRecord: item.linkedTo,
+      project: 'MEIL Corporate Headquarters',
+      module: 'Corporate Governance & Statutory Compliance',
+      status: item.status || 'Verified',
+      uploadedBy: item.uploadedBy || 'Governance Officer',
+      uploadedAt: item.uploadedDate || 'Oct 2026',
+      size: item.size || '1.4 MB',
+      sha256: `sha256_b48f93a10738e4cd09312fe_${item.id.replace(/[^a-zA-Z0-9]/g, '')}`
+    }, {
+      voucherNo: item.id,
+      quantity: 'Statutory Secretarial Clearance',
+      scope: 'SEBI LODR Reg 34(3) & BRSR Principle 1 Ethics & Transparency',
+      issuer: 'MEIL Corporate Governance Secretariat',
+      certifiedBy: item.uploadedBy || 'Company Secretary',
+      verifiedBy: 'Statutory Compliance Lead',
+      substation: 'MEIL Group Secretarial Registry',
+      assuranceStandard: 'ICAI SAE 3410 & Companies Act 2013'
+    });
   };
 
   const handleExportRegistry = () => {

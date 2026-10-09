@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import AuthFlow from './features/auth/AuthFlow';
 import MainDashboard from './features/dashboard/MainDashboard';
 import { api } from './services/api';
@@ -17,6 +19,44 @@ export function App() {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [reportingPeriod, setReportingPeriod] = useState('September 2026');
+
+  // Initialize Lenis Ultra-Smooth Scrolling
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.5,
+      infinite: false,
+    });
+
+    let animationFrameId;
+    function raf(time) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+
+    animationFrameId = requestAnimationFrame(raf);
+    window.lenis = lenis;
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+      delete window.lenis;
+    };
+  }, []);
+
+  // Smooth scroll to top when activeTab changes
+  useEffect(() => {
+    if (window.lenis) {
+      window.lenis.scrollTo(0, { immediate: false, duration: 0.6 });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   // Verify active JWT token on mount
   useEffect(() => {

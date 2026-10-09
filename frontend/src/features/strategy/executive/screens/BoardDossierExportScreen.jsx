@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, Printer, FileText, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
+import { downloadGenericPDF } from '../../../../utils/pdfGenerator';
 import esgStore from '../../../../services/esgStore';
 
 export default function BoardDossierExportScreen() {
@@ -11,28 +12,46 @@ export default function BoardDossierExportScreen() {
   ];
 
   const handleDownloadEntirePack = () => {
-    exportToCsv('MEIL_Executive_Board_Dossier_Index.csv', packs.map(p => ({
-      'Package Code': p.id,
-      'Document Title': p.title,
-      'Statutory Format': p.format,
-      'Package Size': p.size,
-      'Board Approval Status': p.status,
-      'Attestation Entity': 'Board ESG Committee & Managing Director'
-    })));
+    downloadGenericPDF({
+      title: 'MEIL BOARD EXECUTIVE ESG DOSSIER INDEX',
+      filename: 'MEIL_Executive_Board_Dossier_Index.pdf',
+      lines: [
+        'MEGHA ENGINEERING & INFRASTRUCTURES LIMITED — EXECUTIVE BOARD DOSSIER',
+        'Official Compilation for the Board of Directors & Statutory Audit Committee',
+        '---------------------------------------------------------------------------------',
+        '1. Package DP-01: MEIL Board Executive ESG Pack FY25 Q2 (Full Dossier) · 28.4 MB · Ready for Review',
+        '2. Package DP-02: Statutory SEBI BRSR Board Approval Resolution Memo · 3.2 MB · Approved by CSO',
+        '3. Package DP-03: PwC Independent ESG Assurance Opinion Memo · 4.8 MB · Unqualified Opinion',
+        '---------------------------------------------------------------------------------',
+        'Attestation Entity: Board ESG Committee & Managing Director',
+        'Statutory Mandate: SEBI LODR Regulation 34(3) & BRSR Core Reasonable Assurance',
+        'Authentication Status: Board Cryptographically Signed & Timestamped'
+      ],
+      details: { sha256: 'sha256:91bf78e234c90ab12f45d678e90a12b34c56d78e' }
+    });
     esgStore.addAuditLog('EXECUTIVE_DOSSIER_DOWNLOADED', 'Downloaded Full Board Executive ESG Dossier Index', 'EXECUTIVE');
   };
 
   const handleDownloadPack = (pack) => {
-    exportToCsv(`MEIL_${pack.id}_${pack.title.slice(0, 20).replace(/\s+/g, '_')}.csv`, [
-      {
-        'Dossier Identifier': pack.id,
-        'Dossier Title': pack.title,
-        'Release Status': pack.status,
-        'Format': pack.format,
-        'Generated Date': '07 Oct 2026',
-        'Authentication Status': 'Board Cryptographically Signed'
-      }
-    ]);
+    downloadGenericPDF({
+      title: pack.title,
+      filename: `${pack.id}_${pack.title.slice(0, 20).replace(/\s+/g, '_')}.pdf`,
+      lines: [
+        `Dossier Package Code: ${pack.id}`,
+        `Document Title: ${pack.title}`,
+        `Statutory Format: ${pack.format}`,
+        `Package Size: ${pack.size}`,
+        `Board Approval Status: ${pack.status}`,
+        '---------------------------------------------------------------------------------',
+        'STATUTORY EXECUTIVE MEMORANDUM & RESOLUTION',
+        'This dossier contains the approved ESG key performance indicators, GHG emissions inventory,',
+        'and corporate assurance assessments prepared for the Megha Engineering & Infrastructures Ltd Board.',
+        '---------------------------------------------------------------------------------',
+        'Governing Standards: SEBI Circular SEBI/HO/CFD/CMD-2/P/CIR/2021/562, ICAI SAE 3410.',
+        'Official Seal: Ratified by Managing Director & Board Sustainability Committee.'
+      ],
+      details: { sha256: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' }
+    });
   };
 
   return (

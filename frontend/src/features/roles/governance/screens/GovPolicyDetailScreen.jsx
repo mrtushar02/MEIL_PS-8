@@ -9,6 +9,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
+import { downloadPolicyPDF } from '../../../../utils/pdfGenerator';
 
 export default function GovPolicyDetailScreen({
   policy = {
@@ -55,15 +56,14 @@ export default function GovPolicyDetailScreen({
   };
 
   const handleDownloadStamped = () => {
-    const rows = [{
-      Document_Code: `${policy.id}-OFFICIAL-STAMPED`,
-      Policy_Name: policy.name,
-      Version: policy.version,
-      Board_Approval_Status: 'Approved & Signed',
-      Cryptographic_Seal: 'sha256_b48f93a10738e4cd09312fe',
-      Secretariat_Signoff: 'General Counsel & Compliance Officer'
-    }];
-    exportToCsv(`MEIL_Stamped_Policy_${policy.id}`, rows);
+    downloadPolicyPDF({
+      title: policy.name,
+      code: policy.id,
+      version: policy.version,
+      effectiveDate: policy.effectiveDate,
+      description: policy.description || policy.summary,
+      scope: policy.scope
+    });
   };
 
   const handleStartReview = () => {

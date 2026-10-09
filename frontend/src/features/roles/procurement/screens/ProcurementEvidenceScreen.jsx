@@ -10,6 +10,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { triggerFileInput, exportToCsv } from '../../../../utils/exportUtils';
+import { downloadEvidencePDF } from '../../../../utils/pdfGenerator';
 
 export default function ProcurementEvidenceScreen({
   evidence = [],
@@ -45,17 +46,27 @@ export default function ProcurementEvidenceScreen({
   };
 
   const handleDownloadEvidence = (ev) => {
-    const certRow = [{
-      Evidence_ID: ev.id,
-      Document_Name: ev.title,
-      Linked_Entity: ev.linkedTo,
-      Evidence_Type: ev.type,
-      Upload_Date: ev.uploadDate,
-      Verification_Status: ev.status,
-      SHA256_Checksum: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-      Assurance_Standard: 'BRSR Core SEBI / GHG Scope 3 Protocol'
-    }];
-    exportToCsv(`Evidence_Certificate_${ev.id}.csv`, certRow);
+    downloadEvidencePDF({
+      fileName: ev.title,
+      id: ev.id,
+      relatedRecord: ev.linkedTo,
+      project: ev.linkedTo || 'Supply Chain Vendor Hub',
+      module: 'Procurement & Sustainable Supply Chain',
+      status: ev.status || 'Verified',
+      uploadedBy: 'Procurement Auditor',
+      uploadedAt: ev.uploadDate,
+      size: '1.6 MB',
+      sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+    }, {
+      voucherNo: ev.id,
+      quantity: 'Vendor Due Diligence ESG Compliance',
+      scope: 'BRSR Principle 2 & Principle 6 · Sustainable Sourcing & Scope 3',
+      issuer: 'MEIL Corporate Procurement & Materials Directorate',
+      certifiedBy: 'Head of Procurement',
+      verifiedBy: 'Supply Chain ESG Auditor',
+      substation: ev.linkedTo || 'Central Vendor Quality Desk',
+      assuranceStandard: 'ICAI SAE 3410 & ISO 20400 Sustainable Procurement'
+    });
   };
 
   const filteredEvidence = localEvidence.filter((e) => {

@@ -502,6 +502,7 @@ export function RoleCardDeck({
 
                   {/* Role Title & Subtitle */}
                   <div className="role-text-meta">
+                    {role.category && <span className="role-category-tag">{role.category}</span>}
                     <h3 className="role-card-title">{role.title}</h3>
                     <p className="role-card-desc">{role.desc}</p>
                   </div>

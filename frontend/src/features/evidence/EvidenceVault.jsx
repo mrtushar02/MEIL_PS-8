@@ -19,9 +19,13 @@ import {
   UploadCloud,
   FileSpreadsheet,
   Layers,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Eye,
+  Printer,
+  ExternalLink
 } from 'lucide-react';
 import './EvidenceVault.css';
+import { downloadEvidencePDF } from '../../utils/pdfGenerator';
 
 // Master Evidence Records matching Reference Screen 3
 const INITIAL_EVIDENCE = [
@@ -197,6 +201,112 @@ const INITIAL_EVIDENCE = [
   }
 ];
 
+// Authentic Evidence Document Assurance Data Helper
+const getDocumentDetails = (doc) => {
+  if (!doc) return {};
+  const fn = (doc.fileName || '').toLowerCase();
+  const mod = (doc.module || '').toLowerCase();
+  const dt = (doc.docType || '').toLowerCase();
+
+  if (mod.includes('energy') && (fn.includes('diesel') || dt.includes('invoice') || fn.includes('fuel'))) {
+    return {
+      voucherNo: 'INV/IOCL/2026/88219',
+      issuer: 'Indian Oil Corporation Ltd. (IOCL)',
+      metric: 'High Speed Diesel (HSD)',
+      quantity: '4,500 Litres (Weighbridge Matched)',
+      amount: '₹3,98,250',
+      scope: 'BRSR Principle 6 · GHG Scope 1 Stationary Combustion',
+      certifiedBy: 'Rohit Kumar (Site Materials Lead)',
+      verifiedBy: 'K. Venkat (EHS Auditor)',
+      substation: 'Zojila North Portal DG Bank #4',
+      assuranceStandard: 'ICAI SAE 3410 & ISO 14064-1 Verified'
+    };
+  }
+  if (fn.includes('electricity') || fn.includes('bill') || dt.includes('utility')) {
+    return {
+      voucherNo: 'BESCOM/HT/SEP26/49210',
+      issuer: 'State Electricity Supply Corp. (HT Division)',
+      metric: 'Grid Electricity High Tension 66kV',
+      quantity: '1,45,200 kWh (Net Metered)',
+      amount: '₹10,89,000',
+      scope: 'BRSR Principle 6 · GHG Scope 2 Location Emissions',
+      certifiedBy: 'K. Venkat (Plant In-Charge)',
+      verifiedBy: 'Priyanka S. (Energy Manager)',
+      substation: 'Bengaluru Metro Feeder Substation #3',
+      assuranceStandard: 'CEA India Grid Baseline Ver. 19.0'
+    };
+  }
+  if (mod.includes('water') || fn.includes('water') || fn.includes('stp')) {
+    return {
+      voucherNo: 'WTR/NABL/SEP26/1029',
+      issuer: 'NABL Certified Environmental Testing Lab',
+      metric: 'Flowmeter Discharge & Effluent Quality',
+      quantity: '38,420 m³ (BOD: 4.2 mg/L · ZLD Cleared)',
+      amount: 'Zero Liquid Discharge Certified',
+      scope: 'BRSR Principle 6 · Water Recycling & Withdrawal',
+      certifiedBy: 'Priyanka S. (Site Officer)',
+      verifiedBy: 'Suresh Panyam (Environmental Lead)',
+      substation: 'Krishna Water Lift Pumphouse #2',
+      assuranceStandard: 'CPCB Effluent Standards & ISO 14046'
+    };
+  }
+  if (mod.includes('waste') || fn.includes('waste') || fn.includes('manifest')) {
+    return {
+      voucherNo: 'SPCB/HW-M10/2026/0881',
+      issuer: 'State Pollution Control Board Authorized Transporter',
+      metric: 'Hazardous Waste Form 10 (Used Lubricants)',
+      quantity: '2.4 Metric Tonnes (Co-Processing Manifest)',
+      amount: 'TSPCB Manifest Form 10 Cleared',
+      scope: 'BRSR Principle 6 · Waste Circularity & Co-Processing',
+      certifiedBy: 'Jitendra Roy (Safety Officer)',
+      verifiedBy: 'Authorized Transporter Signatory',
+      substation: 'Hazardous Storage Yard (Zone 4)',
+      assuranceStandard: 'Hazardous Waste Rules 2016 (Schedule II)'
+    };
+  }
+  if (mod.includes('safety') || fn.includes('safety') || fn.includes('toolbox') || fn.includes('training')) {
+    return {
+      voucherNo: 'HSE/IND/OCT26/0448',
+      issuer: 'MEIL Corporate Safety & Human Rights Directorate',
+      metric: 'Zero-Harm HSE Induction & SA8000 Compliance',
+      quantity: '45 Personnel (100% Attendance Verified)',
+      amount: 'Zero Lost Time Injury (LTI)',
+      scope: 'BRSR Principle 3 & 5 · Human Rights, Safety & POSH',
+      certifiedBy: 'Rohit Kumar (HSE Induction Trainer)',
+      verifiedBy: 'Jitendra Roy (Head of Safety)',
+      substation: 'Safety Induction Centre - Hall B',
+      assuranceStandard: 'ISO 45001 & SA8000 Social Accountability'
+    };
+  }
+  if (fn.includes('solar') || fn.includes('clean energy')) {
+    return {
+      voucherNo: 'SLR/SCADA/2026/099',
+      issuer: 'MEIL Clean Energy & Solar Telemetry Hub',
+      metric: 'Solar PV Yield Generation',
+      quantity: '8,90,400 kWh (Clean Power Exported)',
+      amount: 'Carbon Offset: 641 tCO2e',
+      scope: 'BRSR Principle 6 · Renewable Energy Generation',
+      certifiedBy: 'Solar Operations Lead',
+      verifiedBy: 'CEA Renewable Auditor',
+      substation: 'MEIL Solar Inverter Station #8',
+      assuranceStandard: 'CEA Renewable Generation Protocol'
+    };
+  }
+
+  return {
+    voucherNo: `AUDIT/MEIL/${(doc.relatedRecord || '2026').replace(/[^a-zA-Z0-9]/g, '')}`,
+    issuer: 'Authorized Regulatory Authority / Vendor',
+    metric: `${doc.module || 'ESG'} Disclosure Evidence`,
+    quantity: doc.size || '1.2 MB Document',
+    amount: 'Verified ESG Record',
+    scope: 'SEBI BRSR Statutory Reasonable Assurance',
+    certifiedBy: doc.uploadedBy || 'Site Officer',
+    verifiedBy: 'Independent Reviewer',
+    substation: doc.project || 'Project Site',
+    assuranceStandard: 'ICAI SAE 3410 Standard on Assurance'
+  };
+};
+
 export default function EvidenceVault() {
   const [evidenceList, setEvidenceList] = useState(INITIAL_EVIDENCE);
   const [storeDocs, setStoreDocs] = useState(() => esgStore.state.evidenceDocuments || []);
@@ -208,6 +318,7 @@ export default function EvidenceVault() {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [viewMode, setViewMode] = useState('list');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -346,6 +457,8 @@ export default function EvidenceVault() {
   const activeDoc = useMemo(() => {
     return mergedEvidenceList.find((e) => e.id === selectedId) || mergedEvidenceList[0] || INITIAL_EVIDENCE[0];
   }, [mergedEvidenceList, selectedId]);
+
+  const docDetails = useMemo(() => getDocumentDetails(activeDoc), [activeDoc]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -549,24 +662,8 @@ export default function EvidenceVault() {
   };
 
   const handleDownload = (doc) => {
-    const content = `MEIL GROUP ESG EVIDENCE ASSURANCE RECORD
-File: ${doc.fileName}
-Related Record: ${doc.relatedRecord}
-Project: ${doc.project}
-Module: ${doc.module}
-Status: ${doc.status}
-SHA-256 Checksum: ${doc.sha256}
-Uploaded By: ${doc.uploadedBy} on ${doc.uploadedAt}
-ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = doc.fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const details = getDocumentDetails(doc);
+    downloadEvidencePDF(doc, details);
   };
 
   const handleExportCSV = () => {
@@ -996,20 +1093,52 @@ ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
           <div className="ev-doc-preview-box">
             <div className="ev-doc-preview-head">
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ width: '14px', height: '14px', background: '#DC2626', borderRadius: '3px', color: '#FFF', fontSize: '9px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>M</div>
+                <div style={{ width: '15px', height: '15px', background: '#DC2626', borderRadius: '3px', color: '#FFF', fontSize: '9px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>M</div>
                 <span style={{ fontSize: '10px', fontWeight: 800, color: '#0F172A' }}>MEIL OFFICIAL ASSURANCE</span>
               </div>
-              <span style={{ fontSize: '9px', color: '#64748B', fontFamily: 'monospace' }}>SHA-256 CHECKED</span>
+              <span style={{ fontSize: '9px', color: '#16A34A', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <CheckCircle2 size={10} /> SHA-256 CHECKED
+              </span>
             </div>
-            <div className="ev-doc-preview-lines">
-              <div className="ev-doc-line" style={{ width: '70%', background: '#CBD5E1' }} />
-              <div className="ev-doc-line" style={{ width: '90%' }} />
-              <div className="ev-doc-line" style={{ width: '85%' }} />
-              <div className="ev-doc-line" style={{ width: '40%' }} />
+
+            <div className="ev-doc-real-content">
+              <div className="ev-real-row">
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div className="ev-real-filename" title={activeDoc.fileName}>
+                    {activeDoc.fileName}
+                  </div>
+                  <div className="ev-real-issuer" title={docDetails.issuer}>
+                    {docDetails.issuer}
+                  </div>
+                </div>
+                <span className="ev-real-voucher">{docDetails.voucherNo}</span>
+              </div>
+
+              <div className="ev-real-metric-badge">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontSize: '8.5px', color: '#64748B', fontWeight: 700 }}>VERIFIED METRIC</span>
+                  <span className="ev-real-metric-val">{docDetails.quantity}</span>
+                </div>
+                <span className="ev-real-scope-tag">{activeDoc.module}</span>
+              </div>
+
+              <button
+                type="button"
+                className="ev-btn-view-doc"
+                onClick={() => setIsPreviewModalOpen(true)}
+              >
+                <Eye size={12} strokeWidth={2.5} />
+                <span>View Full Certificate</span>
+              </button>
             </div>
-            <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '8.5px', color: '#16A34A', fontWeight: 700 }}>✓ ICAI Guideline 2024 Audit Traceable</span>
-              <span style={{ fontSize: '8.5px', color: '#94A3B8' }}>{activeDoc.size}</span>
+
+            <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2px' }}>
+              <span style={{ fontSize: '8.5px', color: '#16A34A', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <ShieldCheck size={11} /> ICAI SAE 3410 Audit Traceable
+              </span>
+              <span style={{ fontSize: '8.5px', color: '#64748B', fontFamily: 'monospace' }}>
+                {activeDoc.size} · {activeDoc.sha256 ? activeDoc.sha256.substring(0, 8) + '...' : 'SEALED'}
+              </span>
             </div>
           </div>
 
@@ -1100,13 +1229,70 @@ ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
 
           {/* Tab 2: Preview */}
           {activeTab === 'Preview' && (
-            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '8px', border: '1px solid rgba(148,163,184,0.18)', fontSize: '11px' }}>
-              <div style={{ fontWeight: 700, marginBottom: '6px' }}>Cryptographic Hash & Integrity</div>
-              <div style={{ fontFamily: 'monospace', color: '#475569', fontSize: '10px', wordBreak: 'break-all', background: '#F1F5F9', padding: '6px', borderRadius: '4px' }}>
-                {activeDoc.sha256}
+            <div className="ev-preview-sheet">
+              <div className="ev-preview-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '15px', height: '15px', background: '#DC2626', borderRadius: '3px', color: '#FFF', fontSize: '9px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>M</div>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A' }}>STATUTORY ASSURANCE CERTIFICATE</span>
+                </div>
+                <span className="ev-preview-cert-badge">
+                  <CheckCircle2 size={11} /> {activeDoc.status}
+                </span>
               </div>
-              <div style={{ marginTop: '10px', color: '#64748B' }}>
-                Standard: Indian ICAI Standard on Assurance Engagements (SAE 3410).
+
+              <div className="ev-preview-meta-grid">
+                <div className="ev-preview-meta-item">
+                  <span className="ev-preview-meta-k">Voucher Ref</span>
+                  <span className="ev-preview-meta-v" style={{ fontFamily: 'monospace', color: '#0284C7' }}>{docDetails.voucherNo}</span>
+                </div>
+                <div className="ev-preview-meta-item">
+                  <span className="ev-preview-meta-k">Substation / Facility</span>
+                  <span className="ev-preview-meta-v">{docDetails.substation}</span>
+                </div>
+                <div className="ev-preview-meta-item">
+                  <span className="ev-preview-meta-k">Issuer Authority</span>
+                  <span className="ev-preview-meta-v">{docDetails.issuer}</span>
+                </div>
+                <div className="ev-preview-meta-item">
+                  <span className="ev-preview-meta-k">Certified Quantity</span>
+                  <span className="ev-preview-meta-v" style={{ color: '#16A34A' }}>{docDetails.quantity}</span>
+                </div>
+              </div>
+
+              <div style={{ padding: '8px 10px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '10.5px' }}>
+                <div style={{ fontWeight: 700, color: '#334155', marginBottom: '2px' }}>Scope & Standard</div>
+                <div style={{ color: '#64748B' }}>{docDetails.scope}</div>
+                <div style={{ color: '#0284C7', fontWeight: 600, marginTop: '2px' }}>Standard: {docDetails.assuranceStandard}</div>
+              </div>
+
+              <div className="ev-preview-hash-box">
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748B', fontWeight: 600, marginBottom: '4px' }}>
+                  <span>CRYPTOGRAPHIC SHA-256 INTEGRITY SEAL</span>
+                  <span style={{ color: '#16A34A', fontWeight: 700 }}>VERIFIED</span>
+                </div>
+                <div style={{ fontFamily: 'monospace', color: '#0F172A', fontSize: '9px', wordBreak: 'break-all', background: '#FFFFFF', padding: '6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                  {activeDoc.sha256}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="ev-btn-view-doc"
+                  style={{ flex: 1, padding: '7px' }}
+                  onClick={() => setIsPreviewModalOpen(true)}
+                >
+                  <Eye size={13} />
+                  <span>Full Certificate View</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(activeDoc)}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', padding: '7px 12px', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '11px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}
+                >
+                  <Download size={13} />
+                  <span>Download</span>
+                </button>
               </div>
             </div>
           )}
@@ -1439,6 +1625,122 @@ ICAI Guidance Note 2024 / SEBI BRSR Assurance Ready`;
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Document Assurance Certificate Modal */}
+      {isPreviewModalOpen && (
+        <div className="ev-modal-overlay" onClick={() => setIsPreviewModalOpen(false)}>
+          <div className="ev-preview-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="ev-preview-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '22px', height: '22px', background: '#DC2626', borderRadius: '4px', color: '#FFF', fontSize: '12px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>M</div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>MEIL Statutory ESG Assurance Certificate</h3>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#64748B' }}>Issued under ICAI Standard on Assurance Engagements (SAE 3410) & SEBI BRSR Core</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="ev-preview-modal-body">
+              <div className="ev-cert-sheet">
+                <div className="ev-cert-watermark">MEIL AUDITED</div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #0F172A', paddingBottom: '12px', marginBottom: '14px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.3px' }}>
+                      MEGHA ENGINEERING & INFRASTRUCTURES LIMITED
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
+                      Corporate Quality, Environmental & Statutory Sustainability Directorate
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#64748B' }}>
+                      Audit Reference: {docDetails.voucherNo}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'inline-block', padding: '4px 10px', background: '#16A34A', color: '#FFF', borderRadius: '4px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px' }}>
+                      CERTIFIED VALID
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#64748B', marginTop: '4px' }}>
+                      Date: {activeDoc.date || '04 Oct 2026'}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                  <div style={{ background: '#FFF', border: '1px solid #E2E8F0', padding: '10px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Document / File Name</div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', wordBreak: 'break-all', marginTop: '2px' }}>{activeDoc.fileName}</div>
+                  </div>
+                  <div style={{ background: '#FFF', border: '1px solid #E2E8F0', padding: '10px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Project Site & Location</div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>{activeDoc.project} ({docDetails.substation})</div>
+                  </div>
+                  <div style={{ background: '#FFF', border: '1px solid #E2E8F0', padding: '10px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Issuer Authority / Vendor</div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>{docDetails.issuer}</div>
+                  </div>
+                  <div style={{ background: '#FFF', border: '1px solid #E2E8F0', padding: '10px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>ESG Module & Telemetry Record</div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>{activeDoc.module} · {activeDoc.relatedRecord}</div>
+                  </div>
+                </div>
+
+                <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '10.5px', color: '#0369A1', fontWeight: 800, textTransform: 'uppercase' }}>Quantified Primary Metric Verification</div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#0C4A6E', marginTop: '3px' }}>{docDetails.quantity}</div>
+                  <div style={{ fontSize: '11px', color: '#0369A1', marginTop: '2px' }}>{docDetails.scope}</div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', borderTop: '1px solid #CBD5E1', paddingTop: '14px' }}>
+                  <div style={{ borderLeft: '3px solid #0284C7', paddingLeft: '8px' }}>
+                    <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Certified & Uploaded By</div>
+                    <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{docDetails.certifiedBy}</div>
+                    <div style={{ fontSize: '9.5px', color: '#64748B' }}>Timestamp: {activeDoc.uploadedAt}</div>
+                  </div>
+                  <div style={{ borderLeft: '3px solid #16A34A', paddingLeft: '8px' }}>
+                    <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Audit Assurance Lead</div>
+                    <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{docDetails.verifiedBy}</div>
+                    <div style={{ fontSize: '9.5px', color: '#16A34A', fontWeight: 600 }}>ICAI SAE 3410 Reasonable Assurance Validated</div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '16px', padding: '8px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '9px', color: '#64748B', fontWeight: 700 }}>IMMUTABLE CRYPTOGRAPHIC SIGNATURE (SHA-256)</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '9.5px', color: '#334155', wordBreak: 'break-all', marginTop: '2px' }}>
+                    {activeDoc.sha256}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFF', fontSize: '12px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}
+                >
+                  <Printer size={14} />
+                  <span>Print Certificate</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(activeDoc)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 18px', borderRadius: '6px', border: 'none', background: '#0284C7', fontSize: '12px', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
+                >
+                  <Download size={14} />
+                  <span>Download Verified Record</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

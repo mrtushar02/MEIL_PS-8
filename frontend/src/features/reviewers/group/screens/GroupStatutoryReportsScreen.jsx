@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Download, FileText, Printer, FileSpreadsheet, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
+import { downloadReportPDF } from '../../../../utils/pdfGenerator';
+import esgStore from '../../../../services/esgStore';
 
 export default function GroupStatutoryReportsScreen() {
   const [downloadedReport, setDownloadedReport] = useState(null);
@@ -55,16 +57,15 @@ export default function GroupStatutoryReportsScreen() {
 
   const handleDownload = (r) => {
     setDownloadedReport(r.id);
-    exportToCsv(`${r.id}_${r.title.replace(/\s+/g, '_')}.csv`, [{
-      Report_ID: r.id,
-      Title: r.title,
-      Regulatory_Framework: r.framework,
-      Format: r.format,
-      File_Size: r.size,
-      Filing_Entity: 'Megha Engineering and Infrastructures Limited (MEIL)',
-      Status: 'Cryptographically Verified & Assurance Signed',
-      SHA256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-    }]);
+    const kpis = esgStore.getCalculatedKPIs();
+    downloadReportPDF({
+      name: r.title,
+      type: r.framework,
+      period: 'FY 2025-26 Q2',
+      project: 'Megha Engineering and Infrastructures Limited (MEIL)',
+      summary: r.description,
+      hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+    }, kpis);
     setTimeout(() => setDownloadedReport(null), 2500);
   };
 

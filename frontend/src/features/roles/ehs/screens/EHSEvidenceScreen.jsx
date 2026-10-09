@@ -10,6 +10,7 @@ import {
   Filter,
   X
 } from 'lucide-react';
+import { downloadEvidencePDF } from '../../../../utils/pdfGenerator';
 
 export default function EHSEvidenceScreen({
   evidence = [],
@@ -107,14 +108,16 @@ export default function EHSEvidenceScreen({
   };
 
   const handleDownloadEvidence = (ev) => {
-    const content = `MEIL ESG EVIDENCE VAULT\nDocument ID: ${ev.id}\nFile: ${ev.fileName}\nModule: ${ev.module || 'EHS'}\nAssurance: SEBI BRSR Core Type 2\nHash: ${ev.hash || 'SHA256-AUTHENTICATED'}\nTimestamp: ${new Date().toISOString()}`;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${ev.fileName || 'evidence'}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadEvidencePDF(ev, {
+      voucherNo: ev.id,
+      quantity: `${ev.size} Validated Proof`,
+      scope: 'BRSR Principle 6 · EHS Zero Harm & SA8000 Assured',
+      issuer: 'MEIL Corporate Safety & EHS Directorate',
+      certifiedBy: ev.uploadedBy || 'Rajesh Kumar (Site Lead)',
+      verifiedBy: 'EHS Statutory Auditor',
+      substation: ev.project || 'Zojila Tunnel',
+      assuranceStandard: 'ICAI SAE 3410 & ISO 45001:2018'
+    });
   };
 
   const handleVerifyEvidence = (evId) => {
@@ -426,50 +429,54 @@ export default function EHSEvidenceScreen({
                 position: 'relative'
               }}>
                 {/* Document Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1.5px solid #2563EB', paddingBottom: '6px' }}>
-                  <div style={{ width: '40px', height: '6px', background: '#2563EB', borderRadius: '2px' }} />
-                  <div style={{ width: '20px', height: '4px', background: '#94A3B8', borderRadius: '2px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1.5px solid #2563EB', paddingBottom: '4px' }}>
+                  <div style={{ fontSize: '7.5px', fontWeight: 900, color: '#1E40AF', letterSpacing: '0.2px' }}>MEIL STATUTORY PROOF</div>
+                  <div style={{ fontSize: '6.5px', color: '#64748B', fontFamily: 'monospace' }}>{selectedEv.id}</div>
                 </div>
+
                 {/* Title Line */}
-                <div style={{ width: '75%', height: '8px', background: '#0F172A', borderRadius: '2px', marginTop: '2px' }} />
-                <div style={{ width: '45%', height: '5px', background: '#64748B', borderRadius: '2px' }} />
+                <div style={{ marginTop: '2px' }}>
+                  <div style={{ fontSize: '8px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {selectedEv.fileName}
+                  </div>
+                  <div style={{ fontSize: '6.5px', color: '#0284C7', fontWeight: 700 }}>
+                    {selectedEv.module} · {selectedEv.project}
+                  </div>
+                </div>
 
                 {/* Content Paragraph lines */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
-                  <div style={{ width: '100%', height: '3.5px', background: '#CBD5E1', borderRadius: '1px' }} />
-                  <div style={{ width: '92%', height: '3.5px', background: '#CBD5E1', borderRadius: '1px' }} />
-                  <div style={{ width: '96%', height: '3.5px', background: '#CBD5E1', borderRadius: '1px' }} />
-                  <div style={{ width: '84%', height: '3.5px', background: '#CBD5E1', borderRadius: '1px' }} />
+                <div style={{ fontSize: '6px', color: '#475569', lineHeight: '1.4', background: '#F8FAFC', padding: '4px', borderRadius: '3px', border: '1px solid #E2E8F0' }}>
+                  Verified compliance document registered under ICAI SAE 3410 & ISO 45001. Cryptographically logged for SEBI BRSR Core.
                 </div>
 
                 {/* Mini Table Mockup */}
-                <div style={{ border: '1px solid #E2E8F0', borderRadius: '3px', padding: '4px', display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px', background: '#F8FAFC' }}>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <div style={{ flex: 1, height: '4px', background: '#94A3B8', borderRadius: '1px' }} />
-                    <div style={{ flex: 1, height: '4px', background: '#94A3B8', borderRadius: '1px' }} />
-                    <div style={{ flex: 1, height: '4px', background: '#94A3B8', borderRadius: '1px' }} />
+                <div style={{ border: '1px solid #E2E8F0', borderRadius: '3px', padding: '4px', display: 'flex', flexDirection: 'column', gap: '2px', background: '#FFFFFF' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '5.5px', color: '#64748B', fontWeight: 700, borderBottom: '0.5px solid #E2E8F0', paddingBottom: '2px' }}>
+                    <span>ATTRIB</span>
+                    <span>DETAILS</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <div style={{ flex: 1, height: '3px', background: '#E2E8F0', borderRadius: '1px' }} />
-                    <div style={{ flex: 1, height: '3px', background: '#E2E8F0', borderRadius: '1px' }} />
-                    <div style={{ flex: 1, height: '3px', background: '#E2E8F0', borderRadius: '1px' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '5.5px', color: '#0F172A' }}>
+                    <span style={{ color: '#64748B' }}>Uploader</span>
+                    <span style={{ fontWeight: 600 }}>{selectedEv.uploadedBy}</span>
                   </div>
-                </div>
-
-                {/* Second Paragraph */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
-                  <div style={{ width: '95%', height: '3.5px', background: '#CBD5E1', borderRadius: '1px' }} />
-                  <div style={{ width: '88%', height: '3.5px', background: '#CBD5E1', borderRadius: '1px' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '5.5px', color: '#0F172A' }}>
+                    <span style={{ color: '#64748B' }}>Timestamp</span>
+                    <span>{selectedEv.uploadedDate}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '5.5px', color: '#0F172A' }}>
+                    <span style={{ color: '#64748B' }}>Priority</span>
+                    <span style={{ color: selectedEv.priority === 'High' ? '#DC2626' : '#2563EB', fontWeight: 700 }}>{selectedEv.priority}</span>
+                  </div>
                 </div>
 
                 {/* Seal & Signature at Bottom */}
-                <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingTop: '4px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px dashed #059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '6px', fontWeight: 900, color: '#059669' }}>
-                    SEAL
+                <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingTop: '4px', borderTop: '0.5px solid #E2E8F0' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1.5px dashed #059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '5.5px', fontWeight: 900, color: '#059669', background: '#ECFDF5' }}>
+                    VERIFIED
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                    <div style={{ width: '45px', height: '1.5px', background: '#64748B' }} />
-                    <div style={{ fontSize: '6.5px', color: '#64748B', fontWeight: 600 }}>Authorized Sign</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
+                    <div style={{ fontSize: '6px', color: '#0F172A', fontWeight: 700 }}>Megha Engg. Ltd</div>
+                    <div style={{ fontSize: '5.5px', color: '#059669', fontWeight: 700 }}>✓ Digitally Signed</div>
                   </div>
                 </div>
               </div>

@@ -419,10 +419,9 @@
   margin: 0;
 }
 
-/* Document Mock Preview Banner */
+/* Document Preview Banner */
 .ev-doc-preview-box {
   width: 100%;
-  height: 110px;
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   background: #FFFFFF;
@@ -431,7 +430,8 @@
   box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
-  padding: 10px 14px;
+  padding: 12px 14px;
+  gap: 8px;
 }
 
 .ev-doc-preview-head {
@@ -440,19 +440,230 @@
   justify-content: space-between;
   border-bottom: 1px solid #E2E8F0;
   padding-bottom: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 
-.ev-doc-preview-lines {
+.ev-doc-real-content {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 7px;
 }
 
-.ev-doc-line {
-  height: 6px;
-  border-radius: 3px;
-  background: #E2E8F0;
+.ev-real-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ev-real-filename {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ev-real-issuer {
+  font-size: 10px;
+  color: #475569;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ev-real-voucher {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #0284C7;
+  font-family: monospace;
+  background: #F0F9FF;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #BAE6FD;
+  flex-shrink: 0;
+}
+
+.ev-real-metric-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.ev-real-metric-val {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.ev-real-scope-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #047857;
+  background: #ECFDF5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #A7F3D0;
+}
+
+.ev-btn-view-doc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  background: #0284C7;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ev-btn-view-doc:hover {
+  background: #0369A1;
+}
+
+/* Certificate Preview Sheet (Under Preview Tab) */
+.ev-preview-sheet {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ev-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 6px;
+}
+
+.ev-preview-cert-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #16A34A;
+  background: #F0FDF4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #BBF7D0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ev-preview-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 10.5px;
+}
+
+.ev-preview-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ev-preview-meta-k {
+  font-size: 9px;
+  color: #64748B;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ev-preview-meta-v {
+  font-size: 11px;
+  color: #0F172A;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.ev-preview-hash-box {
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+/* Document Fullscreen Preview Modal */
+.ev-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ev-preview-modal-dialog {
+  background: #FFFFFF;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #E2E8F0;
+}
+
+.ev-preview-modal-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.ev-preview-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ev-cert-sheet {
+  border: 2px solid #0F172A;
+  border-radius: 8px;
+  padding: 20px;
+  background: #FAFAFA;
+  position: relative;
+}
+
+.ev-cert-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-25deg);
+  font-size: 48px;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.04);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 /* Contextual Tabs */

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Upload, CheckCircle2, ShieldCheck, Lock, ExternalLink } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
+import { downloadGenericPDF } from '../../../../utils/pdfGenerator';
 import esgStore from '../../../../services/esgStore';
 
 export default function FilingCenterScreen() {
@@ -16,12 +17,22 @@ export default function FilingCenterScreen() {
   ];
 
   const handleDownloadFilingPack = () => {
-    exportToCsv('MEIL_SEBI_BRSR_Filing_Package_FY24.csv', checklistItems.map((item, idx) => ({
-      'Sequence': idx + 1,
-      'Mandatory Statutory Item': item,
-      'Verification Status': 'Verified & Attested',
-      'Filing Node': 'NSE / BSE Electronic Gateway (NEAPS / BSE Corporate Filing)'
-    })));
+    downloadGenericPDF({
+      title: 'MEIL SEBI BRSR STATUTORY FILING PACK',
+      filename: 'MEIL_SEBI_BRSR_Filing_Package_FY24.pdf',
+      lines: [
+        'MEGHA ENGINEERING & INFRASTRUCTURES LIMITED — STATUTORY FILING PACK',
+        'Official Submission Dossier for National Stock Exchange (NSE) & Bombay Stock Exchange (BSE)',
+        '---------------------------------------------------------------------------------',
+        'STATUTORY CHECKLIST & ATTESTATION LOG:',
+        ...checklistItems.map((item, idx) => `[VERIFIED] Item ${idx + 1}: ${item}`),
+        '---------------------------------------------------------------------------------',
+        'Filing Nodes: NSE Electronic Application Processing System (NEAPS) & BSE Listing Centre',
+        'DSC Status: DSC Class-3 Certificate Verified & Staged for Corporate Gateway',
+        'Assurance Standard: ICAI SAE 3410 Reasonable Assurance Opinion Attached'
+      ],
+      details: { sha256: 'sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069' }
+    });
   };
 
   const handleValidateDsc = () => {

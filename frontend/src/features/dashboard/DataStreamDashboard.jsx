@@ -327,7 +327,7 @@ export default function DataStreamDashboard({
                 <div className="ds-card-header">
                   <div>
                     <span className="ds-card-title">Site ESG Overview</span>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '3px' }}>
                       Real-time telemetry, GHG footprint & resource circularity
                     </div>
                   </div>
@@ -345,7 +345,7 @@ export default function DataStreamDashboard({
                   <div className="ds-overview-kpi-card">
                     <div className="ds-kpi-header">
                       <span className="ds-kpi-icon-wrap" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#DC2626' }}>
-                        <Flame size={14} />
+                        <Flame size={15} />
                       </span>
                       <span className="ds-metric-delta-badge">-4.2% YoY</span>
                     </div>
@@ -356,7 +356,7 @@ export default function DataStreamDashboard({
                   <div className="ds-overview-kpi-card">
                     <div className="ds-kpi-header">
                       <span className="ds-kpi-icon-wrap" style={{ background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB' }}>
-                        <Zap size={14} />
+                        <Zap size={15} />
                       </span>
                       <span className="ds-metric-delta-badge" style={{ background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB' }}>+1.2%</span>
                     </div>
@@ -367,7 +367,7 @@ export default function DataStreamDashboard({
                   <div className="ds-overview-kpi-card">
                     <div className="ds-kpi-header">
                       <span className="ds-kpi-icon-wrap" style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706' }}>
-                        <Cpu size={14} />
+                        <Cpu size={15} />
                       </span>
                       <span className="ds-metric-delta-badge" style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706' }}>Verified</span>
                     </div>
@@ -378,7 +378,7 @@ export default function DataStreamDashboard({
                   <div className="ds-overview-kpi-card">
                     <div className="ds-kpi-header">
                       <span className="ds-kpi-icon-wrap" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10B981' }}>
-                        <Droplets size={14} />
+                        <Droplets size={15} />
                       </span>
                       <span className="ds-metric-delta-badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10B981' }}>ZLD Active</span>
                     </div>
@@ -388,15 +388,15 @@ export default function DataStreamDashboard({
                 </div>
 
                 {/* Dual Wave Trend Charts */}
-                <div className="ds-overview-dual-charts" style={{ marginTop: '14px' }}>
+                <div className="ds-overview-dual-charts" style={{ marginTop: '16px' }}>
                   {/* Left Chart Box: Monthly Emissions Wave */}
                   <div className="ds-mini-chart-box">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#1E293B' }}>Monthly GHG Trajectory</span>
-                      <span style={{ fontSize: '9.5px', color: '#64748B', background: 'rgba(241, 245, 249, 0.8)', padding: '1px 6px', borderRadius: '4px' }}>Target: &lt;5k tCO₂e</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#1E293B' }}>Monthly GHG Trajectory</span>
+                      <span style={{ fontSize: '11px', color: '#64748B', background: 'rgba(241, 245, 249, 0.8)', padding: '2px 7px', borderRadius: '5px' }}>Target: &lt;5k tCO₂e</span>
                     </div>
 
-                    <div style={{ width: '100%', height: '64px' }}>
+                    <div style={{ width: '100%', height: '70px' }}>
                       <svg viewBox="0 0 240 64" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                         <defs>
                           <linearGradient id="blueWaveGrad1" x1="0" y1="0" x2="0" y2="1">
@@ -432,12 +432,12 @@ export default function DataStreamDashboard({
 
                   {/* Right Chart Box: Fuel & Circularity Wave */}
                   <div className="ds-mini-chart-box">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#1E293B' }}>Water Recycling & ZLD Curve</span>
-                      <span style={{ fontSize: '9.5px', color: '#16A34A', background: 'rgba(22, 163, 74, 0.08)', padding: '1px 6px', borderRadius: '4px' }}>ZLD Compliant</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#1E293B' }}>Water Recycling & ZLD Curve</span>
+                      <span style={{ fontSize: '11px', color: '#16A34A', background: 'rgba(22, 163, 74, 0.08)', padding: '2px 7px', borderRadius: '5px' }}>ZLD Compliant</span>
                     </div>
 
-                    <div style={{ width: '100%', height: '64px' }}>
+                    <div style={{ width: '100%', height: '70px' }}>
                       <svg viewBox="0 0 240 64" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                         <defs>
                           <linearGradient id="greenWaveGrad2" x1="0" y1="0" x2="0" y2="1">
@@ -503,18 +503,19 @@ export default function DataStreamDashboard({
                       return (
                         <tr key={log.id} onClick={() => onNavigateTab?.('audit')} style={{ cursor: 'pointer' }}>
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
                               <img 
                                 src={avatar} 
                                 alt={log.user} 
                                 className="ds-user-avatar"
+                                style={{ width: '26px', height: '26px' }}
                                 onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&auto=format&fit=crop&q=80'; }}
                               />
-                              <span style={{ fontWeight: 600, color: '#1E293B', fontSize: '11.5px' }}>{log.user?.split(' ')[0] || 'Officer'}</span>
+                              <span style={{ fontWeight: 600, color: '#1E293B', fontSize: '13px' }}>{log.user?.split(' ')[0] || 'Officer'}</span>
                             </div>
                           </td>
-                          <td style={{ fontSize: '11.5px', color: '#64748B' }}>{log.reason}</td>
-                          <td style={{ fontSize: '11px', color: '#94A3B8' }}>{log.timestamp?.slice(5, 16)}</td>
+                          <td style={{ fontSize: '13px', color: '#475569' }}>{log.reason}</td>
+                          <td style={{ fontSize: '12px', color: '#94A3B8' }}>{log.timestamp?.slice(5, 16)}</td>
                           <td>
                             <MoreHorizontal size={14} color="#94A3B8" style={{ cursor: 'pointer' }} />
                           </td>
@@ -535,7 +536,7 @@ export default function DataStreamDashboard({
                 <div className="ds-card-header">
                   <div>
                     <span className="ds-card-title">Recent Site Activities</span>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '3px' }}>
                       Real-time submissions, drafts, approvals & audit actions
                     </div>
                   </div>
@@ -806,14 +807,14 @@ export default function DataStreamDashboard({
                         />
                         <div className="ds-dispatch-msg-body">
                           <div className="ds-dispatch-msg-header">
-                            <span style={{ fontWeight: 700, color: '#1E293B', fontSize: '11px' }}>{msg.user}</span>
-                            <span style={{ fontSize: '9.5px', color: '#64748B' }}>{msg.role}</span>
+                            <span style={{ fontWeight: 700, color: '#1E293B', fontSize: '12.5px' }}>{msg.user}</span>
+                            <span style={{ fontSize: '11px', color: '#64748B' }}>{msg.role}</span>
                             {msg.recipient && msg.recipient !== 'All' && (
                               <span className="ds-dispatch-recipient-tag">
                                 Direct to @{msg.recipient}
                               </span>
                             )}
-                            <span style={{ fontSize: '9.5px', color: '#94A3B8', marginLeft: 'auto' }}>{msg.time}</span>
+                            <span style={{ fontSize: '11px', color: '#94A3B8', marginLeft: 'auto' }}>{msg.time}</span>
                           </div>
                           <div className="ds-dispatch-msg-text">{msg.text}</div>
                         </div>
@@ -860,29 +861,29 @@ export default function DataStreamDashboard({
                   <IndianRupee size={15} />
                 </div>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="ds-card-title" style={{ fontSize: '13.5px' }}>Site ESG Capex & Financial Overview</span>
-                    <span className="ds-finance-badge" style={{ fontSize: '10px', padding: '1.5px 7px' }}>FY 2026-27</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="ds-card-title" style={{ fontSize: '15px' }}>Site ESG Capex & Financial Overview</span>
+                    <span className="ds-finance-badge" style={{ fontSize: '11px', padding: '2px 8px' }}>FY 2026-27</span>
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '1px' }}>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
                     Capex allocation, green technology spend, energy savings & carbon ROI
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button 
                   type="button" 
                   className="ds-pill-btn" 
-                  style={{ fontSize: '10.5px', padding: '2.5px 10px' }}
+                  style={{ fontSize: '11.5px', padding: '4px 12px' }}
                   onClick={() => onNavigateTab?.('reports')}
                 >
-                  <BarChart3 size={12} style={{ marginRight: '4px' }} />
+                  <BarChart3 size={13} style={{ marginRight: '4px' }} />
                   Financials
                 </button>
                 <button 
                   type="button" 
                   className="ds-pill-btn" 
-                  style={{ background: '#258BE6', borderColor: '#258BE6', color: '#FFFFFF', fontWeight: 600, fontSize: '10.5px', padding: '2.5px 10px' }}
+                  style={{ background: '#258BE6', borderColor: '#258BE6', color: '#FFFFFF', fontWeight: 600, fontSize: '11.5px', padding: '4px 12px' }}
                   onClick={() => exportToCsv('MEIL_Site_ESG_Capex_Statement_FY27.csv', [
                     { Metric: 'Total ESG Capex', BudgetINR_Cr: 24.50, SpentINR_Cr: 18.82, UtilizationPct: '76.8%', Period: 'FY 2026-27' },
                     { Metric: 'Clean Tech & Decarbonization', BudgetINR_Cr: 12.00, SpentINR_Cr: 9.80, UtilizationPct: '81.7%', Period: 'FY 2026-27' },
@@ -891,42 +892,42 @@ export default function DataStreamDashboard({
                     { Metric: 'Waste Diversion & Circular Economy', BudgetINR_Cr: 2.00, SpentINR_Cr: 1.00, UtilizationPct: '50.0%', Period: 'FY 2026-27' }
                   ])}
                 >
-                  <Download size={12} style={{ marginRight: '4px' }} />
+                  <Download size={13} style={{ marginRight: '4px' }} />
                   Statement
                 </button>
               </div>
             </div>
 
             {/* 4 Financial KPIs Row (Compact) */}
-            <div className="ds-finance-kpi-row" style={{ gap: '8px', marginBottom: '10px' }}>
-              <div className="ds-finance-kpi-card" style={{ padding: '8px 10px' }}>
-                <span className="ds-finance-kpi-lbl" style={{ fontSize: '10px' }}>Total ESG Capex</span>
-                <div className="ds-finance-kpi-val" style={{ fontSize: '16.5px', margin: '2px 0 1px' }}>₹24.50 <span style={{ fontSize: '11px', color: '#64748B' }}>Cr</span></div>
-                <div className="ds-finance-kpi-sub" style={{ fontSize: '9.5px' }}>
+            <div className="ds-finance-kpi-row" style={{ gap: '10px', marginBottom: '12px' }}>
+              <div className="ds-finance-kpi-card" style={{ padding: '10px 12px' }}>
+                <span className="ds-finance-kpi-lbl" style={{ fontSize: '11px' }}>Total ESG Capex</span>
+                <div className="ds-finance-kpi-val" style={{ fontSize: '18px', margin: '3px 0 2px' }}>₹24.50 <span style={{ fontSize: '12px', color: '#64748B' }}>Cr</span></div>
+                <div className="ds-finance-kpi-sub" style={{ fontSize: '11px' }}>
                   <span style={{ color: '#2563EB', fontWeight: 700 }}>₹18.82 Cr</span> Spent (76.8%)
                 </div>
               </div>
 
-              <div className="ds-finance-kpi-card" style={{ padding: '8px 10px' }}>
-                <span className="ds-finance-kpi-lbl" style={{ fontSize: '10px' }}>Energy Cost Savings</span>
-                <div className="ds-finance-kpi-val" style={{ color: '#16A34A', fontSize: '16.5px', margin: '2px 0 1px' }}>₹68.40 <span style={{ fontSize: '11px', color: '#64748B' }}>L</span></div>
-                <div className="ds-finance-kpi-sub" style={{ fontSize: '9.5px' }}>
+              <div className="ds-finance-kpi-card" style={{ padding: '10px 12px' }}>
+                <span className="ds-finance-kpi-lbl" style={{ fontSize: '11px' }}>Energy Cost Savings</span>
+                <div className="ds-finance-kpi-val" style={{ color: '#16A34A', fontSize: '18px', margin: '3px 0 2px' }}>₹68.40 <span style={{ fontSize: '12px', color: '#64748B' }}>L</span></div>
+                <div className="ds-finance-kpi-sub" style={{ fontSize: '11px' }}>
                   <span style={{ color: '#16A34A', fontWeight: 700 }}>+18.2%</span> vs Grid Baseline
                 </div>
               </div>
 
-              <div className="ds-finance-kpi-card" style={{ padding: '8px 10px' }}>
-                <span className="ds-finance-kpi-lbl" style={{ fontSize: '10px' }}>Water Circularity Recovery</span>
-                <div className="ds-finance-kpi-val" style={{ color: '#0284C7', fontSize: '16.5px', margin: '2px 0 1px' }}>₹22.50 <span style={{ fontSize: '11px', color: '#64748B' }}>L</span></div>
-                <div className="ds-finance-kpi-sub" style={{ fontSize: '9.5px' }}>
+              <div className="ds-finance-kpi-card" style={{ padding: '10px 12px' }}>
+                <span className="ds-finance-kpi-lbl" style={{ fontSize: '11px' }}>Water Circularity Recovery</span>
+                <div className="ds-finance-kpi-val" style={{ color: '#0284C7', fontSize: '18px', margin: '3px 0 2px' }}>₹22.50 <span style={{ fontSize: '12px', color: '#64748B' }}>L</span></div>
+                <div className="ds-finance-kpi-sub" style={{ fontSize: '11px' }}>
                   <span style={{ color: '#0284C7', fontWeight: 700 }}>42.5 kL</span> Recycled STP
                 </div>
               </div>
 
-              <div className="ds-finance-kpi-card" style={{ padding: '8px 10px' }}>
-                <span className="ds-finance-kpi-lbl" style={{ fontSize: '10px' }}>Carbon Value (ROI)</span>
-                <div className="ds-finance-kpi-val" style={{ color: '#9333EA', fontSize: '16.5px', margin: '2px 0 1px' }}>₹41.80 <span style={{ fontSize: '11px', color: '#64748B' }}>L</span></div>
-                <div className="ds-finance-kpi-sub" style={{ fontSize: '9.5px' }}>
+              <div className="ds-finance-kpi-card" style={{ padding: '10px 12px' }}>
+                <span className="ds-finance-kpi-lbl" style={{ fontSize: '11px' }}>Carbon Value (ROI)</span>
+                <div className="ds-finance-kpi-val" style={{ color: '#9333EA', fontSize: '18px', margin: '3px 0 2px' }}>₹41.80 <span style={{ fontSize: '12px', color: '#64748B' }}>L</span></div>
+                <div className="ds-finance-kpi-sub" style={{ fontSize: '11px' }}>
                   <span style={{ color: '#9333EA', fontWeight: 700 }}>3,240 tCO₂e</span> Abated
                 </div>
               </div>
@@ -937,13 +938,13 @@ export default function DataStreamDashboard({
               {/* Left Sub-Card: Infographic Multi-Segment Pie Chart */}
               <div className="ds-finance-subcard" style={{ padding: '10px 12px' }}>
                 <div className="ds-finance-subcard-header" style={{ marginBottom: '8px', paddingBottom: '4px' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>ESG Capex Allocation</span>
-                  <span style={{ fontSize: '10px', color: '#64748B' }}>Budget: ₹24.50 Cr</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>ESG Capex Allocation</span>
+                  <span style={{ fontSize: '11.5px', color: '#64748B' }}>Budget: ₹24.50 Cr</span>
                 </div>
 
-                <div className="ds-pie-container" style={{ gap: '12px' }}>
-                  <div className="ds-pie-svg-wrap" style={{ width: '120px', height: '120px' }}>
-                    <svg width="120" height="120" viewBox="0 0 160 160" style={{ transform: 'rotate(-90deg)' }}>
+                <div className="ds-pie-container" style={{ gap: '14px' }}>
+                  <div className="ds-pie-svg-wrap" style={{ width: '124px', height: '124px' }}>
+                    <svg width="124" height="124" viewBox="0 0 160 160" style={{ transform: 'rotate(-90deg)' }}>
                       <circle cx="80" cy="80" r="56" fill="none" stroke="#2563EB" strokeWidth="22" strokeDasharray="123.15 351.86" strokeDashoffset="0" />
                       <circle cx="80" cy="80" r="56" fill="none" stroke="#10B981" strokeWidth="22" strokeDasharray="87.96 351.86" strokeDashoffset="-123.15" />
                       <circle cx="80" cy="80" r="56" fill="none" stroke="#F59E0B" strokeWidth="22" strokeDasharray="70.37 351.86" strokeDashoffset="-211.11" />
@@ -951,13 +952,13 @@ export default function DataStreamDashboard({
                       <circle cx="80" cy="80" r="56" fill="none" stroke="#F43F5E" strokeWidth="22" strokeDasharray="17.59 351.86" strokeDashoffset="-334.26" />
                     </svg>
                     <div className="ds-pie-center-callout">
-                      <div style={{ fontSize: '8.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Spent</div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', lineHeight: 1.1 }}>₹18.8 Cr</div>
-                      <div style={{ fontSize: '8.5px', color: '#16A34A', fontWeight: 700 }}>76.8%</div>
+                      <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Spent</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A', lineHeight: 1.1 }}>₹18.8 Cr</div>
+                      <div style={{ fontSize: '9.5px', color: '#16A34A', fontWeight: 700 }}>76.8%</div>
                     </div>
                   </div>
 
-                  <div className="ds-pie-legend-list" style={{ gap: '4px' }}>
+                  <div className="ds-pie-legend-list" style={{ gap: '5px' }}>
                     {[
                       { label: 'Solar & Decarbonization', pct: '35%', amt: '₹8.58 Cr', color: '#2563EB' },
                       { label: 'Water & ZLD Recycling', pct: '25%', amt: '₹6.12 Cr', color: '#10B981' },
@@ -966,13 +967,13 @@ export default function DataStreamDashboard({
                       { label: 'BRSR Audits & Verification', pct: '5%', amt: '₹1.22 Cr', color: '#F43F5E' }
                     ].map((item, idx) => (
                       <div key={idx} className="ds-pie-legend-item" style={{ padding: '2px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
-                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                          <span className="ds-pie-legend-title" style={{ fontSize: '10.5px' }}>{item.label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                          <span className="ds-pie-legend-title" style={{ fontSize: '12px' }}>{item.label}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-                          <span className="ds-pie-pct-badge" style={{ color: item.color, background: `${item.color}18`, fontSize: '9px', padding: '1px 5px' }}>{item.pct}</span>
-                          <span className="ds-pie-amt" style={{ fontSize: '10px' }}>{item.amt}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                          <span className="ds-pie-pct-badge" style={{ color: item.color, background: `${item.color}18`, fontSize: '10.5px', padding: '1.5px 6px' }}>{item.pct}</span>
+                          <span className="ds-pie-amt" style={{ fontSize: '11.5px' }}>{item.amt}</span>
                         </div>
                       </div>
                     ))}
@@ -983,13 +984,13 @@ export default function DataStreamDashboard({
               {/* Right Sub-Card: Infographic Bar & Growth Chart */}
               <div className="ds-finance-subcard" style={{ padding: '10px 12px' }}>
                 <div className="ds-finance-subcard-header" style={{ marginBottom: '8px', paddingBottom: '4px' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>Monthly Capex vs Savings</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9.5px', color: '#64748B' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <span style={{ width: '7px', height: '7px', background: '#38BDF8', borderRadius: '2px' }} /> Capex
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Monthly Capex vs Savings</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#64748B' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '8px', height: '8px', background: '#38BDF8', borderRadius: '2px' }} /> Capex
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <span style={{ width: '7px', height: '7px', background: '#10B981', borderRadius: '50%' }} /> Savings
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '8px', height: '8px', background: '#10B981', borderRadius: '50%' }} /> Savings
                     </span>
                   </div>
                 </div>
@@ -1052,7 +1053,7 @@ export default function DataStreamDashboard({
                   </svg>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '9px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '4px' }}>
                   <span>Apr</span>
                   <span>May</span>
                   <span>Jun</span>
@@ -1061,7 +1062,7 @@ export default function DataStreamDashboard({
                   <span>Sep</span>
                 </div>
 
-                <div className="ds-finance-roi-ribbon" style={{ marginTop: '6px', padding: '5px 8px', fontSize: '10px' }}>
+                <div className="ds-finance-roi-ribbon" style={{ marginTop: '8px', padding: '6px 10px', fontSize: '11.5px' }}>
                   <span><strong>Payback:</strong> 3.2 Yrs</span>
                   <span style={{ color: '#94A3B8' }}>•</span>
                   <span><strong>Carbon ROI:</strong> 24.8% p.a.</span>
@@ -1210,17 +1211,17 @@ export default function DataStreamDashboard({
                       transform="rotate(-90 18 18)"
                     />
                   </svg>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '9px', color: '#64748B' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#258BE6' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#258BE6' }} />
                       <span>Recycled 72%</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38BDF8' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38BDF8' }} />
                       <span>Ground 18%</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#CBD5E1' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#CBD5E1' }} />
                       <span>Surface 10%</span>
                     </div>
                   </div>
@@ -1354,7 +1355,7 @@ export default function DataStreamDashboard({
                     type="button"
                     onClick={() => setFormInputs({ location: 'Zojila Tunnel PKG-2', division: 'DG Heavy Fleet', email: 'rohit.kumar@meilgroup.in', message: '' })}
                     className="ds-pill-btn"
-                    style={{ padding: '5px 14px', fontSize: '11px' }}
+                    style={{ padding: '7px 18px', fontSize: '12.5px' }}
                   >
                     Reset
                   </button>
@@ -1365,8 +1366,8 @@ export default function DataStreamDashboard({
                       background: '#258BE6',
                       borderColor: '#258BE6',
                       color: '#FFFFFF',
-                      padding: '5px 18px',
-                      fontSize: '11px',
+                      padding: '7px 22px',
+                      fontSize: '12.5px',
                       fontWeight: 700,
                       boxShadow: '0 2px 8px rgba(37, 139, 230, 0.35)'
                     }}
@@ -1417,12 +1418,12 @@ export default function DataStreamDashboard({
                       notes: 'Fuel challan verified against underground tank dip measurement. All 4 DG sets calibrated.'
                     })}
                   >
-                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '11px' }}>HMR-01</td>
-                    <td style={{ fontSize: '11px' }}>
+                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '12.5px' }}>HMR-01</td>
+                    <td style={{ fontSize: '12.5px' }}>
                       <div style={{ fontWeight: 600, color: '#1E293B' }}>Diesel & Fuel Log</div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>DG Heavy Fleet</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>DG Heavy Fleet</div>
                     </td>
-                    <td><span style={{ color: '#16A34A', fontWeight: 600, fontSize: '10.5px' }}>Verified</span></td>
+                    <td><span style={{ color: '#16A34A', fontWeight: 600, fontSize: '11.5px' }}>Verified</span></td>
                     <td>
                       <div className="ds-progress-track">
                         <div className="ds-progress-fill" style={{ width: '100%' }} />
@@ -1444,12 +1445,12 @@ export default function DataStreamDashboard({
                       notes: 'CEA India Grid Baseline Database v19 factor (0.716 kg CO2e/kWh) applied. Verified by BU Coordinator.'
                     })}
                   >
-                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '11px' }}>HMR-02</td>
-                    <td style={{ fontSize: '11px' }}>
+                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '12.5px' }}>HMR-02</td>
+                    <td style={{ fontSize: '12.5px' }}>
                       <div style={{ fontWeight: 600, color: '#1E293B' }}>Grid Power (CEA v19)</div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>33kV Substation</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>33kV Substation</div>
                     </td>
-                    <td><span style={{ color: '#2563EB', fontWeight: 600, fontSize: '10.5px' }}>Approved</span></td>
+                    <td><span style={{ color: '#2563EB', fontWeight: 600, fontSize: '11.5px' }}>Approved</span></td>
                     <td>
                       <div className="ds-progress-track">
                         <div className="ds-progress-fill" style={{ width: '85%' }} />
@@ -1470,12 +1471,12 @@ export default function DataStreamDashboard({
                       notes: 'Zero Liquid Discharge certified. Awaiting final third-party NABL water quality report.'
                     })}
                   >
-                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '11px' }}>HMR-03</td>
-                    <td style={{ fontSize: '11px' }}>
+                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '12.5px' }}>HMR-03</td>
+                    <td style={{ fontSize: '12.5px' }}>
                       <div style={{ fontWeight: 600, color: '#1E293B' }}>Water Inflow & STP</div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>Recycling Unit</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Recycling Unit</div>
                     </td>
-                    <td><span style={{ color: '#D97706', fontWeight: 600, fontSize: '10.5px' }}>In Review</span></td>
+                    <td><span style={{ color: '#D97706', fontWeight: 600, fontSize: '11.5px' }}>In Review</span></td>
                     <td>
                       <div className="ds-progress-track">
                         <div className="ds-progress-fill" style={{ width: '65%' }} />
@@ -1496,12 +1497,12 @@ export default function DataStreamDashboard({
                       notes: 'Zero Fatalities, Zero LTIs, 86 personnel attendance signed off with biometric verification.'
                     })}
                   >
-                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '11px' }}>HMR-04</td>
-                    <td style={{ fontSize: '11px' }}>
+                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '12.5px' }}>HMR-04</td>
+                    <td style={{ fontSize: '12.5px' }}>
                       <div style={{ fontWeight: 600, color: '#1E293B' }}>Monthly Safety Log</div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>Zero Harm Units</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Zero Harm Units</div>
                     </td>
-                    <td><span style={{ color: '#16A34A', fontWeight: 600, fontSize: '10.5px' }}>Verified</span></td>
+                    <td><span style={{ color: '#16A34A', fontWeight: 600, fontSize: '11.5px' }}>Verified</span></td>
                     <td>
                       <div className="ds-progress-track">
                         <div className="ds-progress-fill" style={{ width: '100%' }} />
@@ -1522,12 +1523,12 @@ export default function DataStreamDashboard({
                       notes: 'Manifest #SPCB-JK-2026-891 signed by registered authorized re-refiner.'
                     })}
                   >
-                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '11px' }}>HMR-05</td>
-                    <td style={{ fontSize: '11px' }}>
+                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '12.5px' }}>HMR-05</td>
+                    <td style={{ fontSize: '12.5px' }}>
                       <div style={{ fontWeight: 600, color: '#1E293B' }}>Hazardous Waste Slip</div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>Lubricants / Oil</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Lubricants / Oil</div>
                     </td>
-                    <td><span style={{ color: '#64748B', fontWeight: 600, fontSize: '10.5px' }}>Submitted</span></td>
+                    <td><span style={{ color: '#64748B', fontWeight: 600, fontSize: '11.5px' }}>Submitted</span></td>
                     <td>
                       <div className="ds-progress-track">
                         <div className="ds-progress-fill" style={{ width: '50%' }} />
@@ -1548,12 +1549,12 @@ export default function DataStreamDashboard({
                       notes: 'Captive solar rooftop generation abated 13.17 tCO2e of grid electricity.'
                     })}
                   >
-                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '11px' }}>HMR-06</td>
-                    <td style={{ fontSize: '11px' }}>
+                    <td style={{ fontWeight: 600, color: '#1E293B', fontSize: '12.5px' }}>HMR-06</td>
+                    <td style={{ fontSize: '12.5px' }}>
                       <div style={{ fontWeight: 600, color: '#1E293B' }}>Solar Inverter 120kW</div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>Renewable Microgrid</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Renewable Microgrid</div>
                     </td>
-                    <td><span style={{ color: '#16A34A', fontWeight: 600, fontSize: '10.5px' }}>Verified</span></td>
+                    <td><span style={{ color: '#16A34A', fontWeight: 600, fontSize: '11.5px' }}>Verified</span></td>
                     <td>
                       <div className="ds-progress-track">
                         <div className="ds-progress-fill" style={{ width: '100%' }} />
@@ -1566,12 +1567,12 @@ export default function DataStreamDashboard({
 
             {/* Batch Telemetry Synchronization Footer Strip */}
             <div className="ds-batch-footer-strip">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={13} color="#16A34A" />
-                <span style={{ fontSize: '10.5px', color: '#1E293B', fontWeight: 600 }}>6 of 6 Active Batches Synchronized</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={15} color="#16A34A" />
+                <span style={{ fontSize: '12px', color: '#1E293B', fontWeight: 600 }}>6 of 6 Active Batches Synchronized</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: '#0284C7', fontWeight: 600 }}>
-                <span className="ds-live-dot" style={{ width: '5px', height: '5px' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#0284C7', fontWeight: 600 }}>
+                <span className="ds-live-dot" style={{ width: '6px', height: '6px' }} />
                 <span>Live Telemetry</span>
               </div>
             </div>

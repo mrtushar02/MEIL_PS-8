@@ -9,6 +9,7 @@ import {
   Eye
 } from 'lucide-react';
 import { exportToCsv } from '../../../../utils/exportUtils';
+import { downloadPolicyPDF } from '../../../../utils/pdfGenerator';
 
 export default function GovPoliciesScreen({
   policies = [],
@@ -36,20 +37,14 @@ export default function GovPoliciesScreen({
   };
 
   const handleDownloadSingle = (item) => {
-    const rows = [{
-      Policy_ID: item.id,
-      Policy_Name: item.name,
-      Category: item.category,
-      Department: item.department,
-      Effective_Date: item.effectiveDate,
-      Review_Date: item.reviewDate,
-      Version: item.version,
-      Operational_Status: item.status,
-      Approval_Status: item.approvalStatus,
-      Scope: item.scope || 'Group & Subsidiaries',
-      Statutory_Reference: 'Companies Act 2013 & SEBI LODR 2015'
-    }];
-    exportToCsv(`MEIL_Policy_Dossier_${item.id}`, rows);
+    downloadPolicyPDF({
+      title: item.name,
+      code: item.id,
+      version: item.version,
+      effectiveDate: item.effectiveDate,
+      description: item.scope || 'MEIL Group Statutory Policy',
+      scope: item.category
+    });
   };
 
   const filtered = policies.filter(p => {
