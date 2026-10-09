@@ -115,16 +115,47 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
         <div className="ambient-light ambient-light-2" />
       </div>
 
-      {/* ═══ Clean Focused Enterprise Login Section ═══ */}
+      {/* ═══ Left Side: Brand Narrative Hero (Transparent over background) ═══ */}
+      <div className="welcome-left-brand-hero">
+        <div className="hero-brand-pill">
+          <span className="hero-live-indicator" />
+          <span>STATUTORY BRSR · SUSTAINABILITY INTELLIGENCE</span>
+        </div>
+        <h1 className="hero-main-title">
+          Engineering A<br />
+          <span className="hero-title-accent">Sustainable</span> Tomorrow.
+        </h1>
+        <p className="hero-main-subtitle">
+          Megha Engineering &amp; Infrastructures Limited · CIN: U45202TG2006PLC050271
+        </p>
+        <div className="hero-stats-row">
+          <div className="hero-stat-item">
+            <span className="hero-stat-value">250+</span>
+            <span className="hero-stat-label">Project Sites</span>
+          </div>
+          <div className="hero-stat-sep" />
+          <div className="hero-stat-item">
+            <span className="hero-stat-value">42,800+</span>
+            <span className="hero-stat-label">Workforce</span>
+          </div>
+          <div className="hero-stat-sep" />
+          <div className="hero-stat-item">
+            <span className="hero-stat-value">₹32,450 Cr</span>
+            <span className="hero-stat-label">Turnover</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ Right Side: Clean Focused Enterprise Login Card ═══ */}
       <div className="welcome-clean-login-container">
         <div className="welcome-login-card">
           {/* Header */}
           <div className="login-card-header">
             <div className="login-logo-wrap">
-              <MeilLogo height={42} />
+              <MeilLogo height={38} />
             </div>
             <div className="login-badge-pill">
-              <Sparkles size={12} className="text-blue-500" />
+              <Sparkles size={11} className="text-blue-500" />
               <span>SEBI BRSR STATUTORY PORTAL</span>
             </div>
             <h1 className="login-title">

@@ -1,7 +1,7 @@
 /* ==========================================================================
-   MEIL ESG WELCOME SCREEN — FOCUSED ENTERPRISE LOGIN SYSTEM
+   MEIL ESG WELCOME SCREEN — SPLIT ENTERPRISE HERO & RIGHT LOGIN SYSTEM
    Megha Engineering & Infrastructures Ltd. · ESG & BRSR Reporting Platform
-   Vivid Operational Background Imagery with Liquid Glass Central Login
+   Vivid Operational Background Imagery with Right-Aligned Login Card
    ========================================================================== */
 
 .welcome-page {
@@ -9,13 +9,13 @@
   min-height: 100vh;
   height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   position: relative;
   overflow: hidden;
   background: #0B132B;
-  padding: 24px;
+  padding: 32px 72px 56px 72px;
   font-family: var(--font-body, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   box-sizing: border-box;
 }
@@ -63,8 +63,8 @@
   inset: 0;
   z-index: 2;
   background:
-    linear-gradient(180deg, rgba(10, 25, 47, 0.40) 0%, rgba(10, 25, 47, 0.20) 45%, rgba(10, 25, 47, 0.60) 100%),
-    radial-gradient(circle at 50% 50%, transparent 40%, rgba(10, 25, 47, 0.45) 100%);
+    linear-gradient(90deg, rgba(10, 25, 47, 0.65) 0%, rgba(10, 25, 47, 0.30) 45%, rgba(10, 25, 47, 0.55) 100%),
+    linear-gradient(180deg, rgba(10, 25, 47, 0.35) 0%, transparent 50%, rgba(10, 25, 47, 0.65) 100%);
   pointer-events: none;
 }
 
@@ -79,7 +79,7 @@
 .ambient-light-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, transparent 70%);
   top: -10%;
   left: 10%;
 }
@@ -87,49 +87,170 @@
 .ambient-light-2 {
   width: 480px;
   height: 480px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
   bottom: -10%;
   right: 10%;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FOCUSED ENTERPRISE LOGIN CARD
+   LEFT SIDE: BRAND HERO NARRATIVE (TRANSPARENT OVER BACKGROUND)
+   ───────────────────────────────────────────────────────────── */
+.welcome-left-brand-hero {
+  position: relative;
+  z-index: 10;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: heroFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #FFFFFF;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hero-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 5px 14px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  width: fit-content;
+}
+
+.hero-live-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38BDF8;
+  box-shadow: 0 0 10px #38BDF8;
+  animation: pulseBlue 2s infinite ease-in-out;
+}
+
+@keyframes pulseBlue {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.25); }
+}
+
+.hero-main-title {
+  font-size: 46px;
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.hero-title-accent {
+  background: linear-gradient(135deg, #60A5FA 0%, #38BDF8 50%, #34D399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-main-subtitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  letter-spacing: 0.015em;
+  line-height: 1.5;
+}
+
+.hero-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 8px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 20px;
+  border-radius: 16px;
+  width: fit-content;
+}
+
+.hero-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.hero-stat-label {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.hero-stat-sep {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RIGHT SIDE: FOCUSED ENTERPRISE LOGIN CARD
    ───────────────────────────────────────────────────────────── */
 .welcome-clean-login-container {
   position: relative;
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   width: 100%;
-  max-width: 460px;
-  animation: loginCardFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-bottom: 30px;
+  max-width: 440px;
+  animation: loginCardSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
-@keyframes loginCardFadeIn {
+@keyframes loginCardSlideIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.97);
+    transform: translateX(32px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
   }
 }
 
 .welcome-login-card {
   width: 100%;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow:
-    0 24px 60px -12px rgba(0, 0, 0, 0.38),
-    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 24px 64px -12px rgba(0, 0, 0, 0.45),
+    0 4px 16px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
   border-radius: 22px;
-  padding: 28px 28px 22px;
+  padding: 24px 26px 20px;
   display: flex;
   flex-direction: column;
 }
@@ -139,14 +260,14 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .login-logo-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .login-badge-pill {
@@ -155,17 +276,17 @@
   gap: 5px;
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
-  padding: 3px 9px;
+  padding: 2.5px 8px;
   border-radius: 9999px;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: #1D4ED8;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .login-title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 0 2px;
@@ -181,7 +302,7 @@
 }
 
 .login-desc {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #64748B;
   margin: 0;
   font-weight: 500;
@@ -191,20 +312,20 @@
 .login-actual-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .login-field-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .login-field-label {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: #334155;
 }
@@ -212,13 +333,13 @@
 .login-select-input,
 .login-text-input {
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  font-size: 13px;
+  height: 36px;
+  padding: 0 11px;
+  font-size: 12.5px;
   color: #0F172A;
   background: #FFFFFF;
   border: 1px solid #CBD5E1;
-  border-radius: 9px;
+  border-radius: 8px;
   outline: none;
   transition: all 0.2s ease;
   font-family: inherit;
@@ -237,12 +358,12 @@
 }
 
 .password-wrap .login-text-input {
-  padding-right: 38px;
+  padding-right: 36px;
 }
 
 .password-toggle-btn {
   position: absolute;
-  right: 8px;
+  right: 7px;
   background: none;
   border: none;
   color: #64748B;
@@ -262,20 +383,20 @@
   background: #FEF2F2;
   border: 1px solid #FECACA;
   color: #DC2626;
-  font-size: 11.5px;
-  padding: 6px 10px;
-  border-radius: 7px;
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: 6px;
   font-weight: 500;
 }
 
 .login-submit-button {
   width: 100%;
-  height: 42px;
+  height: 40px;
   background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
   color: #FFFFFF;
   border: none;
-  border-radius: 10px;
-  font-size: 13.5px;
+  border-radius: 9px;
+  font-size: 13px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -284,7 +405,7 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
   transition: all 0.2s ease;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .login-submit-button:hover:not(:disabled) {
@@ -320,16 +441,16 @@
 
 /* Quick Role Chips */
 .login-quick-roles {
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid #E2E8F0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .quick-roles-title {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: #64748B;
@@ -339,17 +460,17 @@
 .quick-roles-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
 }
 
 .quick-role-chip {
   background: #F1F5F9;
   border: 1px solid #E2E8F0;
   color: #334155;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 2.5px 7px;
+  border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -372,8 +493,7 @@
 .welcome-live-spotlight-pill {
   position: fixed;
   bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 72px;
   z-index: 25;
   display: flex;
   align-items: center;
@@ -382,10 +502,10 @@
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 6px 14px;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 5px 14px;
   border-radius: 9999px;
-  max-width: min(92vw, 860px);
+  max-width: min(85vw, 680px);
   pointer-events: auto;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -417,12 +537,12 @@
 }
 
 .spotlight-live-tag {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: #0369A1;
   background: #E0F2FE;
-  padding: 2.5px 8px;
+  padding: 2px 7px;
   border-radius: 9999px;
   text-transform: uppercase;
 }
@@ -431,7 +551,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -454,7 +574,7 @@
 
 .spotlight-sub {
   color: #64748B;
-  font-size: 11px;
+  font-size: 10.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -463,14 +583,14 @@
 .spotlight-dots {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin-left: auto;
   flex-shrink: 0;
 }
 
 .spotlight-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   border: none;
   background: #CBD5E1;
@@ -485,10 +605,32 @@
 }
 
 .spotlight-dot.active {
-  width: 22px;
+  width: 20px;
   border-radius: 9999px;
   background: #0284C7;
   box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .welcome-page {
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 20px;
+    gap: 20px;
+  }
+  .welcome-left-brand-hero {
+    display: none;
+  }
+  .welcome-clean-login-container {
+    max-width: 440px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+  .welcome-live-spotlight-pill {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 8px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -496,12 +638,12 @@
     max-width: 95vw;
   }
   .welcome-login-card {
-    padding: 22px 18px 18px;
+    padding: 20px 16px 16px;
   }
   .welcome-live-spotlight-pill {
     bottom: 8px;
-    padding: 5px 10px;
-    gap: 8px;
+    padding: 4px 10px;
+    gap: 6px;
   }
   .spotlight-sub {
     display: none;
