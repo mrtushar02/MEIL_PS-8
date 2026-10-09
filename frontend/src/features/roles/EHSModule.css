@@ -24,12 +24,10 @@
 
 /* ──── 1. TOP BANNER / HERO (Pixel-Perfect to Master Reference) ──── */
 .ehs-hero-banner {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(28px) saturate(135%);
-  -webkit-backdrop-filter: blur(28px) saturate(135%);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.04), 0 1px 3px rgba(15, 23, 42, 0.03);
-  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  border-radius: 16px;
   padding: 24px 28px;
   position: relative;
   overflow: hidden;
@@ -251,12 +249,11 @@
 }
 
 .ehs-kpi-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(24px) saturate(135%);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
   padding: 16px 18px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -343,12 +340,10 @@
 
 /* ──── 3. GLASS CARD CONTAINERS ──── */
 .ehs-glass-card {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(28px) saturate(135%);
-  -webkit-backdrop-filter: blur(28px) saturate(135%);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
-  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  border-radius: 14px;
   padding: 22px 24px;
   position: relative;
 }

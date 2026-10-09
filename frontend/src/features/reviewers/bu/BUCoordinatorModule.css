@@ -47,16 +47,14 @@
 .bu-sidebar-nav {
   width: 220px;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  border: 1.5px solid var(--bu-border-glass);
-  border-radius: var(--bu-radius-lg);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
   padding: 18px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: var(--bu-card-shadow);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   height: fit-content;
   position: sticky;
   top: 90px;
@@ -117,15 +115,14 @@
 
 /* Context Bar (Screen Top Control Bar) */
 .bu-context-bar {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--bu-border-glass);
-  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
   padding: 10px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .bu-context-left {
@@ -177,15 +174,14 @@
 
 /* Hero Section (Screen 1 Top) */
 .bu-hero-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.85) 100%);
-  backdrop-filter: blur(28px);
-  border: 1.5px solid var(--bu-border-glass);
-  border-radius: var(--bu-radius-lg);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
   padding: 26px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: var(--bu-card-shadow);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   position: relative;
   overflow: hidden;
 }
@@ -314,15 +310,14 @@
 }
 
 .bu-kpi-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  border: 1.5px solid var(--bu-border-glass);
-  border-radius: var(--bu-radius-md);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
   padding: 16px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: var(--bu-card-shadow);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   transition: all 220ms ease;
   position: relative;
   overflow: hidden;

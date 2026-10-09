@@ -18,12 +18,10 @@
 
 /* ──── 1. TOP BANNER / HERO ──── */
 .csr-hero-banner {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(28px) saturate(135%);
-  -webkit-backdrop-filter: blur(28px) saturate(135%);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.04), 0 1px 3px rgba(15, 23, 42, 0.03);
-  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  border-radius: 16px;
   padding: 24px 28px;
   position: relative;
   overflow: hidden;
@@ -196,20 +194,19 @@
 
 /* ──── 2. LIQUID GLASS CARDS ──── */
 .csr-glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(24px) saturate(130%);
-  -webkit-backdrop-filter: blur(24px) saturate(130%);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 30px rgba(30, 90, 160, 0.05), 0 1px 3px rgba(15, 23, 42, 0.02);
-  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  border-radius: 14px;
   padding: 20px 24px;
   position: relative;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .csr-glass-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 36px rgba(30, 90, 160, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  border-color: #CBD5E1;
 }
 
 /* ──── 3. KPI CARDS GRID ──── */
@@ -226,11 +223,10 @@
 }
 
 .csr-kpi-card {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 8px 24px rgba(30, 90, 160, 0.05);
-  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  border-radius: 12px;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
@@ -243,7 +239,8 @@
 
 .csr-kpi-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(30, 90, 160, 0.08);
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .csr-kpi-header {
