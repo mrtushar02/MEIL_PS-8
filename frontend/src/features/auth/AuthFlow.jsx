@@ -88,9 +88,12 @@ export function AuthFlow({ onLoginSuccess }) {
 
   return (
     <div className="auth-flow-root" style={{ width: '100%', minHeight: '100vh', position: 'relative' }}>
-      {/* ════════════ STAGE 1: WELCOME SCREEN ════════════ */}
+      {/* ════════════ STAGE 1: WELCOME SCREEN (DIRECT LOGIN) ════════════ */}
       {stage === 'WELCOME' && (
-        <WelcomeScreen onContinue={handleWelcomeContinue} />
+        <WelcomeScreen 
+          onLoginSuccess={onLoginSuccess} 
+          onContinue={handleWelcomeContinue} 
+        />
       )}
 
       {/* ════════════ STAGES 2, 3 & 4: ROLE SELECTION & LOGIN ════════════ */}

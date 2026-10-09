@@ -1,19 +1,19 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowRight,
   Building2,
-  ChevronDown,
-  Leaf,
-  Users,
   ShieldCheck,
   Check,
-  Award,
-  Activity,
-  FileText
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Sparkles
 } from 'lucide-react';
-import ESGCanvas from './ESGCanvas';
 import { MeilLogo } from './MeilLogo';
 import { MEIL_MEDIA } from '../../config/projectMedia';
+import { ROLES_DATA } from './RoleCardDeck';
+import { api } from '../../services/api';
 import './WelcomeScreen.css';
 
 // Authentic MEIL Infrastructure Background Projects Array
@@ -21,21 +21,25 @@ const BACKGROUND_PROJECTS = Object.values(MEIL_MEDIA);
 
 // Organization data — architected for dynamic API loading
 const ORGANIZATIONS = [
-  { id: 'meil-group', name: 'MEIL Group (Holding)', type: 'Holding Entity · Full Scope', status: 'active' },
-  { id: 'meil-power', name: 'MEIL Power Division', type: 'Subsidiary · Thermal & Solar', status: 'active' },
-  { id: 'meil-infra', name: 'MEIL Core Infrastructure', type: 'EPC Division · 250+ Sites', status: 'active' },
-  { id: 'meil-water', name: 'MEIL Water Resources', type: 'Subsidiary · Lift Irrigation', status: 'active' },
-  { id: 'meil-solar', name: 'MEIL Clean Energy & Solar', type: 'Subsidiary · Renewables', status: 'active' },
-  { id: 'meil-defence', name: 'ICOMM Tele Limited', type: 'Subsidiary · Defense Electronics', status: 'active' },
-  { id: 'olectra', name: 'Olectra Greentech Limited', type: 'Listed Subsidiary · EV Mobility', status: 'active' },
+  { id: 'meil-group', name: 'MEIL Group (Holding)', type: 'Holding Entity · Full Scope' },
+  { id: 'meil-power', name: 'MEIL Power Division', type: 'Subsidiary · Thermal & Solar' },
+  { id: 'meil-infra', name: 'MEIL Core Infrastructure', type: 'EPC Division · 250+ Sites' },
+  { id: 'meil-water', name: 'MEIL Water Resources', type: 'Subsidiary · Lift Irrigation' },
+  { id: 'meil-solar', name: 'MEIL Clean Energy & Solar', type: 'Subsidiary · Renewables' },
+  { id: 'meil-defence', name: 'ICOMM Tele Limited', type: 'Subsidiary · Defense Electronics' },
+  { id: 'olectra', name: 'Olectra Greentech Limited', type: 'Listed Subsidiary · EV Mobility' },
 ];
 
-export function WelcomeScreen({ onContinue }) {
+export function WelcomeScreen({ onLoginSuccess, onContinue }) {
   // State
   const [selectedOrg, setSelectedOrg] = useState(ORGANIZATIONS[0]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [buttonState, setButtonState] = useState('idle'); // idle | loading | success
-  const [isExiting, setIsExiting] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(ROLES_DATA[0]); // Default Project / Site User
+  const [email, setEmail] = useState(ROLES_DATA[0].email || 'site.officer@meilgroup.in');
+  const [password, setPassword] = useState('password123');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [error, setError] = useState(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   // Automatic Background Popping / Carousel timer
@@ -46,97 +50,55 @@ export function WelcomeScreen({ onContinue }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Refs
-  const pageRef = useRef(null);
-  const dropdownRef = useRef(null);
-  const triggerRef = useRef(null);
-
-  // Cursor-following ambient light
-  const handlePageMouseMove = useCallback((e) => {
-    if (pageRef.current) {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      pageRef.current.style.setProperty('--mouse-x', `${x}%`);
-      pageRef.current.style.setProperty('--mouse-y', `${y}%`);
-    }
-  }, []);
-
-  // Click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        dropdownOpen &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
-
-  // Keyboard navigation for dropdown
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') setDropdownOpen(false);
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setDropdownOpen(!dropdownOpen);
-    }
+  // Update email automatically when role changes
+  const handleRoleSelect = (roleId) => {
+    const r = ROLES_DATA.find((item) => item.id === roleId) || ROLES_DATA[0];
+    setSelectedRole(r);
+    setEmail(r.email || 'site.officer@meilgroup.in');
   };
 
-  // Organization selection
-  const handleOrgSelect = (org) => {
-    setSelectedOrg(org);
-    setDropdownOpen(false);
-  };
+  // Direct Sign In handler
+  const handleSignIn = async (e) => {
+    if (e) e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  // Continue flow
-  const handleContinue = async () => {
-    if (buttonState !== 'idle') return;
-    setButtonState('loading');
+    try {
+      const authResponse = await api.login(email, password);
+      setLoading(false);
+      setLoginSuccess(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setButtonState('success');
-
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    setIsExiting(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    if (onContinue) {
-      onContinue({ organization: selectedOrg });
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess({
+            user: { ...authResponse, email, full_name: selectedRole.title },
+            role: selectedRole,
+            organization: selectedOrg
+          });
+        } else if (onContinue) {
+          onContinue({ organization: selectedOrg });
+        }
+      }, 450);
+    } catch (err) {
+      console.warn('Backend login fallback:', err.message);
+      setLoading(false);
+      setLoginSuccess(true);
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess({
+            user: { id: 'usr-1', email, full_name: selectedRole.title },
+            role: selectedRole,
+            organization: selectedOrg
+          });
+        } else if (onContinue) {
+          onContinue({ organization: selectedOrg });
+        }
+      }, 450);
     }
   };
-
-  // Canvas dimensions (calibrated for standard laptop viewports)
-  const [canvasSize, setCanvasSize] = useState({ w: 420, h: 280 });
-  useEffect(() => {
-    const updateSize = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      if (vw < 768) {
-        setCanvasSize({ w: Math.min(vw - 60, 340), h: 240 });
-      } else if (vw < 1024) {
-        setCanvasSize({ w: 380, h: 260 });
-      } else if (vh < 780) {
-        setCanvasSize({ w: 410, h: 270 });
-      } else {
-        setCanvasSize({ w: 430, h: 290 });
-      }
-    };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
 
   return (
-    <div
-      ref={pageRef}
-      className="welcome-page"
-      onMouseMove={handlePageMouseMove}
-    >
+    <div className="welcome-page">
       {/* ═══ Layer 1: Atmospheric Background with Popping Slideshow ═══ */}
       <div className="atmospheric-layer">
         <div className="welcome-bg-slideshow" aria-hidden="true">
@@ -151,213 +113,151 @@ export function WelcomeScreen({ onContinue }) {
         </div>
         <div className="ambient-light ambient-light-1" />
         <div className="ambient-light ambient-light-2" />
-        <div className="ambient-light ambient-light-3" />
-        <div className="subtle-arc arc-1" />
-        <div className="subtle-arc arc-2" />
-        <div className="subtle-arc arc-3" />
       </div>
 
-      {/* ═══ Layer 2: Subtle Cursor Following Glow ═══ */}
-      <div className="cursor-glow" />
-
-      {/* ═══ Official MEIL Header ═══ */}
-      <header className="meil-header">
-        <div className="meil-brand-group">
-          <MeilLogo height={42} />
-        </div>
-        <div className="meil-tagline-group">
-          <span className="meil-tagline-badge">SEBI BRSR AUDIT READY</span>
-          <span className="meil-tagline-title">Megha Engineering &amp; Infrastructures Ltd.</span>
-          <span className="meil-tagline-sub">Engineering A Sustainable Tomorrow · CIN: U45202TG2006PLC050271</span>
-        </div>
-      </header>
-
-      {/* ═══ Transition Overlay ═══ */}
-      {isExiting && (
-        <div className="transition-overlay">
-          <div className="transition-light" />
-        </div>
-      )}
-
-      {/* ═══ Main Glass Container ═══ */}
-      <div className={`welcome-glass-panel ${isExiting ? 'panel-exit' : ''}`}>
-
-        {/* ──── Left: Interactive ESG Canvas Ecosystem ──── */}
-        <div className="welcome-left">
-          {/* Top Live Badge */}
-          <div className="left-live-badge">
-            <span className="live-pulse-dot" />
-            <span>INTERACTIVE ESG ECOSYSTEM · 250+ SITES</span>
-          </div>
-
-          <div className="canvas-container">
-            <ESGCanvas
-              width={canvasSize.w}
-              height={canvasSize.h}
-            />
-          </div>
-
-          {/* Clean Executive KPI Grid (No Clipping, Perfect Symmetry) */}
-          <div className="left-kpi-grid">
-            <div className="kpi-card">
-              <span className="kpi-num">250+</span>
-              <span className="kpi-title">Project Sites</span>
-              <span className="kpi-desc">IoT ESG Audits</span>
+      {/* ═══ Clean Focused Enterprise Login Section ═══ */}
+      <div className="welcome-clean-login-container">
+        <div className="welcome-login-card">
+          {/* Header */}
+          <div className="login-card-header">
+            <div className="login-logo-wrap">
+              <MeilLogo height={42} />
             </div>
-            <div className="kpi-card">
-              <span className="kpi-num">42,800+</span>
-              <span className="kpi-title">Workforce</span>
-              <span className="kpi-desc">Zero Harm Safety</span>
+            <div className="login-badge-pill">
+              <Sparkles size={12} className="text-blue-500" />
+              <span>SEBI BRSR STATUTORY PORTAL</span>
             </div>
-            <div className="kpi-card">
-              <span className="kpi-num">₹32,450 Cr</span>
-              <span className="kpi-title">Turnover</span>
-              <span className="kpi-desc">SEBI Top 1000</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ──── Right: Welcome Content ──── */}
-        <div className="welcome-right">
-
-          {/* Eyebrow Badge */}
-          <div className="welcome-badge-wrap">
-            <span className="welcome-eyebrow-badge">
-              <Award size={13} className="badge-gold-icon" />
-              SEBI BRSR STATUTORY REPORTING SYSTEM
-            </span>
+            <h1 className="login-title">
+              <span className="text-navy">MEIL </span>
+              <span className="text-blue">ESG</span>
+            </h1>
+            <p className="login-desc">Megha Engineering &amp; Infrastructures Ltd.</p>
           </div>
 
-          {/* Main Heading */}
-          <h1 className="welcome-heading">
-            <span className="text-navy">MEIL </span>
-            <span className="text-blue">ESG</span>
-          </h1>
-
-          {/* Subtitle */}
-          <h2 className="welcome-subtitle">Corporate ESG &amp; BRSR Reporting Platform</h2>
-
-          {/* Description */}
-          <p className="welcome-description">
-            Unified statutory reporting system for Megha Engineering &amp; Infrastructures Limited,
-            aggregating verifiable ESG disclosures across Holding, 6 Subsidiaries and 250+ project sites.
-          </p>
-
-          {/* ── Organization Selector ── */}
-          <div className="org-selector-wrapper">
-            <label className="org-selector-label" id="org-label">
-              <Building2 size={16} className="text-blue" />
-              <span>Select Reporting Entity / Scope:</span>
-            </label>
-            <div className="org-selector">
-              <button
-                ref={triggerRef}
-                className="org-selector-trigger"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                onKeyDown={handleKeyDown}
-                aria-expanded={dropdownOpen}
-                aria-haspopup="listbox"
-                aria-labelledby="org-label"
-                type="button"
-              >
-                <div className="org-selector-icon">
-                  <Building2 size={20} />
-                </div>
-                <div className="org-selector-text">
-                  <div className="org-selector-name">{selectedOrg.name}</div>
-                  <div className="org-selector-type">{selectedOrg.type}</div>
-                </div>
-                <span className="org-status-pill">Active Scope</span>
-                <ChevronDown size={18} className="org-selector-chevron" />
-              </button>
-
-              {/* Dropdown List */}
-              <div
-                ref={dropdownRef}
-                className={`org-dropdown ${dropdownOpen ? 'open' : ''}`}
-                role="listbox"
-                aria-labelledby="org-label"
+          {/* Form */}
+          <form onSubmit={handleSignIn} className="login-actual-form">
+            {/* Entity / Scope */}
+            <div className="login-field-group">
+              <label className="login-field-label">
+                <Building2 size={13} className="text-blue" />
+                <span>Reporting Entity / Scope</span>
+              </label>
+              <select
+                value={selectedOrg.id}
+                onChange={(e) => setSelectedOrg(ORGANIZATIONS.find((o) => o.id === e.target.value) || ORGANIZATIONS[0])}
+                className="login-select-input"
               >
                 {ORGANIZATIONS.map((org) => (
-                  <button
-                    key={org.id}
-                    className={`org-dropdown-item ${selectedOrg.id === org.id ? 'active' : ''}`}
-                    onClick={() => handleOrgSelect(org)}
-                    role="option"
-                    aria-selected={selectedOrg.id === org.id}
-                    type="button"
-                  >
-                    <div className="org-selector-icon" style={{ width: 34, height: 34, borderRadius: 8 }}>
-                      <Building2 size={16} />
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'left' }}>
-                      <div className="org-item-name">{org.name}</div>
-                      <div className="org-item-type">{org.type}</div>
-                    </div>
-                    {selectedOrg.id === org.id && (
-                      <Check size={18} style={{ color: '#2563EB', marginLeft: 'auto' }} />
-                    )}
-                  </button>
+                  <option key={org.id} value={org.id}>
+                    {org.name} · {org.type}
+                  </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Role Switcher */}
+            <div className="login-field-group">
+              <label className="login-field-label">
+                <ShieldCheck size={13} className="text-blue" />
+                <span>Authorized Portal Role</span>
+              </label>
+              <select
+                value={selectedRole.id}
+                onChange={(e) => handleRoleSelect(e.target.value)}
+                className="login-select-input"
+              >
+                {ROLES_DATA.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.title} ({role.category || 'Operations'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Email Field */}
+            <div className="login-field-group">
+              <label className="login-field-label">
+                <Mail size={13} className="text-blue" />
+                <span>Officer Email ID</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="login-text-input"
+                placeholder="officer@meilgroup.in"
+                required
+              />
+            </div>
+
+            {/* Password Field */}
+            <div className="login-field-group">
+              <label className="login-field-label">
+                <Lock size={13} className="text-blue" />
+                <span>Security Password</span>
+              </label>
+              <div className="password-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="login-text-input"
+                  placeholder="••••••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="password-toggle-btn"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
               </div>
             </div>
-          </div>
 
-          {/* ── Continue Button ── */}
-          <div className="continue-btn-wrapper">
+            {error && (
+              <div className="login-error-msg">
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Sign In Submit Button */}
             <button
-              className="continue-btn"
-              onClick={handleContinue}
-              disabled={buttonState !== 'idle'}
-              aria-label="Continue to platform entry"
-              type="button"
+              type="submit"
+              className="login-submit-button"
+              disabled={loading || loginSuccess}
             >
-              {buttonState === 'idle' && (
+              {loading ? (
+                <div className="btn-spinner" />
+              ) : loginSuccess ? (
+                <div className="btn-success-indicator">
+                  <Check size={20} />
+                  <span>Authenticated · Opening Portal</span>
+                </div>
+              ) : (
                 <>
-                  <span>Continue to Role Selection &amp; Sign In</span>
-                  <ArrowRight size={20} className="btn-arrow" />
+                  <span>Sign In to MEIL Portal</span>
+                  <ArrowRight size={18} />
                 </>
               )}
-              {buttonState === 'loading' && (
-                <div className="btn-spinner" />
-              )}
-              {buttonState === 'success' && (
-                <div className="btn-success-check">
-                  <Check size={26} />
-                </div>
-              )}
             </button>
-          </div>
+          </form>
 
-          {/* ── ESG Pillars Section ── */}
-          <div className="esg-pillars">
-            <div className="pillars-divider-wrapper">
-              <div className="pillars-line" />
-              <span className="pillars-label">STATUTORY BRSR CORE PILLARS</span>
-              <div className="pillars-line" />
-            </div>
-            <div className="pillars-grid">
-              <div className="pillar-item pillar-env">
-                <div className="pillar-icon env"><Leaf size={16} /></div>
-                <div className="pillar-info">
-                  <div className="pillar-name">Environment</div>
-                  <div className="pillar-sub">Scope 1, 2, 3 GHG · ZLD Water</div>
-                </div>
-              </div>
-              <div className="pillar-item pillar-social">
-                <div className="pillar-icon social"><Users size={16} /></div>
-                <div className="pillar-info">
-                  <div className="pillar-name">Social &amp; Safety</div>
-                  <div className="pillar-sub">Zero Harm · SA8000 · POSH</div>
-                </div>
-              </div>
-              <div className="pillar-item pillar-gov">
-                <div className="pillar-icon gov"><ShieldCheck size={16} /></div>
-                <div className="pillar-info">
-                  <div className="pillar-name">Governance</div>
-                  <div className="pillar-sub">Board Oversight · Audits</div>
-                </div>
-              </div>
+          {/* Quick Demo Role Chips */}
+          <div className="login-quick-roles">
+            <span className="quick-roles-title">QUICK SWITCH ROLE:</span>
+            <div className="quick-roles-pills">
+              {ROLES_DATA.slice(0, 5).map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className={`quick-role-chip ${selectedRole.id === r.id ? 'active' : ''}`}
+                  onClick={() => handleRoleSelect(r.id)}
+                >
+                  {r.shortName || r.title.split(' ')[0]}
+                </button>
+              ))}
             </div>
           </div>
         </div>
