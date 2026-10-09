@@ -13,7 +13,11 @@ import {
 } from 'lucide-react';
 import ESGCanvas from './ESGCanvas';
 import { MeilLogo } from './MeilLogo';
+import { MEIL_MEDIA } from '../../config/projectMedia';
 import './WelcomeScreen.css';
+
+// Authentic MEIL Infrastructure Background Projects Array
+const BACKGROUND_PROJECTS = Object.values(MEIL_MEDIA);
 
 // Organization data — architected for dynamic API loading
 const ORGANIZATIONS = [
@@ -32,6 +36,15 @@ export function WelcomeScreen({ onContinue }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [buttonState, setButtonState] = useState('idle'); // idle | loading | success
   const [isExiting, setIsExiting] = useState(false);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  // Automatic Background Popping / Carousel timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % BACKGROUND_PROJECTS.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   // Refs
   const pageRef = useRef(null);
@@ -124,8 +137,18 @@ export function WelcomeScreen({ onContinue }) {
       className="welcome-page"
       onMouseMove={handlePageMouseMove}
     >
-      {/* ═══ Layer 1: Atmospheric Background ═══ */}
+      {/* ═══ Layer 1: Atmospheric Background with Popping Slideshow ═══ */}
       <div className="atmospheric-layer">
+        <div className="welcome-bg-slideshow" aria-hidden="true">
+          {BACKGROUND_PROJECTS.map((project, idx) => (
+            <div
+              key={project.id}
+              className={`welcome-bg-slide ${idx === currentSlideIndex ? 'is-active' : ''}`}
+              style={{ backgroundImage: `url(${project.src})` }}
+            />
+          ))}
+          <div className="welcome-bg-scrim" />
+        </div>
         <div className="ambient-light ambient-light-1" />
         <div className="ambient-light ambient-light-2" />
         <div className="ambient-light ambient-light-3" />
@@ -337,7 +360,33 @@ export function WelcomeScreen({ onContinue }) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* ═══ Floating Live Operational Facility Spotlight Pill ═══ */}
+      <div className="welcome-live-spotlight-pill">
+        <div className="spotlight-indicator">
+          <span className="spotlight-pulse" />
+          <span className="spotlight-live-tag">
+            OPERATIONS SPOTLIGHT {currentSlideIndex + 1}/{BACKGROUND_PROJECTS.length}
+          </span>
+        </div>
+        <div className="spotlight-meta">
+          <span className="spotlight-title">{BACKGROUND_PROJECTS[currentSlideIndex]?.title}</span>
+          <span className="spotlight-sep">·</span>
+          <span className="spotlight-sub">{BACKGROUND_PROJECTS[currentSlideIndex]?.subtitle}</span>
+        </div>
+        <div className="spotlight-dots">
+          {BACKGROUND_PROJECTS.map((p, i) => (
+            <button
+              key={p.id}
+              className={`spotlight-dot ${i === currentSlideIndex ? 'active' : ''}`}
+              onClick={() => setCurrentSlideIndex(i)}
+              title={`${p.title} (${p.bu})`}
+              type="button"
+              aria-label={`View ${p.title}`}
+            />
+          ))}
         </div>
       </div>
     </div>

@@ -102,8 +102,8 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
+html, body, #root, * {
+  scroll-behavior: smooth !important;
 }
 
 body {
@@ -115,7 +115,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Universal Smooth Scrollbars across all browsers */
