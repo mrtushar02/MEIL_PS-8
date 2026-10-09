@@ -12,6 +12,7 @@ import {
   FileCheck2,
   ArrowUpRight
 } from 'lucide-react';
+import { MEIL_MEDIA } from '../../../../config/projectMedia';
 
 export default function ProcurementOverviewScreen({
   onNavigateTab,
@@ -425,6 +426,81 @@ export default function ProcurementOverviewScreen({
           </div>
         </div>
 
+      </div>
+
+      {/* ──── SCOPE 3 FLEET & FREIGHT LOGISTICS TELEMETRY CARD ──── */}
+      <div 
+        className="proc-glass-card" 
+        style={{ 
+          padding: '18px 22px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px' 
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: '1 1 500px' }}>
+          <img 
+            src={MEIL_MEDIA.logisticsCargo.src} 
+            alt={MEIL_MEDIA.logisticsCargo.title}
+            style={{ 
+              width: '180px', 
+              height: '110px', 
+              borderRadius: '10px', 
+              objectFit: 'cover', 
+              border: '1px solid #CBD5E1',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              flexShrink: 0
+            }}
+          />
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB' }}>
+                Scope 3 Value Chain Telemetry
+              </span>
+              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                Cat 4: Upstream Freight & Logistics
+              </span>
+            </div>
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: '0 0 4px 0' }}>
+              {MEIL_MEDIA.logisticsCargo.title}
+            </h3>
+            <p style={{ fontSize: '12.5px', color: '#64748B', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {MEIL_MEDIA.logisticsCargo.subtitle} — Multi-modal heavy hauling fleet transporting critical pressure vessels, tunnel boring machinery & prefabricated plant sections across high-altitude corridors.
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: '#334155', fontWeight: 600 }}>
+              <span>
+                <strong>Fleet Size:</strong> 428 Heavy Carriers
+              </span>
+              <span>
+                <strong>GPS Tracking:</strong> 100% Live
+              </span>
+              <span>
+                <strong>Fuel Intensity:</strong> 0.082 L/t-km
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
+          <button
+            type="button"
+            className="proc-btn proc-btn-primary"
+            onClick={() => onNavigateTab?.('procurement')}
+            style={{ padding: '8px 18px', fontSize: '12.5px' }}
+          >
+            Log Scope 3 Trip Batch
+          </button>
+          <button
+            type="button"
+            className="proc-btn proc-btn-outline"
+            onClick={() => onNavigateTab?.('assessments')}
+            style={{ padding: '8px 18px', fontSize: '12.5px' }}
+          >
+            Carrier ESG Scorecards
+          </button>
+        </div>
       </div>
     </div>
   );

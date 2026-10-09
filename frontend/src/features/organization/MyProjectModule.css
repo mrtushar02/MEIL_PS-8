@@ -20,6 +20,14 @@
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 4px;
+  background: 
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.90) 55%, rgba(255, 255, 255, 0.45) 100%),
+    url('/meil_polavaram_dam.jpg') right center / 380px no-repeat,
+    #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 18px 24px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .mp-header-left {
@@ -813,4 +821,122 @@
   .mp-filter-bar {
     flex-wrap: wrap;
   }
+}
+
+/* Grid View for Projects */
+.mp-grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 4px;
+}
+
+.mp-grid-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.mp-grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  border-color: #CBD5E1;
+}
+
+.mp-grid-card.is-selected {
+  border-color: #0284C7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25), 0 4px 14px rgba(2, 132, 199, 0.12);
+}
+
+.mp-grid-card-hero {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: #0F172A;
+  overflow: hidden;
+}
+
+.mp-grid-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mp-grid-card:hover .mp-grid-card-img {
+  transform: scale(1.04);
+}
+
+.mp-grid-status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2.5px 7px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+}
+
+.mp-grid-code-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #FFFFFF;
+  letter-spacing: 0.02em;
+}
+
+.mp-grid-card-content {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.mp-grid-card-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.mp-grid-card-sub {
+  font-size: 11.5px;
+  color: #64748B;
+  margin-top: -4px;
+}
+
+.mp-grid-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.mp-grid-bu-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #F1F5F9;
+  color: #334155;
+}
+
+.mp-grid-card-progress {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #F1F5F9;
 }

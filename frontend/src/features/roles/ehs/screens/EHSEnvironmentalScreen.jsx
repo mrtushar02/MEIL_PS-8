@@ -9,6 +9,7 @@ import {
   X,
   FileText
 } from 'lucide-react';
+import { MEIL_MEDIA } from '../../../../config/projectMedia';
 
 export default function EHSEnvironmentalScreen({
   records = [],
@@ -122,7 +123,7 @@ export default function EHSEnvironmentalScreen({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* ──── 1. PAGE HEADER (Matching Image Panel 7) ──── */}
-      <div className="ehs-glass-card" style={{ padding: '16px 20px', borderRadius: '12px' }}>
+      <div className="ehs-glass-card ehs-page-banner" style={{ padding: '18px 24px', borderRadius: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.02em' }}>
@@ -382,6 +383,55 @@ export default function EHSEnvironmentalScreen({
             </div>
           </div>
         )}
+      </div>
+
+      {/* ──── INDUSTRIAL FACILITIES & CONTINUOUS CEMS TELEMETRY ──── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
+        {/* Facility 1: Thermal Power */}
+        <div className="ehs-glass-card" style={{ padding: '16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
+          <img 
+            src={MEIL_MEDIA.thermalPowerPlant.src} 
+            alt={MEIL_MEDIA.thermalPowerPlant.title}
+            style={{ width: '130px', height: '90px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #CBD5E1', flexShrink: 0 }}
+          />
+          <div style={{ minWidth: 0 }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: 'rgba(220, 38, 38, 0.1)', color: '#DC2626' }}>
+              Online CEMS Stack Monitoring
+            </span>
+            <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A', margin: '4px 0 2px 0' }}>
+              {MEIL_MEDIA.thermalPowerPlant.title}
+            </h4>
+            <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.3 }}>
+              Continuous opacity, SOx, NOx telemetry & natural draft cooling tower water recirculation.
+            </p>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A' }}>
+              ● Compliant with CPCB Emission Standards
+            </div>
+          </div>
+        </div>
+
+        {/* Facility 2: Hydrocarbon Refinery */}
+        <div className="ehs-glass-card" style={{ padding: '16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
+          <img 
+            src={MEIL_MEDIA.hydrocarbonPlant.src} 
+            alt={MEIL_MEDIA.hydrocarbonPlant.title}
+            style={{ width: '130px', height: '90px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #CBD5E1', flexShrink: 0 }}
+          />
+          <div style={{ minWidth: 0 }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: 'rgba(217, 119, 6, 0.1)', color: '#D97706' }}>
+              Pipeline Leak Detection & VOC
+            </span>
+            <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A', margin: '4px 0 2px 0' }}>
+              {MEIL_MEDIA.hydrocarbonPlant.title}
+            </h4>
+            <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.3 }}>
+              Automated SCADA pipeline pressure telemetry & continuous fugitive hydrocarbon emission control.
+            </p>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A' }}>
+              ● Zero Unplanned Venting Incidents
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ──── LOG ENVIRONMENTAL RECORD MODAL ──── */}

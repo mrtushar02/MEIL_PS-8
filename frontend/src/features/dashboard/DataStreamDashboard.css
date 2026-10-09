@@ -22,7 +22,9 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: #F8FAFC;
+  background: 
+    linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.93) 100%),
+    url('/meil_zojila_tunnel.jpg') center bottom / cover no-repeat;
 }
 
 .ds-master-layout {

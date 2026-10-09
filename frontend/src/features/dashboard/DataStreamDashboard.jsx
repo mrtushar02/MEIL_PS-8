@@ -23,6 +23,7 @@ import DataStreamSkeleton from './DataStreamSkeleton';
 import { esgStore } from '../../services/esgStore';
 import { api } from '../../services/api';
 import { exportToCsv } from '../../utils/exportUtils';
+import { MEIL_MEDIA } from '../../config/projectMedia';
 import './DataStreamDashboard.css';
 
 export default function DataStreamDashboard({
@@ -288,8 +289,83 @@ export default function DataStreamDashboard({
             ============================================================== */}
         <div className="ds-master-island">
           
-          {/* 1. Header Bar: Nav Capsule (Clean Top Pod for Site User) */}
+          {/* 1. Header Bar: Active Site Context & Nav Capsule */}
           <div className="ds-island-header">
+            {/* Active Facility Context Strip with Immersive Real Site Background */}
+            <div 
+              style={{
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 20px',
+                borderRadius: '12px',
+                backgroundImage: `linear-gradient(90deg, rgba(15, 23, 42, 0.94) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(15, 23, 42, 0.4) 100%), url('${MEIL_MEDIA.zojilaTunnel.src}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 4px 16px rgba(15, 23, 42, 0.12)',
+                marginBottom: '12px',
+                gap: '12px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, zIndex: 1 }}>
+                <div 
+                  style={{ 
+                    width: '56px', 
+                    height: '42px', 
+                    borderRadius: '8px', 
+                    overflow: 'hidden',
+                    border: '2px solid rgba(255, 255, 255, 0.8)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    flexShrink: 0
+                  }}
+                >
+                  <img 
+                    src={MEIL_MEDIA.zojilaTunnel.src} 
+                    alt={MEIL_MEDIA.zojilaTunnel.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.01em' }}>
+                      {MEIL_MEDIA.zojilaTunnel.title}
+                    </span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.25)', color: '#38BDF8', border: '1px solid rgba(56, 189, 248, 0.4)' }}>
+                      PKG-2 · Active Strategic Site
+                    </span>
+                    <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.25)', color: '#4ADE80', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
+                      13.1 km High-Altitude Tunnel
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#CBD5E1', marginTop: '2px' }}>
+                    {MEIL_MEDIA.zojilaTunnel.subtitle} · Site Lead: Rohit Kumar
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, zIndex: 1 }}>
+                <button
+                  type="button"
+                  className="ds-pill-btn"
+                  onClick={() => onNavigateTab?.('my-project')}
+                  style={{ 
+                    fontSize: '11.5px', 
+                    padding: '6px 14px',
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    color: '#FFFFFF',
+                    fontWeight: 600,
+                    backdropFilter: 'blur(4px)'
+                  }}
+                >
+                  View All 9 Projects &rarr;
+                </button>
+              </div>
+            </div>
+
             {/* Nav Pill Pod Spanning Full Island Width - Mouse Wheel & Drag Scrollable */}
             <div 
               ref={navRef}

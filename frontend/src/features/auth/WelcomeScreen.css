@@ -30,10 +30,10 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 55% at 15% 15%, rgba(234, 244, 255, 0.7) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 85% 20%, rgba(221, 238, 255, 0.5) 0%, transparent 65%),
-    radial-gradient(circle 800px at 50% 90%, rgba(242, 248, 253, 0.8) 0%, transparent 80%),
-    linear-gradient(180deg, #FFFFFF 0%, #F8FBFE 45%, #F0F6FC 100%);
+    radial-gradient(ellipse 70% 55% at 15% 15%, rgba(234, 244, 255, 0.75) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 85% 20%, rgba(221, 238, 255, 0.55) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 251, 254, 0.90) 100%),
+    url('/meil_polavaram_dam.jpg') center bottom / cover no-repeat;
 }
 
 /* Ambient light fields */

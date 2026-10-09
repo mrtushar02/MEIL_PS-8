@@ -21,15 +21,16 @@ import {
   Layers
 } from 'lucide-react';
 import './MyProjectModule.css';
+import { MEIL_MEDIA } from '../../config/projectMedia';
 
-// Master 6 Projects Data corresponding directly to the approved UI reference
+// Master 6 Projects Data featuring authentic MEIL operations
 const MASTER_PROJECTS = [
   {
     id: 'site-102',
     name: 'Zojila Tunnel Project',
-    subtitle: 'Jammu & Kashmir',
+    subtitle: 'Jammu & Kashmir · PKG-2',
     code: 'PKG-2',
-    bu: 'Infra - Roads',
+    bu: 'Transportation & Infra',
     location: 'Kargil, J&K',
     fullLocation: 'Kargil, Jammu & Kashmir',
     type: 'Tunnel',
@@ -44,10 +45,10 @@ const MASTER_PROJECTS = [
     endDate: '31 Mar 2027',
     reportingPeriod: 'FY 2026-27',
     projectLead: 'Rohit Kumar',
-    description: 'Construction of Zojila Tunnel for all-weather connectivity between Srinagar and Leh.',
+    description: 'Construction of 13.1 km strategic all-weather high-altitude Zojila Tunnel connecting Srinagar and Leh.',
     lat: 34.298,
     lng: 75.485,
-    image: '/zojila_tunnel.jpg',
+    image: MEIL_MEDIA.zojilaTunnel.src,
     esgBreakdown: { energy: 86, water: 78, waste: 62, safety: 90 },
     submissions: [
       { module: 'Energy', total: 12, submitted: 8, underReview: 2, approved: 1, pending: 1 },
@@ -57,10 +58,145 @@ const MASTER_PROJECTS = [
     ],
     deadlines: [
       { task: 'Submit Energy Data', project: 'Zojila Tunnel (PKG-2)', dueDate: '15 Oct 2026', status: 'Pending', statusColor: '#D97706', statusBg: 'rgba(217, 119, 6, 0.12)' },
-      { task: 'Water Quality Report', project: 'Krishna Water Supply', dueDate: '20 Oct 2026', status: 'Pending', statusColor: '#D97706', statusBg: 'rgba(217, 119, 6, 0.12)' },
-      { task: 'Waste Manifest Upload', project: 'Bengaluru Metro', dueDate: '25 Oct 2026', status: 'In Progress', statusColor: '#2563EB', statusBg: 'rgba(37, 99, 235, 0.12)' },
+      { task: 'Water Quality Report', project: 'Zojila Tunnel', dueDate: '20 Oct 2026', status: 'Pending', statusColor: '#D97706', statusBg: 'rgba(217, 119, 6, 0.12)' },
       { task: 'Monthly Site Submission', project: 'Zojila Tunnel (PKG-2)', dueDate: '31 Oct 2026', status: 'Pending', statusColor: '#D97706', statusBg: 'rgba(217, 119, 6, 0.12)' }
     ]
+  },
+  {
+    id: 'site-logistics-01',
+    name: 'MEIL Heavy Cargo & Fleet Logistics',
+    subtitle: 'Strategic Material Mobilization',
+    code: 'LOG-01',
+    bu: 'Supply Chain & Logistics',
+    location: 'Pan-India Corridor',
+    fullLocation: 'Multimodal Transport & Air Freight Base',
+    type: 'Logistics',
+    typeColor: '#2563EB',
+    typeBg: 'rgba(37, 99, 235, 0.12)',
+    progress: 75,
+    dataCompletion: 82,
+    status: 'Active',
+    statusColor: '#16A34A',
+    statusBg: 'rgba(22, 163, 74, 0.12)',
+    startDate: '10 Jan 2023',
+    endDate: '31 Dec 2028',
+    reportingPeriod: 'FY 2026-27',
+    projectLead: 'Amitabh Sen',
+    description: 'Heavy specialized freight transport, cryogenic road tankers & air cargo logistics across high-altitude corridors.',
+    lat: 28.6139,
+    lng: 77.2090,
+    image: MEIL_MEDIA.logisticsCargo.src,
+    esgBreakdown: { energy: 72, water: 65, waste: 80, safety: 92 },
+    submissions: [
+      { module: 'Energy', total: 10, submitted: 7, underReview: 2, approved: 1, pending: 0 },
+      { module: 'Water', total: 6, submitted: 4, underReview: 1, approved: 1, pending: 0 },
+      { module: 'Waste', total: 8, submitted: 6, underReview: 1, approved: 1, pending: 0 },
+      { module: 'Safety', total: 6, submitted: 5, underReview: 1, approved: 0, pending: 0 }
+    ],
+    deadlines: [
+      { task: 'Scope 3 Logistics Fuel Verification', project: 'MEIL Heavy Cargo', dueDate: '18 Oct 2026', status: 'In Progress', statusColor: '#2563EB', statusBg: 'rgba(37, 99, 235, 0.12)' }
+    ]
+  },
+  {
+    id: 'site-hydro-01',
+    name: 'Hydrocarbon Refinery & Pipelines',
+    subtitle: 'Industrial Process Networks',
+    code: 'HCP-01',
+    bu: 'Hydrocarbons',
+    location: 'Hazira, GJ',
+    fullLocation: 'Hazira Petrochem Complex, Gujarat',
+    type: 'Refinery',
+    typeColor: '#D97706',
+    typeBg: 'rgba(217, 119, 6, 0.12)',
+    progress: 88,
+    dataCompletion: 92,
+    status: 'Active',
+    statusColor: '#16A34A',
+    statusBg: 'rgba(22, 163, 74, 0.12)',
+    startDate: '15 Feb 2021',
+    endDate: '30 Nov 2027',
+    reportingPeriod: 'FY 2026-27',
+    projectLead: 'Suresh Panyam',
+    description: 'Petrochemical refinery unit, cross-country pipeline network & continuous fugitive emission control systems.',
+    lat: 21.1702,
+    lng: 72.8311,
+    image: MEIL_MEDIA.hydrocarbonPlant.src,
+    esgBreakdown: { energy: 88, water: 82, waste: 90, safety: 94 },
+    submissions: [
+      { module: 'Energy', total: 14, submitted: 11, underReview: 2, approved: 1, pending: 0 },
+      { module: 'Water', total: 10, submitted: 8, underReview: 1, approved: 1, pending: 0 },
+      { module: 'Waste', total: 8, submitted: 7, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Safety', total: 8, submitted: 7, underReview: 1, approved: 0, pending: 0 }
+    ],
+    deadlines: [
+      { task: 'Pipeline Pressure & Fugitive Audit', project: 'Hydrocarbon Refinery', dueDate: '22 Oct 2026', status: 'Pending', statusColor: '#D97706', statusBg: 'rgba(217, 119, 6, 0.12)' }
+    ]
+  },
+  {
+    id: 'site-power-01',
+    name: 'Thermal Power & Energy Station',
+    subtitle: 'CEMS & Cooling Tower Complex',
+    code: 'TPP-01',
+    bu: 'Energy & Power',
+    location: 'Bellary, KA',
+    fullLocation: 'Kudgi Super Thermal Station, Karnataka',
+    type: 'Thermal',
+    typeColor: '#DC2626',
+    typeBg: 'rgba(220, 38, 38, 0.12)',
+    progress: 94,
+    dataCompletion: 96,
+    status: 'Active',
+    statusColor: '#16A34A',
+    statusBg: 'rgba(22, 163, 74, 0.12)',
+    startDate: '01 Jun 2020',
+    endDate: '31 Oct 2028',
+    reportingPeriod: 'FY 2026-27',
+    projectLead: 'K. Venkat',
+    description: '2x800 MW super-critical power generation with natural draft cooling towers and online CEMS monitoring.',
+    lat: 15.1394,
+    lng: 76.9214,
+    image: MEIL_MEDIA.thermalPowerPlant.src,
+    esgBreakdown: { energy: 95, water: 88, waste: 92, safety: 98 },
+    submissions: [
+      { module: 'Energy', total: 16, submitted: 14, underReview: 1, approved: 1, pending: 0 },
+      { module: 'Water', total: 8, submitted: 7, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Waste', total: 6, submitted: 5, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Safety', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 }
+    ],
+    deadlines: []
+  },
+  {
+    id: 'site-csr-01',
+    name: 'MEIL Foundation Rural Infrastructure',
+    subtitle: 'Community Welfare & Development',
+    code: 'CSR-01',
+    bu: 'CSR & Social',
+    location: 'Krishna Dist, AP',
+    fullLocation: 'Rural Community Clusters, Andhra Pradesh',
+    type: 'Community',
+    typeColor: '#059669',
+    typeBg: 'rgba(5, 150, 105, 0.12)',
+    progress: 96,
+    dataCompletion: 98,
+    status: 'Active',
+    statusColor: '#16A34A',
+    statusBg: 'rgba(22, 163, 74, 0.12)',
+    startDate: '01 Jan 2021',
+    endDate: '31 Dec 2030',
+    reportingPeriod: 'FY 2026-27',
+    projectLead: 'P. Venkat Reddy',
+    description: 'Rural drinking water schemes, skill development training centres, medical health clinics & community foundation.',
+    lat: 16.5062,
+    lng: 80.6480,
+    image: MEIL_MEDIA.csrInauguration.src,
+    esgBreakdown: { energy: 90, water: 95, waste: 85, safety: 96 },
+    submissions: [
+      { module: 'Energy', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 },
+      { module: 'Water', total: 8, submitted: 8, underReview: 0, approved: 0, pending: 0 },
+      { module: 'Waste', total: 6, submitted: 5, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Safety', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 }
+    ],
+    deadlines: []
   },
   {
     id: 'site-blr-m3',
@@ -98,136 +234,134 @@ const MASTER_PROJECTS = [
     ]
   },
   {
-    id: 'site-kws-01',
-    name: 'Krishna Water Supply',
-    subtitle: 'Package 1',
-    code: 'KWS-01',
-    bu: 'Water Infra',
-    location: 'Vijayawada, AP',
-    fullLocation: 'Vijayawada, Andhra Pradesh',
-    type: 'Water',
+    id: 'site-polavaram-01',
+    name: 'Polavaram Multi-Purpose Dam Project',
+    subtitle: 'Godavari Basin · ECRF & Spillway',
+    code: 'PLV-01',
+    bu: 'Water & Hydro Infra',
+    location: 'Eluru, AP',
+    fullLocation: 'Polavaram, Andhra Pradesh',
+    type: 'Hydro',
     typeColor: '#0284C7',
     typeBg: 'rgba(2, 132, 199, 0.12)',
-    progress: 45,
-    dataCompletion: 48,
-    status: 'On Hold',
-    statusColor: '#D97706',
-    statusBg: 'rgba(217, 119, 6, 0.12)',
-    startDate: '10 Aug 2023',
-    endDate: '31 Mar 2026',
+    progress: 84,
+    dataCompletion: 89,
+    status: 'Active',
+    statusColor: '#16A34A',
+    statusBg: 'rgba(22, 163, 74, 0.12)',
+    startDate: '01 Jan 2020',
+    endDate: '31 Dec 2027',
     reportingPeriod: 'FY 2026-27',
-    projectLead: 'Suresh Panyam',
-    description: 'Lift irrigation pumphouse and water grid transmission canal network.',
-    lat: 16.5062,
-    lng: 80.6480,
-    image: 'https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=600&auto=format&fit=crop&q=80',
-    esgBreakdown: { energy: 48, water: 60, waste: 42, safety: 75 },
+    projectLead: 'S. Ramamurthy',
+    description: 'National multi-purpose project comprising 48 radial spillway gates, 960 MW hydro power and river linking.',
+    lat: 17.2514,
+    lng: 81.6503,
+    image: MEIL_MEDIA.polavaramDam.src,
+    esgBreakdown: { energy: 92, water: 98, waste: 80, safety: 94 },
     submissions: [
-      { module: 'Energy', total: 8, submitted: 4, underReview: 1, approved: 1, pending: 2 },
-      { module: 'Water', total: 12, submitted: 8, underReview: 2, approved: 1, pending: 1 },
-      { module: 'Waste', total: 4, submitted: 2, underReview: 1, approved: 0, pending: 1 },
-      { module: 'Safety', total: 4, submitted: 2, underReview: 1, approved: 1, pending: 0 }
+      { module: 'Energy', total: 12, submitted: 10, underReview: 1, approved: 1, pending: 0 },
+      { module: 'Water', total: 16, submitted: 15, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Waste', total: 6, submitted: 5, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Safety', total: 8, submitted: 8, underReview: 0, approved: 0, pending: 0 }
     ],
-    deadlines: [
-      { task: 'Water Quality Report', project: 'Krishna Water Supply', dueDate: '20 Oct 2026', status: 'Pending', statusColor: '#D97706', statusBg: 'rgba(217, 119, 6, 0.12)' }
-    ]
+    deadlines: []
   },
   {
-    id: 'site-mep-01',
-    name: 'MEIL Energy Park',
-    subtitle: 'Solar + BESS',
-    code: 'MEP-01',
+    id: 'site-solar-01',
+    name: 'Ultra Mega Solar Power Park',
+    subtitle: '500 MW PV Farm + BESS',
+    code: 'SLR-01',
     bu: 'Renewables',
     location: 'Anantapur, AP',
-    fullLocation: 'Anantapur Ultra Mega Solar Park, AP',
-    type: 'Renewable',
+    fullLocation: 'Anantapur Ultra Mega Solar Grid, AP',
+    type: 'Solar',
     typeColor: '#16A34A',
     typeBg: 'rgba(22, 163, 74, 0.12)',
-    progress: 90,
-    dataCompletion: 88,
+    progress: 96,
+    dataCompletion: 98,
     status: 'Active',
     statusColor: '#16A34A',
     statusBg: 'rgba(22, 163, 74, 0.12)',
     startDate: '01 Jun 2021',
-    endDate: '31 Oct 2026',
+    endDate: '31 Dec 2026',
     reportingPeriod: 'FY 2026-27',
     projectLead: 'K. Venkat',
-    description: '500 MW solar PV farm with 100 MWh Battery Energy Storage System (BESS).',
+    description: 'Utility-scale solar farm supplying clean zero-carbon power with real-time inverter SCADA telemetry.',
     lat: 14.6819,
     lng: 77.6006,
-    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80',
-    esgBreakdown: { energy: 95, water: 82, waste: 90, safety: 98 },
+    image: MEIL_MEDIA.solarMegaPark.src,
+    esgBreakdown: { energy: 98, water: 88, waste: 94, safety: 98 },
     submissions: [
-      { module: 'Energy', total: 14, submitted: 12, underReview: 1, approved: 1, pending: 0 },
-      { module: 'Water', total: 6, submitted: 5, underReview: 1, approved: 0, pending: 0 },
-      { module: 'Waste', total: 5, submitted: 4, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Energy', total: 14, submitted: 14, underReview: 0, approved: 0, pending: 0 },
+      { module: 'Water', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 },
+      { module: 'Waste', total: 4, submitted: 4, underReview: 0, approved: 0, pending: 0 },
       { module: 'Safety', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 }
     ],
     deadlines: []
   },
   {
-    id: 'site-hip-01',
-    name: 'Hyderabad Infra Park',
-    subtitle: 'Phase 1',
-    code: 'HIP-01',
-    bu: 'Real Estate',
-    location: 'Hyderabad, TG',
-    fullLocation: 'HITEC City, Hyderabad, Telangana',
-    type: 'Building',
-    typeColor: '#6366F1',
-    typeBg: 'rgba(99, 102, 241, 0.12)',
-    progress: 30,
-    dataCompletion: 35,
-    status: 'Planning',
-    statusColor: '#64748B',
-    statusBg: 'rgba(100, 116, 139, 0.14)',
-    startDate: '01 Jan 2024',
-    endDate: '31 Dec 2029',
-    reportingPeriod: 'FY 2026-27',
-    projectLead: 'P. Venkat Reddy',
-    description: 'IGBC Platinum certified commercial tower with rainwater harvesting.',
-    lat: 17.3850,
-    lng: 78.4867,
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop&q=80',
-    esgBreakdown: { energy: 35, water: 40, waste: 25, safety: 70 },
-    submissions: [
-      { module: 'Energy', total: 6, submitted: 2, underReview: 1, approved: 0, pending: 3 },
-      { module: 'Water', total: 5, submitted: 2, underReview: 1, approved: 0, pending: 2 },
-      { module: 'Waste', total: 4, submitted: 1, underReview: 0, approved: 0, pending: 3 },
-      { module: 'Safety', total: 4, submitted: 2, underReview: 1, approved: 0, pending: 1 }
-    ],
-    deadlines: []
-  },
-  {
-    id: 'site-wmp-01',
-    name: 'Waste Management Plant',
-    subtitle: 'Integrated Facility',
-    code: 'WMP-01',
-    bu: 'Waste Infra',
-    location: 'Nagpur, MH',
-    fullLocation: 'MIDC Butibori, Nagpur, Maharashtra',
-    type: 'Waste',
-    typeColor: '#D97706',
-    typeBg: 'rgba(217, 119, 6, 0.12)',
-    progress: 70,
-    dataCompletion: 78,
+    id: 'site-wtp-01',
+    name: 'Water Treatment Plant & Reservoirs',
+    subtitle: 'Integrated Circularity & ZLD',
+    code: 'WTP-01',
+    bu: 'Water & Environment',
+    location: 'Visakhapatnam, AP',
+    fullLocation: 'Industrial Valley Water Grid, Andhra Pradesh',
+    type: 'Water',
+    typeColor: '#0284C7',
+    typeBg: 'rgba(2, 132, 199, 0.12)',
+    progress: 88,
+    dataCompletion: 91,
     status: 'Active',
     statusColor: '#16A34A',
     statusBg: 'rgba(22, 163, 74, 0.12)',
     startDate: '15 Mar 2022',
-    endDate: '15 Nov 2026',
+    endDate: '30 Jun 2027',
     reportingPeriod: 'FY 2026-27',
     projectLead: 'Priyanka S.',
-    description: 'Municipal solid waste recycling, composting and refuse-derived fuel (RDF).',
-    lat: 21.1458,
-    lng: 79.0882,
-    image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600&auto=format&fit=crop&q=80',
-    esgBreakdown: { energy: 75, water: 70, waste: 94, safety: 88 },
+    description: 'Hillside clariflocculator reservoirs, automated chemical dosing & zero-liquid-discharge water recycle.',
+    lat: 17.6868,
+    lng: 83.2185,
+    image: MEIL_MEDIA.waterTreatmentPlant.src,
+    esgBreakdown: { energy: 82, water: 96, waste: 88, safety: 92 },
     submissions: [
-      { module: 'Energy', total: 8, submitted: 6, underReview: 1, approved: 1, pending: 0 },
-      { module: 'Water', total: 7, submitted: 5, underReview: 1, approved: 1, pending: 0 },
-      { module: 'Waste', total: 10, submitted: 8, underReview: 1, approved: 1, pending: 0 },
-      { module: 'Safety', total: 5, submitted: 4, underReview: 1, approved: 0, pending: 0 }
+      { module: 'Energy', total: 8, submitted: 7, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Water', total: 14, submitted: 13, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Waste', total: 6, submitted: 5, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Safety', total: 4, submitted: 4, underReview: 0, approved: 0, pending: 0 }
+    ],
+    deadlines: []
+  },
+  {
+    id: 'site-coastal-01',
+    name: 'Coastal Thermal & Super-Critical Station',
+    subtitle: 'FGD & Marine Cooling Telemetry',
+    code: 'CTP-01',
+    bu: 'Energy & Thermal',
+    location: 'Nellore, AP',
+    fullLocation: 'Krishnapatnam Coastal Station, Andhra Pradesh',
+    type: 'Thermal',
+    typeColor: '#DC2626',
+    typeBg: 'rgba(220, 38, 38, 0.12)',
+    progress: 92,
+    dataCompletion: 95,
+    status: 'Active',
+    statusColor: '#16A34A',
+    statusBg: 'rgba(22, 163, 74, 0.12)',
+    startDate: '10 Feb 2020',
+    endDate: '31 Aug 2028',
+    reportingPeriod: 'FY 2026-27',
+    projectLead: 'Jitendra Roy',
+    description: 'High-efficiency thermal generation with tall stack CEMS monitoring, FGD desulfurization and marine cooling.',
+    lat: 14.4426,
+    lng: 79.9865,
+    image: MEIL_MEDIA.coastalPowerPlant.src,
+    esgBreakdown: { energy: 94, water: 86, waste: 90, safety: 96 },
+    submissions: [
+      { module: 'Energy', total: 14, submitted: 13, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Water', total: 8, submitted: 7, underReview: 1, approved: 0, pending: 0 },
+      { module: 'Waste', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 },
+      { module: 'Safety', total: 6, submitted: 6, underReview: 0, approved: 0, pending: 0 }
     ],
     deadlines: []
   }
@@ -578,8 +712,60 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
             </div>
           </div>
 
-          {/* Project Table */}
-          <div className="mp-table-wrapper">
+          {/* Project Table or Visual Cards Grid */}
+          {viewMode === 'grid' ? (
+            <div className="mp-grid-view">
+              {filteredProjects.map((p) => {
+                const isSelected = selectedProjectId === p.id;
+                return (
+                  <div
+                    key={p.id}
+                    className={`mp-grid-card ${isSelected ? 'is-selected' : ''}`}
+                    onClick={() => setSelectedProjectId(p.id)}
+                  >
+                    <div className="mp-grid-card-hero">
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="mp-grid-card-img"
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&auto=format&fit=crop&q=80'; }}
+                      />
+                      <span className="mp-grid-status-badge" style={{ color: p.statusColor, background: p.statusBg }}>
+                        {p.status}
+                      </span>
+                      <span className="mp-grid-code-badge">{p.code}</span>
+                    </div>
+                    <div className="mp-grid-card-content">
+                      <div className="mp-grid-card-title">{p.name}</div>
+                      <div className="mp-grid-card-sub">{p.subtitle}</div>
+                      <div className="mp-grid-card-meta">
+                        <span className="mp-grid-bu-tag">{p.bu}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '11px', color: '#64748B' }}>
+                          <MapPin size={11} color="#0284C7" />
+                          <span>{p.location}</span>
+                        </div>
+                      </div>
+                      <div className="mp-grid-card-progress">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
+                          <span>Data Completion</span>
+                          <strong style={{ color: '#0F172A' }}>{p.dataCompletion}%</strong>
+                        </div>
+                        <div className="mp-progress-track">
+                          <div className="mp-progress-fill" style={{ width: `${p.dataCompletion}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredProjects.length === 0 && (
+                <div style={{ padding: '30px', textAlign: 'center', color: '#64748B', width: '100%', gridColumn: '1 / -1' }}>
+                  No matching projects found. Try clearing your filters or search term.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mp-table-wrapper">
             <table className="mp-table">
               <thead>
                 <tr>
@@ -781,6 +967,7 @@ export default function MyProjectModule({ onSelectProject, onNavigateTab }) {
               </tbody>
             </table>
           </div>
+          )}
 
         </div>
 

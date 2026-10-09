@@ -13,6 +13,7 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { SPEND_TREND_DATA, INITIAL_BENEFICIARIES_DATA } from '../csrData';
+import { MEIL_MEDIA } from '../../../../config/projectMedia';
 
 const DONUT_COLORS = ['#2563EB', '#0284C7', '#059669', '#D97706', '#8B5CF6', '#64748B'];
 
@@ -391,6 +392,81 @@ export default function CSROverviewScreen({
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ──── FEATURED CSR INITIATIVE & ON-GROUND IMPACT ──── */}
+      <div 
+        className="csr-glass-card" 
+        style={{ 
+          padding: '18px 22px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px' 
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: '1 1 500px' }}>
+          <img 
+            src={MEIL_MEDIA.csrInauguration.src} 
+            alt={MEIL_MEDIA.csrInauguration.title}
+            style={{ 
+              width: '180px', 
+              height: '110px', 
+              borderRadius: '10px', 
+              objectFit: 'cover', 
+              border: '1px solid #CBD5E1',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              flexShrink: 0
+            }}
+          />
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: 'rgba(5, 150, 105, 0.1)', color: '#059669' }}>
+                Featured On-Ground Initiative
+              </span>
+              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                BRSR Principle 8 Verified
+              </span>
+            </div>
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: '0 0 4px 0' }}>
+              {MEIL_MEDIA.csrInauguration.title}
+            </h3>
+            <p style={{ fontSize: '12.5px', color: '#64748B', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {MEIL_MEDIA.csrInauguration.subtitle} — Impacting 18,420+ rural residents through specialized healthcare access, clean drinking water filtration, and community skill centres.
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: '#334155', fontWeight: 600 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <MapPin size={13} color="#0284C7" /> Krishna & Godavari Basin, AP
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Users size={13} color="#DB2777" /> 18,420 Verified Beneficiaries
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <IndianRupee size={13} color="#059669" /> ₹12.6 Cr Disbursed
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
+          <button
+            type="button"
+            className="csr-btn csr-btn-primary"
+            onClick={() => onNavigateTab?.('projects')}
+            style={{ padding: '8px 18px', fontSize: '12.5px' }}
+          >
+            Explore Projects Directory
+          </button>
+          <button
+            type="button"
+            className="csr-btn csr-btn-outline"
+            onClick={() => onNavigateTab?.('social-impact')}
+            style={{ padding: '8px 18px', fontSize: '12.5px' }}
+          >
+            View Social Audit Report
+          </button>
         </div>
       </div>
     </div>

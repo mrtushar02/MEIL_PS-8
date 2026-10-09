@@ -66,7 +66,7 @@ export default function EHSOverviewScreen({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* ──── 1. PAGE HEADER & FILTERS BAR (Matching Image Panel 1) ──── */}
-      <div className="ehs-glass-card" style={{ padding: '16px 20px', borderRadius: '12px' }}>
+      <div className="ehs-glass-card ehs-page-banner" style={{ padding: '18px 24px', borderRadius: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           {/* Title with Shield Icon */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
