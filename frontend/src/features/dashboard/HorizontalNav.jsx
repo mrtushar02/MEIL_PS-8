@@ -63,47 +63,28 @@ export default function HorizontalNav({
           { id: 'overview', label: 'Overview', icon: Home },
           { id: 'safety', label: 'Safety & HSE', icon: ShieldAlert },
           { id: 'inspections', label: 'Inspections', icon: CheckSquare },
-          { id: 'training', label: 'Training', icon: GraduationCap },
-          { id: 'environmental', label: 'Environmental', icon: Leaf },
-          { id: 'evidence', label: 'Evidence', icon: Paperclip },
-          { id: 'submissions', label: 'Submissions', icon: Send },
-          { id: 'analytics', label: 'Analytics', icon: TrendingUp }
+          { id: 'evidence', label: 'Evidence', icon: Paperclip }
         ];
       case 'PROCUREMENT_OFFICER':
         return [
           { id: 'overview', label: 'Overview', icon: Home },
           { id: 'suppliers', label: 'Suppliers', icon: Building2 },
           { id: 'procurement', label: 'Procurement', icon: Truck },
-          { id: 'assessments', label: 'Assessments', icon: FileCheck2 },
-          { id: 'value-chain', label: 'Value Chain', icon: Layers },
-          { id: 'risk', label: 'Risk', icon: ShieldAlert },
-          { id: 'actions', label: 'Actions', icon: CheckSquare },
-          { id: 'evidence', label: 'Evidence', icon: Paperclip },
-          { id: 'submissions', label: 'Submissions', icon: Send },
-          { id: 'analytics', label: 'Analytics', icon: TrendingUp }
+          { id: 'evidence', label: 'Evidence', icon: Paperclip }
         ];
       case 'HR_OFFICER':
         return [
           { id: 'overview', label: 'Overview', icon: Home },
           { id: 'workforce', label: 'Workforce', icon: Users },
           { id: 'training', label: 'Training', icon: GraduationCap },
-          { id: 'wellbeing', label: 'Wellbeing', icon: HeartPulse },
-          { id: 'human-rights', label: 'Human Rights', icon: Scale },
-          { id: 'evidence', label: 'Evidence', icon: Paperclip },
-          { id: 'submissions', label: 'Submissions', icon: Send }
+          { id: 'evidence', label: 'Evidence', icon: Paperclip }
         ];
       case 'CSR_OFFICER':
         return [
           { id: 'overview', label: 'Overview', icon: Home },
           { id: 'projects', label: 'CSR Projects', icon: FolderKanban },
           { id: 'community', label: 'Community', icon: MapPin },
-          { id: 'beneficiaries', label: 'Beneficiaries', icon: Users },
-          { id: 'social-impact', label: 'Social Impact', icon: Target },
-          { id: 'stakeholders', label: 'Stakeholders', icon: Users2 },
-          { id: 'grievances', label: 'Grievances', icon: AlertCircle },
-          { id: 'evidence', label: 'Evidence', icon: Paperclip },
-          { id: 'submissions', label: 'Submissions', icon: Send },
-          { id: 'analytics', label: 'Analytics', icon: TrendingUp }
+          { id: 'evidence', label: 'Evidence', icon: Paperclip }
         ];
       case 'COMPLIANCE_OFFICER':
         return [
@@ -214,13 +195,9 @@ export default function HorizontalNav({
       default:
         return [
           { id: 'overview', label: 'Overview', icon: Home },
-          { id: 'my-project', label: 'My Project', icon: Building2 },
           { id: 'data-entry', label: 'Data Entry', icon: FileText },
-          { id: 'evidence', label: 'Evidence', icon: Paperclip },
-          { id: 'submissions', label: 'Submissions', icon: Send },
-          { id: 'reports', label: 'Reports', icon: BarChart3 },
-          { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-          { id: 'audit', label: 'Audit & Traceability', icon: Clock }
+          { id: 'evidence', label: 'Evidence Vault', icon: Paperclip },
+          { id: 'reports', label: 'Reports & BRSR', icon: BarChart3 }
         ];
     }
   };
@@ -324,9 +301,11 @@ export default function HorizontalNav({
       case 'PROJECT_OFFICER':
       default:
         return [
-          { id: 'workforce', label: 'Workforce & HR', icon: Users, tag: 'P3/P5' },
-          { id: 'reports', label: 'BRSR Reports', icon: BarChart3, tag: 'SEBI' },
+          { id: 'my-project', label: 'My Project Sites', icon: Building2, tag: 'SITE' },
+          { id: 'submissions', label: 'Submissions Tracker', icon: Send, tag: 'QUEUE' },
           { id: 'analytics', label: 'ESG Analytics', icon: TrendingUp, tag: 'GHG' },
+          { id: 'audit', label: 'Audit & Traceability', icon: Clock, tag: 'LOGS' },
+          { id: 'workforce', label: 'Workforce & HR', icon: Users, tag: 'P3/P5' },
         ];
     }
   };

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   ArrowRight,
-  Building2,
   ShieldCheck,
   Check,
   Mail,
@@ -19,20 +18,14 @@ import './WelcomeScreen.css';
 // Authentic MEIL Infrastructure Background Projects Array
 const BACKGROUND_PROJECTS = Object.values(MEIL_MEDIA);
 
-// Organization data — architected for dynamic API loading
-const ORGANIZATIONS = [
-  { id: 'meil-group', name: 'MEIL Group (Holding)', type: 'Holding Entity · Full Scope' },
-  { id: 'meil-power', name: 'MEIL Power Division', type: 'Subsidiary · Thermal & Solar' },
-  { id: 'meil-infra', name: 'MEIL Core Infrastructure', type: 'EPC Division · 250+ Sites' },
-  { id: 'meil-water', name: 'MEIL Water Resources', type: 'Subsidiary · Lift Irrigation' },
-  { id: 'meil-solar', name: 'MEIL Clean Energy & Solar', type: 'Subsidiary · Renewables' },
-  { id: 'meil-defence', name: 'ICOMM Tele Limited', type: 'Subsidiary · Defense Electronics' },
-  { id: 'olectra', name: 'Olectra Greentech Limited', type: 'Listed Subsidiary · EV Mobility' },
-];
+const DEFAULT_ORGANIZATION = {
+  id: 'meil-group',
+  name: 'MEIL Group (Holding)',
+  type: 'Holding Entity · Full Scope'
+};
 
 export function WelcomeScreen({ onLoginSuccess, onContinue }) {
   // State
-  const [selectedOrg, setSelectedOrg] = useState(ORGANIZATIONS[0]);
   const [selectedRole, setSelectedRole] = useState(ROLES_DATA[0]); // Default Project / Site User
   const [email, setEmail] = useState(ROLES_DATA[0].email || 'site.officer@meilgroup.in');
   const [password, setPassword] = useState('password123');
@@ -73,12 +66,12 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
           onLoginSuccess({
             user: { ...authResponse, email, full_name: selectedRole.title },
             role: selectedRole,
-            organization: selectedOrg
+            organization: DEFAULT_ORGANIZATION
           });
         } else if (onContinue) {
-          onContinue({ organization: selectedOrg });
+          onContinue({ organization: DEFAULT_ORGANIZATION });
         }
-      }, 450);
+      }, 400);
     } catch (err) {
       console.warn('Backend login fallback:', err.message);
       setLoading(false);
@@ -88,12 +81,12 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
           onLoginSuccess({
             user: { id: 'usr-1', email, full_name: selectedRole.title },
             role: selectedRole,
-            organization: selectedOrg
+            organization: DEFAULT_ORGANIZATION
           });
         } else if (onContinue) {
-          onContinue({ organization: selectedOrg });
+          onContinue({ organization: DEFAULT_ORGANIZATION });
         }
-      }, 450);
+      }, 400);
     }
   };
 
@@ -115,7 +108,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
         <div className="ambient-light ambient-light-2" />
       </div>
 
-      {/* ═══ Left Side: Brand Narrative Hero (Transparent over background) ═══ */}
+      {/* ═══ Left Side: Clean Minimal Brand Narrative ═══ */}
       <div className="welcome-left-brand-hero">
         <div className="hero-brand-pill">
           <span className="hero-live-indicator" />
@@ -126,27 +119,11 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
           <span className="hero-title-accent">Sustainable</span> Tomorrow.
         </h1>
         <p className="hero-main-subtitle">
-          Megha Engineering &amp; Infrastructures Limited · CIN: U45202TG2006PLC050271
+          Megha Engineering &amp; Infrastructures Limited · 250+ Project Sites
         </p>
-        <div className="hero-stats-row">
-          <div className="hero-stat-item">
-            <span className="hero-stat-value">250+</span>
-            <span className="hero-stat-label">Project Sites</span>
-          </div>
-          <div className="hero-stat-sep" />
-          <div className="hero-stat-item">
-            <span className="hero-stat-value">42,800+</span>
-            <span className="hero-stat-label">Workforce</span>
-          </div>
-          <div className="hero-stat-sep" />
-          <div className="hero-stat-item">
-            <span className="hero-stat-value">₹32,450 Cr</span>
-            <span className="hero-stat-label">Turnover</span>
-          </div>
-        </div>
       </div>
 
-      {/* ═══ Right Side: Clean Focused Enterprise Login Card ═══ */}
+      {/* ═══ Right Side: Simplified & Clean Login Card ═══ */}
       <div className="welcome-clean-login-container">
         <div className="welcome-login-card">
           {/* Header */}
@@ -162,35 +139,16 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
               <span className="text-navy">MEIL </span>
               <span className="text-blue">ESG</span>
             </h1>
-            <p className="login-desc">Megha Engineering &amp; Infrastructures Ltd. · Enterprise Portal</p>
+            <p className="login-desc">Megha Engineering &amp; Infrastructures Ltd.</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSignIn} className="login-actual-form">
-            {/* Entity / Scope */}
-            <div className="login-field-group">
-              <label className="login-field-label">
-                <Building2 size={13} className="text-blue" />
-                <span>Reporting Entity / Scope</span>
-              </label>
-              <select
-                value={selectedOrg.id}
-                onChange={(e) => setSelectedOrg(ORGANIZATIONS.find((o) => o.id === e.target.value) || ORGANIZATIONS[0])}
-                className="login-select-input"
-              >
-                {ORGANIZATIONS.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name} · {org.type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Role Switcher */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <ShieldCheck size={13} className="text-blue" />
-                <span>Authorized Portal Role</span>
+                <ShieldCheck size={14} className="text-blue" />
+                <span>Select Your Role</span>
               </label>
               <select
                 value={selectedRole.id}
@@ -208,8 +166,8 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Email Field */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <Mail size={13} className="text-blue" />
-                <span>Officer Email ID</span>
+                <Mail size={14} className="text-blue" />
+                <span>Official Email ID</span>
               </label>
               <input
                 type="email"
@@ -224,8 +182,8 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Password Field */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <Lock size={13} className="text-blue" />
-                <span>Security Password</span>
+                <Lock size={14} className="text-blue" />
+                <span>Password</span>
               </label>
               <div className="password-wrap">
                 <input
@@ -242,7 +200,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
                   className="password-toggle-btn"
                   title={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
