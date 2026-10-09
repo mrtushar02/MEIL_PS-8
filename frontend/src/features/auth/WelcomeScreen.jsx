@@ -152,17 +152,17 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
           {/* Header */}
           <div className="login-card-header">
             <div className="login-logo-wrap">
-              <MeilLogo height={38} />
+              <MeilLogo height={46} />
             </div>
             <div className="login-badge-pill">
-              <Sparkles size={11} className="text-blue-500" />
+              <Sparkles size={12} className="text-blue-500" />
               <span>SEBI BRSR STATUTORY PORTAL</span>
             </div>
             <h1 className="login-title">
               <span className="text-navy">MEIL </span>
               <span className="text-blue">ESG</span>
             </h1>
-            <p className="login-desc">Megha Engineering &amp; Infrastructures Ltd.</p>
+            <p className="login-desc">Megha Engineering &amp; Infrastructures Ltd. · Enterprise Portal</p>
           </div>
 
           {/* Form */}

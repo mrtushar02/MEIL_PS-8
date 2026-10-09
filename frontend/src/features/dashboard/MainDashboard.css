@@ -49,14 +49,14 @@
 }
 
 .dashboard-bg-slide.is-active {
-  opacity: 0.28; /* Clearly visible, vivid infrastructure backdrop */
+  opacity: 0.58; /* Clearly and boldly visible infrastructure backdrop */
   transform: scale(1);
 }
 
 .dashboard-bg-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.78) 0%, rgba(241, 245, 249, 0.88) 100%);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.48) 0%, rgba(241, 245, 249, 0.68) 100%);
   pointer-events: none;
 }
 
