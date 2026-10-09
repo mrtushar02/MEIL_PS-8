@@ -233,20 +233,20 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             </button>
           </form>
 
-          {/* Quick Demo Role Chips */}
-          <div className="login-quick-roles">
-            <span className="quick-roles-title">QUICK SWITCH ROLE:</span>
-            <div className="quick-roles-pills">
-              {ROLES_DATA.slice(0, 5).map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  className={`quick-role-chip ${selectedRole.id === r.id ? 'active' : ''}`}
-                  onClick={() => handleRoleSelect(r.id)}
-                >
-                  {r.shortName || r.title.split(' ')[0]}
-                </button>
-              ))}
+          {/* Enterprise Role-Based Access Governance Notice */}
+          <div style={{
+            marginTop: '16px',
+            padding: '10px 12px',
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '8px'
+          }}>
+            <ShieldCheck size={16} color="#059669" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ fontSize: '11px', color: '#64748B', lineHeight: '1.4' }}>
+              <strong>Strict RBAC Enforced:</strong> Each user is strictly bound to their departmental portal. Cross-department portal jumping without authentication is prohibited under SEBI audit controls.
             </div>
           </div>
         </div>

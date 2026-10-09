@@ -276,61 +276,21 @@ export default function DashboardHeader({
                   </div>
                 </div>
 
-                {/* Quick Role Switcher */}
-                <div style={{ padding: '8px 6px', borderBottom: '1px solid rgba(226, 232, 240, 0.7)' }}>
-                  <div style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
-                    Switch Workspace Role
+                {/* Strict Role-Based Access Control Notice */}
+                <div style={{ padding: '10px 8px', borderBottom: '1px solid rgba(226, 232, 240, 0.7)' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginBottom: '4px'
+                  }}>
+                    <Shield size={13} color="#059669" />
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#059669', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      RBAC Security Locked
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    {[
-                      { id: 'PROJECT_OFFICER', title: 'Project / Site Officer', person: 'Rohit Kumar', color: '#0284C7' },
-                      { id: 'HR_OFFICER', title: 'HR & Workforce Manager', person: 'Sunita Raman', color: '#2563EB' },
-                      { id: 'EHS_OFFICER', title: 'EHS & Safety Specialist', person: 'Rajeshwar K.', color: '#059669' },
-                      { id: 'PROCUREMENT_OFFICER', title: 'Procurement & Scope 3', person: 'Anand Mahindra V.', color: '#D97706' },
-                      { id: 'CSR_OFFICER', title: 'CSR & Community Lead', person: 'Priya Nair', color: '#2563EB' },
-                      { id: 'COMPLIANCE_OFFICER', title: 'Governance & Compliance', person: 'Adv. S. K. Nair', color: '#1E40AF' },
-                    ].map(r => {
-                      const isCurrent = role?.id === r.id;
-                      return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onClick={() => {
-                            setIsUserMenuOpen(false);
-                            onSwitchRole?.(r.id);
-                          }}
-                          style={{
-                            width: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '6px 8px',
-                            background: isCurrent ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
-                            border: isCurrent ? '1px solid rgba(37, 99, 235, 0.25)' : '1px solid transparent',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            transition: 'all 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isCurrent) e.currentTarget.style.background = 'rgba(234, 244, 255, 0.5)';
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isCurrent) e.currentTarget.style.background = 'transparent';
-                          }}
-                        >
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '11px', fontWeight: isCurrent ? '800' : '600', color: isCurrent ? '#2563EB' : '#1E293B' }}>
-                              {r.title}
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: '#64748B' }}>{r.person}</span>
-                          </div>
-                          {isCurrent && (
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563EB' }} />
-                          )}
-                        </button>
-                      );
-                    })}
+                  <div style={{ fontSize: '11px', color: '#64748B', lineHeight: '1.4' }}>
+                    You are authenticated strictly for <strong>{role?.title || 'Current Role'}</strong>. Cross-department portal hopping is restricted under SEBI statutory audit governance.
                   </div>
                 </div>
 
