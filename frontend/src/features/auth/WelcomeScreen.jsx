@@ -129,10 +129,10 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
           {/* Header */}
           <div className="login-card-header">
             <div className="login-logo-wrap">
-              <MeilLogo height={46} />
+              <MeilLogo height={52} />
             </div>
             <div className="login-badge-pill">
-              <Sparkles size={12} className="text-blue-500" />
+              <Sparkles size={14} className="text-blue-500" />
               <span>SEBI BRSR STATUTORY PORTAL</span>
             </div>
             <h1 className="login-title">
@@ -147,7 +147,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Role Switcher */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <ShieldCheck size={14} className="text-blue" />
+                <ShieldCheck size={16} className="text-blue" />
                 <span>Select Your Role</span>
               </label>
               <select
@@ -166,7 +166,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Email Field */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <Mail size={14} className="text-blue" />
+                <Mail size={16} className="text-blue" />
                 <span>Official Email ID</span>
               </label>
               <input
@@ -182,7 +182,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Password Field */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <Lock size={14} className="text-blue" />
+                <Lock size={16} className="text-blue" />
                 <span>Password</span>
               </label>
               <div className="password-wrap">
