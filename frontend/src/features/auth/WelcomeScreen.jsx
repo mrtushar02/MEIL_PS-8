@@ -129,10 +129,10 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
           {/* Header */}
           <div className="login-card-header">
             <div className="login-logo-wrap">
-              <MeilLogo height={52} />
+              <MeilLogo height={60} />
             </div>
             <div className="login-badge-pill">
-              <Sparkles size={14} className="text-blue-500" />
+              <Sparkles size={15} className="text-blue-500" />
               <span>SEBI BRSR STATUTORY PORTAL</span>
             </div>
             <h1 className="login-title">
@@ -147,7 +147,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Role Switcher */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <ShieldCheck size={16} className="text-blue" />
+                <ShieldCheck size={18} className="text-blue" />
                 <span>Select Your Role</span>
               </label>
               <select
@@ -166,7 +166,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Email Field */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <Mail size={16} className="text-blue" />
+                <Mail size={18} className="text-blue" />
                 <span>Official Email ID</span>
               </label>
               <input
@@ -182,7 +182,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
             {/* Password Field */}
             <div className="login-field-group">
               <label className="login-field-label">
-                <Lock size={16} className="text-blue" />
+                <Lock size={18} className="text-blue" />
                 <span>Password</span>
               </label>
               <div className="password-wrap">
@@ -200,7 +200,7 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
                   className="password-toggle-btn"
                   title={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -221,13 +221,13 @@ export function WelcomeScreen({ onLoginSuccess, onContinue }) {
                 <div className="btn-spinner" />
               ) : loginSuccess ? (
                 <div className="btn-success-indicator">
-                  <Check size={20} />
+                  <Check size={22} />
                   <span>Authenticated · Opening Portal</span>
                 </div>
               ) : (
                 <>
                   <span>Sign In to MEIL Portal</span>
-                  <ArrowRight size={18} />
+                  <ArrowRight size={20} />
                 </>
               )}
             </button>
